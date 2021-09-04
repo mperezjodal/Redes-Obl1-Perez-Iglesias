@@ -1,0 +1,13 @@
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.csproj.AssemblyReference.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.GeneratedMSBuildEditorConfig.editorconfig
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.AssemblyInfoInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.AssemblyInfo.cs
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.csproj.CoreCompileInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/bin/Debug/netcoreapp3.1/Server.deps.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/bin/Debug/netcoreapp3.1/Server.runtimeconfig.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/bin/Debug/netcoreapp3.1/Server.runtimeconfig.dev.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/bin/Debug/netcoreapp3.1/Server.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/bin/Debug/netcoreapp3.1/Server.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/Server/obj/Debug/netcoreapp3.1/Server.genruntimeconfig.cache

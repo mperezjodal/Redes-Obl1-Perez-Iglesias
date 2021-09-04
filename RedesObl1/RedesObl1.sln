@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedesObl1", "RedesObl1\RedesObl1.csproj", "{1ECE6FD1-11C2-4A18-B2B7-8BC86C54BC48}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{31C0CB81-E23B-4A03-8E0F-81EA392D2683}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{62A1856E-AD63-43FA-9958-D1EB37071E55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +10,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1ECE6FD1-11C2-4A18-B2B7-8BC86C54BC48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1ECE6FD1-11C2-4A18-B2B7-8BC86C54BC48}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1ECE6FD1-11C2-4A18-B2B7-8BC86C54BC48}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1ECE6FD1-11C2-4A18-B2B7-8BC86C54BC48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31C0CB81-E23B-4A03-8E0F-81EA392D2683}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C0CB81-E23B-4A03-8E0F-81EA392D2683}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C0CB81-E23B-4A03-8E0F-81EA392D2683}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C0CB81-E23B-4A03-8E0F-81EA392D2683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62A1856E-AD63-43FA-9958-D1EB37071E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62A1856E-AD63-43FA-9958-D1EB37071E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62A1856E-AD63-43FA-9958-D1EB37071E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62A1856E-AD63-43FA-9958-D1EB37071E55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
