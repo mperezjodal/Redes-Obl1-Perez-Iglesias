@@ -1,0 +1,12 @@
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.deps.json
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.dll
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\ref\SocketUtils.dll
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.pdb
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.csproj.AssemblyReference.cache
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.AssemblyInfoInputs.cache
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.AssemblyInfo.cs
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.csproj.CoreCompileInputs.cache
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.dll
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\ref\SocketUtils.dll
+C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.pdb
