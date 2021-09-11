@@ -1,19 +1,37 @@
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.deps.json
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ref\ClientSocket.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.pdb
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\SocketUtils.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\SocketUtils.pdb
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.csproj.AssemblyReference.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.AssemblyInfoInputs.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.AssemblyInfo.cs
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.csproj.CoreCompileInputs.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.csproj.CopyComplete
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ref\ClientSocket.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.pdb
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.exe
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.runtimeconfig.json
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\bin\Debug\net5.0\ClientSocket.runtimeconfig.dev.json
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ClientSocket\obj\Debug\net5.0\ClientSocket.genruntimeconfig.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.deps.json
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ref/ClientSocket.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.pdb
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/SocketUtils.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/SocketUtils.pdb
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.AssemblyReference.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.GeneratedMSBuildEditorConfig.editorconfig
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.AssemblyInfoInputs.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.AssemblyInfo.cs
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.CoreCompileInputs.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.CopyComplete
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ref/ClientSocket.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.pdb
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.exe
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.runtimeconfig.json
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.runtimeconfig.dev.json
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.genruntimeconfig.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.deps.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.runtimeconfig.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.runtimeconfig.dev.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ref/ClientSocket.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/ClientSocket.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/SocketUtils.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/bin/Debug/net5.0/SocketUtils.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.AssemblyReference.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.GeneratedMSBuildEditorConfig.editorconfig
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.AssemblyInfoInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.AssemblyInfo.cs
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.CoreCompileInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.csproj.CopyComplete
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ref/ClientSocket.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ClientSocket/obj/Debug/net5.0/ClientSocket.genruntimeconfig.cache

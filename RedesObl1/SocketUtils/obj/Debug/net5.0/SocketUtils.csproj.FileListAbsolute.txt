@@ -1,12 +1,24 @@
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.deps.json
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\ref\SocketUtils.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\bin\Debug\net5.0\SocketUtils.pdb
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.csproj.AssemblyReference.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.AssemblyInfoInputs.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.AssemblyInfo.cs
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.csproj.CoreCompileInputs.cache
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\ref\SocketUtils.dll
-C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\SocketUtils\obj\Debug\net5.0\SocketUtils.pdb
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.deps.json
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/ref/SocketUtils.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.pdb
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.csproj.AssemblyReference.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.GeneratedMSBuildEditorConfig.editorconfig
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.AssemblyInfoInputs.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.AssemblyInfo.cs
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.csproj.CoreCompileInputs.cache
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/ref/SocketUtils.dll
+C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.deps.json
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/ref/SocketUtils.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/bin/Debug/net5.0/SocketUtils.pdb
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.csproj.AssemblyReference.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.GeneratedMSBuildEditorConfig.editorconfig
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.AssemblyInfoInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.AssemblyInfo.cs
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.csproj.CoreCompileInputs.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/ref/SocketUtils.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/SocketUtils/obj/Debug/net5.0/SocketUtils.pdb

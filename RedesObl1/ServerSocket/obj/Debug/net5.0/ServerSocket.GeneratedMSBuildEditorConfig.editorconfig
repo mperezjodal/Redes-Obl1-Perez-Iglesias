@@ -7,4 +7,4 @@ build_property.PublishSingleFile =
 build_property.IncludeAllContentForSelfExtract = 
 build_property._SupportedPlatformList = Android,iOS,Linux,macOS,Windows
 build_property.RootNamespace = Server5
-build_property.ProjectDir = C:\Users\figle\Redes-Obl1-Perez-Iglesias\RedesObl1\ServerSocket\
+build_property.ProjectDir = /Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/
