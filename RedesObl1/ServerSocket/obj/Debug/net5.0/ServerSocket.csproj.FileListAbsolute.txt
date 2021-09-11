@@ -35,3 +35,5 @@ C:/Users/figle/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/obj/Debug/net5.0
 /Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/obj/Debug/net5.0/ref/ServerSocket.dll
 /Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/obj/Debug/net5.0/ServerSocket.pdb
 /Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/obj/Debug/net5.0/ServerSocket.genruntimeconfig.cache
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/bin/Debug/net5.0/Domain.dll
+/Users/marceloperez/Documents/ORT/Prog Redes/Redes-Obl1-Perez-Iglesias/RedesObl1/ServerSocket/bin/Debug/net5.0/Domain.pdb

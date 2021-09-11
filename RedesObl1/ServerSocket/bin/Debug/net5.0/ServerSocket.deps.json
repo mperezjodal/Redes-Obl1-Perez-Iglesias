@@ -8,10 +8,16 @@
     ".NETCoreApp,Version=v5.0": {
       "ServerSocket/1.0.0": {
         "dependencies": {
+          "Domain": "1.0.0",
           "SocketUtils": "1.0.0"
         },
         "runtime": {
           "ServerSocket.dll": {}
+        }
+      },
+      "Domain/1.0.0": {
+        "runtime": {
+          "Domain.dll": {}
         }
       },
       "SocketUtils/1.0.0": {
@@ -23,6 +29,11 @@
   },
   "libraries": {
     "ServerSocket/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Domain/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

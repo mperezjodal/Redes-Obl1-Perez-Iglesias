@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SocketUtils\SocketUtils.csproj" />
+      <ProjectReference Include="..\Domain\Domain.csproj" />
     </ItemGroup>
 
 </Project>

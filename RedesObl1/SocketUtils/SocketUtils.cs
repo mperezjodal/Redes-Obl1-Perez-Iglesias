@@ -23,66 +23,60 @@ namespace SocketUtils
 
         public static void SendData(Socket socket)
         {
-            while (true)
+            string message = Console.ReadLine();
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            int length = data.Length;
+            byte[] dataLength = BitConverter.GetBytes(length);
+            int totalDataSent = 0;
+            while (totalDataSent < dataLength.Length)
             {
-                string message = Console.ReadLine();
-                byte[] data = Encoding.UTF8.GetBytes(message);
-                int length = data.Length;
-                byte[] dataLength = BitConverter.GetBytes(length);
-                int totalDataSent = 0;
-                while (totalDataSent < dataLength.Length)
+                int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
+                if (sent == 0)
                 {
-                    int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
+                    throw new SocketException();
                 }
-                
-                totalDataSent = 0;
-                while (totalDataSent < data.Length)
+                totalDataSent += sent;
+            }
+            
+            totalDataSent = 0;
+            while (totalDataSent < data.Length)
+            {
+                int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
+                if (sent == 0)
                 {
-                    int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
+                    throw new SocketException();
                 }
+                totalDataSent += sent;
             }
         }
         
         public static void SendData(Socket socket, String msg)
         {
-            // while (true)
-            // {
-                string message = msg;
-                byte[] data = Encoding.UTF8.GetBytes(message);
-                int length = data.Length;
-                byte[] dataLength = BitConverter.GetBytes(length);
-                int totalDataSent = 0;
-                while (totalDataSent < dataLength.Length)
+            string message = msg;
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            int length = data.Length;
+            byte[] dataLength = BitConverter.GetBytes(length);
+            int totalDataSent = 0;
+            while (totalDataSent < dataLength.Length)
+            {
+                int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
+                if (sent == 0)
                 {
-                    int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
+                    throw new SocketException();
                 }
-                
-                totalDataSent = 0;
-                while (totalDataSent < data.Length)
+                totalDataSent += sent;
+            }
+            
+            totalDataSent = 0;
+            while (totalDataSent < data.Length)
+            {
+                int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
+                if (sent == 0)
                 {
-                    int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
+                    throw new SocketException();
                 }
-            // }
+                totalDataSent += sent;
+            }
         }
     }
 }
