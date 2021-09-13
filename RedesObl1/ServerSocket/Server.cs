@@ -58,36 +58,37 @@ namespace ServerSocket
 
         private static void HandleClient(Socket clientSocket)
         {
-            DisplayMenu(clientSocket);
-
             while (!_exit)
             {
-                byte[] dataLength = new byte[ProtocolFixedSize];
-                clientSocket.Receive(dataLength);
-                int length = BitConverter.ToInt32(dataLength);
-                byte[] data = new byte[length];
-                clientSocket.Receive(data);
-                string clientMessage = Encoding.UTF8.GetString(data);
-
+                var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                   HeaderConstants.DataLength;
+                var buffer = new byte[headerLength];
                 try
                 {
-                    switch (clientMessage)
+                    ReceiveData(clientSocket, headerLength, buffer);
+                    var header = new Header();
+                    header.DecodeData(buffer);
+                    switch (header.ICommand)
                     {
-                        case "1":
-                            Utils.SendData(clientSocket,  "Seleccionaste: Ver catálogo de juegos");
+                        case 1:
+                            Console.Write("Seleccionaste: Ver catálogo de juegos");
                             break;
-                        case "2":
+                        case 2:
                             Utils.SendData(clientSocket,  "Seleccionaste: Adquirir juego");
                             break;
-                        case "3":
+                        case 3:
                             Utils.SendData(clientSocket,  "Seleccionaste: Publicar juego");
                             break;
-                        case "4":
+                        case 4:
                             Utils.SendData(clientSocket,  "Seleccionaste: Publicar calificación de un juego");
                             break;
-                        case "5":
+                        case 5:
                             Utils.SendData(clientSocket,  "Seleccionaste: Buscar juegos");
                             break;
+                        // case "exit":
+                        //     Utils.SendData(clientSocket,  "Terminó la conexión.");
+                        //     _exit = true;
+                        //     break;
                     }
                 }
                 catch (Exception e)
@@ -97,24 +98,35 @@ namespace ServerSocket
             }
         }
 
+        private static void ReceiveData(Socket clientSocket,  int Length, byte[] buffer)
+        {
+            var iRecv = 0;
+            while (iRecv < Length)
+            {
+                try
+                {
+                    var localRecv = clientSocket.Receive(buffer, iRecv, Length - iRecv, SocketFlags.None);
+                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
+                    {
+                        if (!_exit)
+                        {
+                            clientSocket.Shutdown(SocketShutdown.Both);
+                            clientSocket.Close();
+                        }
+                        else
+                        {
+                            throw new Exception("Server is closing");
+                        }
+                    }
 
-        public static void DisplayMenu(Socket socket) {
-            Utils.SendData(socket,  "###############################################");
-            Utils.SendData(socket,  "#                                             #");
-            Utils.SendData(socket, @"#       |¯\ /¯| | ____| |¯\ |¯| | | | |       #");
-            Utils.SendData(socket, @"#       |  ¯  | | __|   |  \| | | |_| |       #");
-            Utils.SendData(socket, @"#       |     | |_____| | \   | |_____|       #");
-            Utils.SendData(socket,  "#                                             #");
-            Utils.SendData(socket,  "#   Seleccione una opción:                    #");
-            Utils.SendData(socket,  "#                                             #");
-            Utils.SendData(socket,  "#   1-   Ver catálogo de juegos               #");
-            Utils.SendData(socket,  "#   2-   Adquirir juego                       #");
-            Utils.SendData(socket,  "#   3-   Publicar juego                       #");
-            Utils.SendData(socket,  "#   4-   Publicar calificación de un juego    #");
-            Utils.SendData(socket,  "#   5-   Buscar juegos                        #");
-            Utils.SendData(socket,  "#        exit                                 #");
-            Utils.SendData(socket,  "#                                             #");
-            Utils.SendData(socket,  "###############################################");
+                    iRecv += localRecv;
+                }
+                catch (SocketException se)
+                {
+                    Console.WriteLine(se.Message);
+                    return;
+                }
+            }
         }
     }
 }
