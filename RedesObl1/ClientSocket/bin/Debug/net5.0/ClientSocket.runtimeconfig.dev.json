@@ -1,8 +1,0 @@
-{
-  "runtimeOptions": {
-    "additionalProbingPaths": [
-      "C:\\Users\\figle\\.dotnet\\store\\|arch|\\|tfm|",
-      "C:\\Users\\figle\\.nuget\\packages"
-    ]
-  }
-}
