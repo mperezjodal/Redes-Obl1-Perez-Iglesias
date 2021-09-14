@@ -10,11 +10,9 @@ namespace ClientSocket
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            Console.ResetColor();
             Console.WriteLine();
-            Console.WriteLine(@"        |¯\ /¯| | ____| |¯\ |¯| | | | |        ");
-            Console.WriteLine(@"        |  ¯  | | __|   |  \| | | |_| |        ");
-            Console.WriteLine(@"        |     | |_____| | \   | |_____|        ");
+            Console.ResetColor();
+            MenuTitle();
             Console.WriteLine();
             Console.WriteLine("    Seleccione una opción:                     ");
             Console.WriteLine();
@@ -93,6 +91,36 @@ namespace ClientSocket
             foreach(Game g in games){
                 Console.WriteLine(g.Title);
             }
+        }
+
+        public static void MenuTitle(){
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(@"        |¯\ /¯|");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(@" | ____|");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(@" |¯\ |¯|");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(@" | | | |");
+            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(@"        |  ¯  |");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(@" | __|  ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(@" |  \| |");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(@" | |_| |");
+            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write(@"        |     |");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write(@" |_____|");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(@" | \   |");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(@" |_____|");
+            Console.ResetColor();
         }
     }
 }
