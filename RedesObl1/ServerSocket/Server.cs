@@ -89,7 +89,6 @@ namespace ServerSocket
                 {
                     var clientConnected = socketServer.Accept();
                     _clients.Add(clientConnected);
-                    Console.WriteLine("Nueva conexión aceptada.");
                     var threadClient = new Thread(() => HandleClient(clientConnected));
                     threadClient.Start();
                 }
@@ -124,26 +123,19 @@ namespace ServerSocket
                             Game newGame = Game.Decode(jsonGame);
                             GameSystem.AddGame(newGame);
 
-                            var message = "Se ha publicado el juego: " + newGame.Title + ".";
-                            var responseHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, message.Length);
-                            var data = responseHeader.GetRequest();
-                            Utils.SendData(clientSocket, data, message);
+                            var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
+                            var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
+                            var publishedGameHeaderData = publishedGameHeader.GetRequest();
+                            Utils.SendData(clientSocket, publishedGameHeaderData, publishedGameMessage);
+
                             break;
                         case CommandConstants.GetGames:
                             var gameListMessage = GameSystem.EncodeGameList();
                             var gameListHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gameListMessage.Length);
                             var gameListData = gameListHeader.GetRequest();
                             Utils.SendData(clientSocket, gameListData, gameListMessage);
+
                             break;
-                        // case 3:
-                        //     Utils.SendData(clientSocket,  "Seleccionaste: Publicar juego");
-                        //     break;
-                        // case 4:
-                        //     Utils.SendData(clientSocket,  "Seleccionaste: Publicar calificación de un juego");
-                        //     break;
-                        // case 5:
-                        //     Utils.SendData(clientSocket,  "Seleccionaste: Buscar juegos");
-                        //     break;
                     }
                 }
                 catch (SocketException e)

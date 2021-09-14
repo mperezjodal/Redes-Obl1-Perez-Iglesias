@@ -23,7 +23,6 @@ namespace ClientSocket
         {
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientIpAddress), ClientPort);
-            
             clientSocket.Bind(clientEndPoint);
             Console.WriteLine("Conectando al servidor...");
             
@@ -35,7 +34,6 @@ namespace ClientSocket
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             var dataRequestGameList = headerRequestGameList.GetRequest();
 
-            
             while (connected)
             {
                 Display.ClientMenu();
@@ -64,6 +62,7 @@ namespace ClientSocket
 
                         Game gameToModify = Display.SelectGame(gameList);
                         if(gameToModify == null){
+                            Console.WriteLine("Retorno al menú.");
                             break;
                         }
                         Console.WriteLine(gameToModify.Title);

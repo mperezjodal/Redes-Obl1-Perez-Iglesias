@@ -9,7 +9,7 @@ namespace ClientSocket
         public static void ClientMenu() {
             Console.WriteLine(@"###############################################");
             Console.WriteLine(@"#                                             #");
-            Console.WriteLine(@"#       |¯\ /¯| | ____| |¯\ |¯| | | | |       #");
+            Console.WriteLine(@"#     d  |¯\ /¯| | ____| |¯\ |¯| | | | |       #");
             Console.WriteLine(@"#       |  ¯  | | __|   |  \| | | |_| |       #");
             Console.WriteLine(@"#       |     | |_____| | \   | |_____|       #");
             Console.WriteLine(@"#                                             #");
@@ -44,22 +44,25 @@ namespace ClientSocket
         }
 
         public static Game SelectGame(List<Game> gameList){
-            Console.WriteLine("Esta es la lista de juegos:");
+            Console.WriteLine("Lista de juegos:");
             foreach(Game g in gameList){
                 Console.WriteLine(g.Title);
             }
+
             Game selectedGame = null;
             Console.WriteLine("Ingrese el título del juego que desea modificar:");
             string gameTitle = Console.ReadLine();
             selectedGame = gameList.Find(g => g.Title.Equals(gameTitle));
+
             if(selectedGame == null){
-                Console.WriteLine("Juego inválido, ingrese el título del juego que desea modificar:");
+                Console.WriteLine("Juego inválido, ingrese el título nuevamente:");
                 gameTitle = Console.ReadLine();
                 selectedGame = gameList.Find(g => g.Title.Equals(gameTitle));
             }
             if(selectedGame == null){
-                Console.WriteLine("Juego inválido, retorno al menú");
+                Console.WriteLine("Juego inválido.");
             }
+
             return selectedGame;
         }
     }
