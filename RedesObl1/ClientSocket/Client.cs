@@ -67,8 +67,7 @@ namespace ClientSocket
                             break;
                         }
                         
-                        Console.WriteLine("Ingrese los nuevos datos del juego.");
-                        Console.WriteLine("Si no quiere modificar el campo, presione ENTER.");
+                        Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
                         Game modifiedGame = Display.InputGame();
 
                         var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
@@ -96,19 +95,16 @@ namespace ClientSocket
                         Console.WriteLine(Utils.ReciveMessageData(clientSocket));
                         break;
                     case "4": //buscar
+                        Console.WriteLine("Funcionalidad no implementada.");
+                        break;
                     case "5": //calificar
-                        // Utils.SendCommand(clientSocket, Int32.Parse(option));
+                        Console.WriteLine("Funcionalidad no implementada.");
                         break;
                     default:
-                        Console.WriteLine("option invalida");
+                        Console.WriteLine("Opción inválida/");
                         break;
                 }
             }
-
-            // new Thread(() => Utils.ReciveData(clientSocket)).Start();
-            // Utils.SendData(clientSocket);
         }
-
-        
     }
 }

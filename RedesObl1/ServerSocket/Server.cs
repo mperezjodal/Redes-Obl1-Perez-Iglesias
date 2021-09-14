@@ -65,6 +65,7 @@ namespace ServerSocket
                         fakeSocket.Connect("127.0.0.1",20000);
                         break;
                     case "1": // ver juegos
+                        Display.GameList(GameSystem.Games);
                         break;
                     case "2": // adquirir   
                         break;

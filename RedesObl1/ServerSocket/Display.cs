@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using Domain;
 
 namespace ServerSocket
 {
     public class Display
     {
         public static void ServerMenu() {
+            Console.WriteLine();
             Console.WriteLine(@"###############################################");
             Console.WriteLine(@"#                                             #");
             Console.WriteLine(@"#       |¯\ /¯| | ____| |¯\ |¯| | | | |       #");
@@ -21,6 +24,14 @@ namespace ServerSocket
             Console.WriteLine(@"#        exit                                 #");
             Console.WriteLine(@"#                                             #");
             Console.WriteLine(@"###############################################");
+            Console.WriteLine();
+        }
+
+        public static void GameList(List<Game> games){
+            Console.WriteLine("Lista de juegos:");
+            foreach(Game g in games){
+                Console.WriteLine(g.Title);
+            }
         }
     }
 }
