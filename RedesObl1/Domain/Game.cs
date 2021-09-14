@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Domain
 {
@@ -10,5 +12,13 @@ namespace Domain
         public int Rating { get; set; }
         public string Synopsis { get; set; }
         public string Cover { get; set; }
+
+        public string Encode(){
+            return JsonSerializer.Serialize(this);
+        }
+
+        public static Game Decode(string jsonString){
+            return JsonSerializer.Deserialize<Game>(jsonString);
+        }
     }
 }

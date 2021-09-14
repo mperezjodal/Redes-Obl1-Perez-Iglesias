@@ -32,11 +32,44 @@ namespace ServerSocket
             
             var threadServer = new Thread(()=> ListenForConnections(serverSocket));
             threadServer.Start();
+            
+            while (!_exit)
+            {
+                Display.ServerMenu();
+                var option = Console.ReadLine();
+                switch (option)
+                {
+                    case "exit":
+                        _exit = true;
+                        serverSocket.Close(0);
+                        foreach (var client in _clients)
+                        {
+                            client.Shutdown(SocketShutdown.Both);
+                            client.Close();
+                        }
+                        var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
+                        fakeSocket.Connect("127.0.0.1",20000);
+                        break;
+                    case "1": // ver juegos
+                       
+                        break;
+                    case "2": // adquirir   
+                        break;
+                    case "3": // publicar juego
+                        break;
+                    case "4": // publicar califiacion
+                        break;
+                    case "5": // buscar juegos
+                        break;
+                    default:
+                        Console.WriteLine("option invalida");
+                        break;
+                }
+            }
         }
 
         private static void ListenForConnections(Socket socketServer)
         {
-            Console.WriteLine("Esperando por conexiones...");
             while (!_exit)
             {
                 try
@@ -65,66 +98,45 @@ namespace ServerSocket
                 var buffer = new byte[headerLength];
                 try
                 {
-                    ReceiveData(clientSocket, headerLength, buffer);
+                    Utils.ReceiveData(clientSocket, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     switch (header.ICommand)
                     {
-                        case 1:
-                            Console.Write("Seleccionaste: Ver catálogo de juegos");
+                        case CommandConstants.PublishGame:
+                            var bufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
+                            
+                            string jsonGame = Encoding.UTF8.GetString(bufferData);
+                            Game newGame = Game.Decode(jsonGame);
+                            GameSystem.AddGame(newGame);
+
+                            var message = "Se ha publicado el juego: " + newGame.Title + ".";
+                            var responseHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, message.Length);
+                            var data = responseHeader.GetRequest();
+                            Utils.Send(clientSocket, data, message);
                             break;
-                        case 2:
-                            Utils.SendData(clientSocket,  "Seleccionaste: Adquirir juego");
-                            break;
-                        case 3:
-                            Utils.SendData(clientSocket,  "Seleccionaste: Publicar juego");
-                            break;
-                        case 4:
-                            Utils.SendData(clientSocket,  "Seleccionaste: Publicar calificación de un juego");
-                            break;
-                        case 5:
-                            Utils.SendData(clientSocket,  "Seleccionaste: Buscar juegos");
-                            break;
-                        // case "exit":
-                        //     Utils.SendData(clientSocket,  "Terminó la conexión.");
-                        //     _exit = true;
+                        // case 2:
+                        //     Utils.SendData(clientSocket,  "Seleccionaste: Adquirir juego");
+                        //     break;
+                        // case 3:
+                        //     Utils.SendData(clientSocket,  "Seleccionaste: Publicar juego");
+                        //     break;
+                        // case 4:
+                        //     Utils.SendData(clientSocket,  "Seleccionaste: Publicar calificación de un juego");
+                        //     break;
+                        // case 5:
+                        //     Utils.SendData(clientSocket,  "Seleccionaste: Buscar juegos");
                         //     break;
                     }
+                }
+                catch (SocketException e)
+                {
+                    Console.WriteLine($"Error: {e.Message}..");    
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error: {e.Message}..");    
-                }
-            }
-        }
-
-        private static void ReceiveData(Socket clientSocket,  int Length, byte[] buffer)
-        {
-            var iRecv = 0;
-            while (iRecv < Length)
-            {
-                try
-                {
-                    var localRecv = clientSocket.Receive(buffer, iRecv, Length - iRecv, SocketFlags.None);
-                    if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
-                    {
-                        if (!_exit)
-                        {
-                            clientSocket.Shutdown(SocketShutdown.Both);
-                            clientSocket.Close();
-                        }
-                        else
-                        {
-                            throw new Exception("Server is closing");
-                        }
-                    }
-
-                    iRecv += localRecv;
-                }
-                catch (SocketException se)
-                {
-                    Console.WriteLine(se.Message);
-                    return;
                 }
             }
         }
