@@ -1,4 +1,4 @@
-﻿namespace SocketUtils
+﻿namespace ProtocolLibrary
 {
     public static class HeaderConstants
     {

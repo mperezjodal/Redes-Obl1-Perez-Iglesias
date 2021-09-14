@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Globalization;
+using System;
 using System.ComponentModel.Design;
 using System.Collections.Generic;
 using System.Net;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Threading;
 using SocketUtils;
 using Domain;
+using ProtocolLibrary;
 
 namespace ServerSocket
 {
@@ -23,6 +25,18 @@ namespace ServerSocket
         static void Main(string[] args)
         {
             GameSystem = new GameSystem();
+            GameSystem.AddGame(new Game {
+                Title = "FIFA",
+                Genre = "Sports",
+                Synopsis = "football game",
+                Rating = 10
+            });
+            GameSystem.AddGame(new Game {
+                Title = "COD",
+                Genre = "War",
+                Synopsis = "war game",
+                Rating = 9
+            });
             _clients = new List<Socket>();
 
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -51,7 +65,6 @@ namespace ServerSocket
                         fakeSocket.Connect("127.0.0.1",20000);
                         break;
                     case "1": // ver juegos
-                       
                         break;
                     case "2": // adquirir   
                         break;
@@ -114,11 +127,14 @@ namespace ServerSocket
                             var message = "Se ha publicado el juego: " + newGame.Title + ".";
                             var responseHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, message.Length);
                             var data = responseHeader.GetRequest();
-                            Utils.Send(clientSocket, data, message);
+                            Utils.SendData(clientSocket, data, message);
                             break;
-                        // case 2:
-                        //     Utils.SendData(clientSocket,  "Seleccionaste: Adquirir juego");
-                        //     break;
+                        case CommandConstants.GetGames:
+                            var gameListMessage = GameSystem.EncodeGameList();
+                            var gameListHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gameListMessage.Length);
+                            var gameListData = gameListHeader.GetRequest();
+                            Utils.SendData(clientSocket, gameListData, gameListMessage);
+                            break;
                         // case 3:
                         //     Utils.SendData(clientSocket,  "Seleccionaste: Publicar juego");
                         //     break;

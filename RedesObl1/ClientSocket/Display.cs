@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Domain;
 
 namespace ClientSocket
@@ -40,6 +41,26 @@ namespace ClientSocket
             newGame.Synopsis = Console.ReadLine();
 
             return newGame;
+        }
+
+        public static Game SelectGame(List<Game> gameList){
+            Console.WriteLine("Esta es la lista de juegos:");
+            foreach(Game g in gameList){
+                Console.WriteLine(g.Title);
+            }
+            Game selectedGame = null;
+            Console.WriteLine("Ingrese el título del juego que desea modificar:");
+            string gameTitle = Console.ReadLine();
+            selectedGame = gameList.Find(g => g.Title.Equals(gameTitle));
+            if(selectedGame == null){
+                Console.WriteLine("Juego inválido, ingrese el título del juego que desea modificar:");
+                gameTitle = Console.ReadLine();
+                selectedGame = gameList.Find(g => g.Title.Equals(gameTitle));
+            }
+            if(selectedGame == null){
+                Console.WriteLine("Juego inválido, retorno al menú");
+            }
+            return selectedGame;
         }
     }
 }
