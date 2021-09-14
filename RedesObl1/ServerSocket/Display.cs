@@ -33,5 +33,22 @@ namespace ServerSocket
                 Console.WriteLine(g.Title);
             }
         }
+
+        public static Game InputGame() {
+            Game newGame = new Game();
+
+            Console.WriteLine("Título:");
+            newGame.Title = Console.ReadLine();
+            Console.WriteLine("Género:");
+            newGame.Genre = Console.ReadLine();
+            Console.WriteLine("Calificación (número del 1 al 10):");
+            int rating;
+            Int32.TryParse(Console.ReadLine(), out rating);
+            newGame.Rating = rating;
+            Console.WriteLine("Sinópsis:");
+            newGame.Synopsis = Console.ReadLine();
+
+            return newGame;
+        }
     }
 }

@@ -67,9 +67,12 @@ namespace ServerSocket
                     case "1": // ver juegos
                         Display.GameList(GameSystem.Games);
                         break;
-                    case "2": // adquirir   
+                    case "2": // adquirir
                         break;
                     case "3": // publicar juego
+                        Game gameToPublish = Display.InputGame();
+                        GameSystem.AddGame(gameToPublish);
+                        Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
                         break;
                     case "4": // publicar califiacion
                         break;

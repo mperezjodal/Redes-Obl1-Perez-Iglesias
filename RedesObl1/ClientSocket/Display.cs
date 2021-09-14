@@ -28,7 +28,6 @@ namespace ClientSocket
         }
 
         public static Game InputGame() {
-            //try catch
             Game newGame = new Game();
 
             Console.WriteLine("Título:");
