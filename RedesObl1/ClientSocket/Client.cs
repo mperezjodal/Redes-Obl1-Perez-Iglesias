@@ -101,7 +101,7 @@ namespace ClientSocket
                         Console.WriteLine("Funcionalidad no implementada.");
                         break;
                     default:
-                        Console.WriteLine("Opción inválida/");
+                        Console.WriteLine("Opción inválida.");
                         break;
                 }
             }

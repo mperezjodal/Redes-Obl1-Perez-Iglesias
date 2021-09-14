@@ -8,22 +8,26 @@ namespace ClientSocket
     {
         public static void ClientMenu() {
             Console.WriteLine();
-            Console.WriteLine(@"###############################################");
-            Console.WriteLine(@"#                                             #");
-            Console.WriteLine(@"#       |¯\ /¯| | ____| |¯\ |¯| | | | |       #");
-            Console.WriteLine(@"#       |  ¯  | | __|   |  \| | | |_| |       #");
-            Console.WriteLine(@"#       |     | |_____| | \   | |_____|       #");
-            Console.WriteLine(@"#                                             #");
-            Console.WriteLine(@"#   Seleccione una opción:                    #");
-            Console.WriteLine(@"#                                             #");
-            Console.WriteLine(@"#   1-   Publicar juego                       #");
-            Console.WriteLine(@"#   2-   Modificar juego                      #");
-            Console.WriteLine(@"#   3-   Eliminar juego                       #");
-            Console.WriteLine(@"#   4-   Buscar juego                         #");
-            Console.WriteLine(@"#   5-   Calificar juegos                     #");
-            Console.WriteLine(@"#        exit                                 #");
-            Console.WriteLine(@"#                                             #");
-            Console.WriteLine(@"###############################################");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(@"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine(@"        |¯\ /¯| | ____| |¯\ |¯| | | | |        ");
+            Console.WriteLine(@"        |  ¯  | | __|   |  \| | | |_| |        ");
+            Console.WriteLine(@"        |     | |_____| | \   | |_____|        ");
+            Console.WriteLine();
+            Console.WriteLine(@"    Seleccione una opción:                     ");
+            Console.WriteLine();
+            Console.WriteLine(@"    1-   Publicar juego                        ");
+            Console.WriteLine(@"    2-   Modificar juego                       ");
+            Console.WriteLine(@"    3-   Eliminar juego                        ");
+            Console.WriteLine(@"    4-   Buscar juego                          ");
+            Console.WriteLine(@"    5-   Calificar juegos                      ");
+            Console.WriteLine(@"         exit                                  ");
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(@"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+            Console.ResetColor();
             Console.WriteLine();
         }
 
