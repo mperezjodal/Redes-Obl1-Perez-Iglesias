@@ -32,8 +32,7 @@ namespace ClientSocket
             Console.WriteLine("Conectado al servidor.");
 
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
-            var dataRequestGameList = headerRequestGameList.GetRequest();
-
+            
             while (connected)
             {
                 Display.ClientMenu();
@@ -50,22 +49,31 @@ namespace ClientSocket
 
                         var message = gameToPublish.Encode();
                         var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
-                        var data = header.GetRequest();
-                        Utils.SendData(clientSocket, data, message);
+                        Utils.SendData(clientSocket, header, message);
                         
                         Console.WriteLine(Utils.ReciveMessageData(clientSocket));
                         break;
                     case "2": //modificar        
-                        Utils.SendData(clientSocket, dataRequestGameList, "");
+                        Utils.SendData(clientSocket, headerRequestGameList, "");
+
                         string gameListJson = Utils.ReciveMessageData(clientSocket);
-                        List<Game> gameList = GameSystem.DecodeGameList(gameListJson);
+                        List<Game> gameList = GameSystem.DecodeGames(gameListJson);
 
                         Game gameToModify = Display.SelectGame(gameList);
                         if(gameToModify == null){
                             Console.WriteLine("Retorno al menú.");
                             break;
                         }
-                        Console.WriteLine(gameToModify.Title);
+                        
+                        Console.WriteLine("Ingrese los nuevos datos del juego.");
+                        Console.WriteLine("Si no quiere modificar el campo, presione ENTER.");
+                        Game modifiedGame = Display.InputGame();
+
+                        var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
+                        var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
+                        Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+
+                        Console.WriteLine(Utils.ReciveMessageData(clientSocket));
                         break;
                     case "3": //eliminar
                     case "4": //buscar

@@ -66,7 +66,8 @@ namespace SocketUtils
                 }
             }
         }
-        public static void SendData(Socket socket, byte[] data, string mensaje) {
+        public static void SendData(Socket socket, Header header, string mensaje) {
+            var data = header.GetRequest();
             var sentBytes = 0;
             while (sentBytes < data.Length)
             {

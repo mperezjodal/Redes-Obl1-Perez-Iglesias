@@ -116,25 +116,45 @@ namespace ServerSocket
                     switch (header.ICommand)
                     {
                         case CommandConstants.PublishGame:
-                            var bufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
-                            
-                            string jsonGame = Encoding.UTF8.GetString(bufferData);
-                            Game newGame = Game.Decode(jsonGame);
+                            var publishGameBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref publishGameBufferData);
+                            string jsonPublishGame = Encoding.UTF8.GetString(publishGameBufferData);
+
+                            Game newGame = Game.Decode(jsonPublishGame);
                             GameSystem.AddGame(newGame);
 
                             var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
                             var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
-                            var publishedGameHeaderData = publishedGameHeader.GetRequest();
-                            Utils.SendData(clientSocket, publishedGameHeaderData, publishedGameMessage);
+                            Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
 
                             break;
                         case CommandConstants.GetGames:
-                            var gameListMessage = GameSystem.EncodeGameList();
-                            var gameListHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gameListMessage.Length);
-                            var gameListData = gameListHeader.GetRequest();
-                            Utils.SendData(clientSocket, gameListData, gameListMessage);
+                            var gamesMessage = GameSystem.EncodeGames();
+                            var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
+                            Utils.SendData(clientSocket, gamesHeader, gamesMessage);
 
+                            break;
+                        case CommandConstants.ModifyGame:
+                            try
+                            {
+                                var modifyGameBufferData = new byte[header.IDataLength];  
+                                Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
+                                string jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
+
+                                List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
+                                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
+                                gameToModify.Update(updatingGames[1]);
+                                
+                                var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
+                                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
+                                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                            }
+                            catch (Exception){
+                                var modifyGameMessage = "No se ha podido modificar el juego.";
+                                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
+                                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                            }
+                            
                             break;
                     }
                 }

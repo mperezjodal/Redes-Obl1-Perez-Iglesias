@@ -8,7 +8,7 @@ namespace Domain
 {
     public class GameSystem
     {
-        public ICollection<Game> Games { get; set;}
+        public List<Game> Games { get; set;}
         public List<User> Users { get; set;}
 
         public GameSystem(){
@@ -24,11 +24,15 @@ namespace Domain
             Users.Add(user);
         }
 
-        public string EncodeGameList(){
+        public string EncodeGames(){
             return JsonSerializer.Serialize(this.Games);
         }
 
-        public static List<Game> DecodeGameList(string jsonString){
+        public static string EncodeGames(List<Game> games){
+            return JsonSerializer.Serialize(games);
+        }
+
+        public static List<Game> DecodeGames(string jsonString){
             return JsonSerializer.Deserialize<List<Game>>(jsonString);
         }
     }
