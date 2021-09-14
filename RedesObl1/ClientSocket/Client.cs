@@ -37,6 +37,8 @@ namespace ClientSocket
             {
                 Display.ClientMenu();
                 var option = Console.ReadLine();
+                string gamesJson;
+                List<Game> gameList;
                 switch (option)
                 {
                     case "exit":
@@ -56,8 +58,8 @@ namespace ClientSocket
                     case "2": //modificar        
                         Utils.SendData(clientSocket, headerRequestGameList, "");
 
-                        string gameListJson = Utils.ReciveMessageData(clientSocket);
-                        List<Game> gameList = GameSystem.DecodeGames(gameListJson);
+                        gamesJson = Utils.ReciveMessageData(clientSocket);
+                        gameList = GameSystem.DecodeGames(gamesJson);
 
                         Game gameToModify = Display.SelectGame(gameList);
                         if(gameToModify == null){
@@ -75,7 +77,24 @@ namespace ClientSocket
 
                         Console.WriteLine(Utils.ReciveMessageData(clientSocket));
                         break;
-                    case "3": //eliminar
+                    case "3":
+                        Utils.SendData(clientSocket, headerRequestGameList, "");
+
+                        gamesJson = Utils.ReciveMessageData(clientSocket);
+                        gameList = GameSystem.DecodeGames(gamesJson);
+
+                        Game gameToDelete = Display.SelectGame(gameList);
+                        if(gameToDelete == null){
+                            Console.WriteLine("Retorno al menú.");
+                            break;
+                        }
+
+                        var deleteGameMessage = gameToDelete.Encode();
+                        var deleteGameHeader = new Header(HeaderConstants.Request, CommandConstants.DeleteGame, deleteGameMessage.Length);
+                        Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+
+                        Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+                        break;
                     case "4": //buscar
                     case "5": //calificar
                         // Utils.SendCommand(clientSocket, Int32.Parse(option));

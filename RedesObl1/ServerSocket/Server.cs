@@ -154,7 +154,26 @@ namespace ServerSocket
                                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
                                 Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
                             }
-                            
+                            break;
+                        case CommandConstants.DeleteGame:
+                            try
+                            {
+                                var deleteGameBufferData = new byte[header.IDataLength];  
+                                Utils.ReceiveData(clientSocket, header.IDataLength, ref deleteGameBufferData);
+                                string jsonDeleteGameData = Encoding.UTF8.GetString(deleteGameBufferData);
+
+                                Game gameToDelete = Game.Decode(jsonDeleteGameData);
+                                GameSystem.DeleteGame(gameToDelete);
+                                
+                                var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
+                                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
+                                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+                            }
+                            catch (Exception){
+                                var deleteGameMessage = "No se ha podido eliminar el juego.";
+                                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
+                                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+                            }
                             break;
                     }
                 }

@@ -50,7 +50,7 @@ namespace ClientSocket
             }
 
             Game selectedGame = null;
-            Console.WriteLine("Ingrese el título del juego que desea modificar:");
+            Console.WriteLine("Ingrese el título del juego:");
             string gameTitle = Console.ReadLine();
             selectedGame = gameList.Find(g => g.Title.Equals(gameTitle));
 

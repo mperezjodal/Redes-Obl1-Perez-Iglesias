@@ -20,6 +20,11 @@ namespace Domain
             Games.Add(game);
         }
 
+        public void DeleteGame(Game game){
+            Games.RemoveAll(g => g.Title == game.Title);
+        }
+
+
         public void AddUser(User user){
             Users.Add(user);
         }
