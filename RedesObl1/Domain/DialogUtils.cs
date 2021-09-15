@@ -5,7 +5,8 @@ namespace Domain
 {
     public class DialogUtils
     {
-        public static void Menu(Dictionary<string, string> items) {
+        public static void Menu(Dictionary<string, string> items)
+        {
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -15,8 +16,9 @@ namespace Domain
             Console.WriteLine();
             Console.WriteLine("    Seleccione una opción:                     ");
             Console.WriteLine();
-            foreach(var menuOption in items){
-                Console.WriteLine("    " + menuOption.Key + " -   "  + menuOption.Value);       
+            foreach (var menuOption in items)
+            {
+                Console.WriteLine("    " + menuOption.Key + " -   " + menuOption.Value);
             }
             Console.WriteLine("         exit                                  ");
             Console.WriteLine();
@@ -26,7 +28,8 @@ namespace Domain
             Console.WriteLine();
         }
 
-        public static void MenuTitle(){
+        public static void MenuTitle()
+        {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write(@"        |¯\ /¯|");
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -56,14 +59,17 @@ namespace Domain
             Console.ResetColor();
         }
 
-        public static void GameList(List<Game> games){
+        public static void GameList(List<Game> games)
+        {
             Console.WriteLine("Lista de juegos:");
-            foreach(Game g in games){
+            foreach (Game g in games)
+            {
                 Console.WriteLine(g.Title);
             }
         }
 
-        public static Game InputGame() {
+        public static Game InputGame()
+        {
             Game newGame = new Game();
 
             Console.WriteLine("Título:");
@@ -80,7 +86,8 @@ namespace Domain
             return newGame;
         }
 
-        public static Game SelectGame(List<Game> games){
+        public static Game SelectGame(List<Game> games)
+        {
             DialogUtils.GameList(games);
 
             Game selectedGame = null;
@@ -88,19 +95,22 @@ namespace Domain
             string gameTitle = Console.ReadLine();
             selectedGame = games.Find(g => g.Title.Equals(gameTitle));
 
-            if(selectedGame == null){
+            if (selectedGame == null)
+            {
                 Console.WriteLine("Juego inválido, ingrese el título nuevamente:");
                 gameTitle = Console.ReadLine();
                 selectedGame = games.Find(g => g.Title.Equals(gameTitle));
             }
-            if(selectedGame == null){
+            if (selectedGame == null)
+            {
                 Console.WriteLine("Juego inválido.");
             }
 
             return selectedGame;
         }
 
-        public static void GameFilterOptions(List<Game> games){
+        public static void GameFilterOptions(List<Game> games)
+        {
             Console.WriteLine();
             Console.WriteLine("Seleccione una opción para filtrar juegos:");
             Console.WriteLine();
@@ -108,36 +118,37 @@ namespace Domain
             Console.WriteLine("    2-   Título");
             Console.WriteLine("    3-   Rating");
             Console.WriteLine();
-            var filter =  Console.ReadLine();
+            var filter = Console.ReadLine();
             List<Game> filtedGames = new List<Game>();
             switch (filter)
-                {
-                    case "1":
-                        Console.WriteLine("Ingrese categoría.");
-                        var cat = Console.ReadLine();
-                        filtedGames = games.FindAll(g => g.Genre.Equals(cat));
-                        DialogUtils.GameList(filtedGames);
+            {
+                case "1":
+                    Console.WriteLine("Ingrese categoría:");
+                    var cat = Console.ReadLine();
+                    filtedGames = games.FindAll(g => g.Genre.Equals(cat));
+                    DialogUtils.GameList(filtedGames);
                     break;
-                    case "2": 
-                        Console.WriteLine("Ingrese tituilo.");
-                        var title = Console.ReadLine();
-                        filtedGames = games.FindAll(g => g.Title.Equals(title));
-                        DialogUtils.GameList(filtedGames);
+                case "2":
+                    Console.WriteLine("Ingrese título:");
+                    var title = Console.ReadLine();
+                    filtedGames = games.FindAll(g => g.Title.Equals(title));
+                    DialogUtils.GameList(filtedGames);
                     break;
-                    case "3": 
-                    Console.WriteLine("Ingrese categoría.");
-                        int rating;
-                        Int32.TryParse(Console.ReadLine(), out rating);
-                        filtedGames = games.FindAll(g => g.Rating.Equals(rating));
-                        DialogUtils.GameList(filtedGames);
+                case "3":
+                    Console.WriteLine("Ingrese categoría:");
+                    int rating;
+                    Int32.TryParse(Console.ReadLine(), out rating);
+                    filtedGames = games.FindAll(g => g.Rating.Equals(rating));
+                    DialogUtils.GameList(filtedGames);
                     break;
-                    default:
+                default:
                     Console.WriteLine("Opción inválida.");
                     break;
-                }
+            }
         }
-        
-        public static void ShowGameDetail(List<Game> games) {
+
+        public static void ShowGameDetail(List<Game> games)
+        {
             Game gameToShow = SelectGame(games);
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
