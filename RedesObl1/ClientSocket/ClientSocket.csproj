@@ -9,6 +9,7 @@
       <ProjectReference Include="..\SocketUtils\SocketUtils.csproj" />
       <ProjectReference Include="..\Domain\Domain.csproj" />
       <ProjectReference Include="..\ProtocolLibrary\ProtocolLibrary.csproj" />
+      <ProjectReference Include="..\DisplayUtils\DisplayUtils.csproj" />
     </ItemGroup>
 
     <ItemGroup>

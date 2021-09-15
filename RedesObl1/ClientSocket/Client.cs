@@ -7,6 +7,7 @@ using ProtocolLibrary;
 using SocketUtils;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using DisplayUtils;
 
 namespace ClientSocket
 {
@@ -53,7 +54,6 @@ namespace ClientSocket
             {
                 DialogUtils.Menu(ClientMenu);
                 var option = Console.ReadLine();
-                Console.WriteLine("Has seleccionado: " + ClientMenu[option]);
                 switch (option)
                 {
                     case "exit":
@@ -112,7 +112,7 @@ namespace ClientSocket
             Game gameToModify = DialogUtils.SelectGame(games);
             if(gameToModify == null){
                 Console.WriteLine("Retorno al menú.");
-                return ;
+                return;
             }
             
             Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");

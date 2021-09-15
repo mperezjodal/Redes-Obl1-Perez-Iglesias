@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Domain;
 
-namespace Domain
+namespace DisplayUtils
 {
     public class DialogUtils
     {
@@ -150,6 +151,10 @@ namespace Domain
         public static void ShowGameDetail(List<Game> games)
         {
             Game gameToShow = SelectGame(games);
+            if(gameToShow == null){
+                Console.WriteLine("Juego inválido.");
+                return;
+            }
             Console.WriteLine();
             Console.WriteLine("Detalle del juego: ");
             Console.WriteLine();

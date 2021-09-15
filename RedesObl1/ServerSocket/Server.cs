@@ -9,15 +9,19 @@ using System.Threading;
 using SocketUtils;
 using Domain;
 using ProtocolLibrary;
+using DisplayUtils;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace ServerSocket
 {
     public class Server
     {
-        private const string ServerIpAddress = "127.0.0.1";
-        private const int ProtocolFixedSize = 4;
-        private const int ServerPort = 6000;
-        private const int Backlog = 100;
+
+        public string ServerIpAddress  { get; set; }
+        public int ProtocolFixedSize { get; set; }
+        public int ServerPort  { get; set; }
+        public int Backlog  { get; set; }
         private static GameSystem GameSystem;
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
@@ -32,6 +36,16 @@ namespace ServerSocket
 
         static void Main(string[] args)
         {
+
+            string directory = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(directory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+
+            var section = configuration.GetSection(nameof(Server));
+		    var ServerConfig = section.Get<Server>();
+
             GameSystem = new GameSystem();
             GameSystem.AddGame(new Game {
                 Title = "FIFA",
@@ -48,9 +62,9 @@ namespace ServerSocket
 
             _clients = new List<Socket>();
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerIpAddress), ServerPort);
+            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
             serverSocket.Bind(serverIpEndPoint);
-            serverSocket.Listen(Backlog);
+            serverSocket.Listen(ServerConfig.Backlog);
             
             var threadServer = new Thread(()=> ListenForConnections(serverSocket));
             threadServer.Start();
@@ -59,7 +73,6 @@ namespace ServerSocket
             {
                 DialogUtils.Menu(ServerMenu);
                 var option = Console.ReadLine();
-                Console.WriteLine("Has seleccionado: " + ServerMenu[option]);
                 switch (option)
                 {
                     case "exit":
