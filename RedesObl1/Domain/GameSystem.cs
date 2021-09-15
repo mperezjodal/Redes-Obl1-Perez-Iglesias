@@ -1,6 +1,8 @@
-﻿using System;
+﻿using System.Globalization;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Domain
 {
@@ -18,8 +20,25 @@ namespace Domain
             Games.Add(game);
         }
 
+        public void DeleteGame(Game game){
+            Games.RemoveAll(g => g.Title == game.Title);
+        }
+
+
         public void AddUser(User user){
             Users.Add(user);
+        }
+
+        public string EncodeGames(){
+            return JsonSerializer.Serialize(this.Games);
+        }
+
+        public static string EncodeGames(List<Game> games){
+            return JsonSerializer.Serialize(games);
+        }
+
+        public static List<Game> DecodeGames(string jsonString){
+            return JsonSerializer.Deserialize<List<Game>>(jsonString);
         }
     }
 }

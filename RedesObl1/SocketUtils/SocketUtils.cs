@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using ProtocolLibrary;
 
 namespace SocketUtils
 {
@@ -65,69 +66,8 @@ namespace SocketUtils
                 }
             }
         }
-
-        public static void SendData(Socket socket)
-        {
-            while (true)
-            {
-                string message = Console.ReadLine();
-                byte[] data = Encoding.UTF8.GetBytes(message);
-                int length = data.Length;
-                byte[] dataLength = BitConverter.GetBytes(length);
-                int totalDataSent = 0;
-                while (totalDataSent < dataLength.Length)
-                {
-                    int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
-                }
-                
-                totalDataSent = 0;
-                while (totalDataSent < data.Length)
-                {
-                    int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
-                    if (sent == 0)
-                    {
-                        throw new SocketException();
-                    }
-                    totalDataSent += sent;
-                }
-            }
-        }
-        
-        public static void SendData(Socket socket, String msg)
-        {
-            string message = msg;
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            int length = data.Length;
-            byte[] dataLength = BitConverter.GetBytes(length);
-            int totalDataSent = 0;
-            while (totalDataSent < dataLength.Length)
-            {
-                int sent = socket.Send(dataLength, totalDataSent, dataLength.Length-totalDataSent, SocketFlags.None);
-                if (sent == 0)
-                {
-                    throw new SocketException();
-                }
-                totalDataSent += sent;
-            }
-            
-            totalDataSent = 0;
-            while (totalDataSent < data.Length)
-            {
-                int sent = socket.Send(data, totalDataSent, data.Length- totalDataSent, SocketFlags.None);
-                if (sent == 0)
-                {
-                    throw new SocketException();
-                }
-                totalDataSent += sent;
-            }
-        }
-
-        public static void Send(Socket socket, byte[] data, string mensaje) {
+        public static void SendData(Socket socket, Header header, string mensaje) {
+            var data = header.GetRequest();
             var sentBytes = 0;
             while (sentBytes < data.Length)
             {

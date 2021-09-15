@@ -1,37 +1,58 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading;
 using Domain;
+using ProtocolLibrary;
 using SocketUtils;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+using DisplayUtils;
 
 namespace ClientSocket
 {
     public class Client
     {
-        private const string ServerIpAddress = "127.0.0.1";
-        private const int ServerPort = 6000;
-        private const string ClientIpAddress = "127.0.0.1";
-        private const int ClientPort = 0;
-        
+        public string ServerIpAddress  { get; set; }
+        public int ServerPort { get; set; }
+        public string ClientIpAddress  { get; set; }
+        public int ClientPort  { get; set; }
+
+        public static Dictionary<string, string> ClientMenu = new Dictionary<string, string> {
+            {"1", "Publicar juego"},
+            {"2", "Modificar juego"},
+            {"3", "Eliminar juego"},
+            {"4", "Buscar juego"},
+            {"5", "Calificar juegos"},
+            {"6", "Ver juegos y su detalle"}
+        };
+
         static void Main(string[] args)
         {
+            string directory = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(directory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+
+            var section = configuration.GetSection(nameof(Client));
+		    var ClientConfig = section.Get<Client>();
+
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientIpAddress), ClientPort);
-            
+            IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ClientIpAddress), ClientConfig.ClientPort);
             clientSocket.Bind(clientEndPoint);
             Console.WriteLine("Conectando al servidor...");
-            
-            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ServerIpAddress), ServerPort);
+
+            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ServerIpAddress), ClientConfig.ServerPort);
             clientSocket.Connect(serverEndPoint);
             var connected = true;
             Console.WriteLine("Conectado al servidor.");
 
+            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             
             while (connected)
             {
-                Display.ClientMenu();
+                DialogUtils.Menu(ClientMenu);
                 var option = Console.ReadLine();
                 switch (option)
                 {
@@ -40,32 +61,84 @@ namespace ClientSocket
                         clientSocket.Close();
                         connected = false;
                         break;
-                    case "1": //publicar
-                        Game gameToPublish = Display.InputGame();
-
-                        var message = gameToPublish.Encode();
-                        var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
-                        var data = header.GetRequest();
-                        Utils.Send(clientSocket, data, message);
-                        
-                        Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+                    case "1":
+                        PublishGame(clientSocket);
                         break;
-                    case "2": //modificar   
-                    case "3": //eliminar
-                    case "4": //buscar
-                    case "5": //calificar
-                        // Utils.SendCommand(clientSocket, Int32.Parse(option));
+                    case "2": 
+                        ModifyGame(clientSocket);
+                        break;
+                    case "3": 
+                        DeleteGame(clientSocket);
+                        break;
+                    case "4": 
+                        DialogUtils.GameFilterOptions(GetGames(clientSocket));
+                        break;
+                    case "5": 
+                        Console.WriteLine("Funcionalidad no implementada.");
+                        break;
+                    case "6": 
+                        DialogUtils.ShowGameDetail(GetGames(clientSocket));
                         break;
                     default:
-                        Console.WriteLine("option invalida");
+                        Console.WriteLine("Opción inválida.");
                         break;
                 }
+                Console.WriteLine("Ingrese cualquier valor para volver al menú.");
+                Console.ReadLine();
             }
-
-            // new Thread(() => Utils.ReciveData(clientSocket)).Start();
-            // Utils.SendData(clientSocket);
         }
 
-        
+        private static List<Game> GetGames(Socket clientSocket){
+            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
+            Utils.SendData(clientSocket, headerRequestGameList, "");
+
+            var gamesJson = Utils.ReciveMessageData(clientSocket);
+            return GameSystem.DecodeGames(gamesJson);
+        }
+
+        private static void PublishGame(Socket clientSocket){
+            Game gameToPublish = DialogUtils.InputGame();
+
+            var message = gameToPublish.Encode();
+            var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
+            Utils.SendData(clientSocket, header, message);
+            
+            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+        }
+
+        private static void ModifyGame(Socket clientSocket) {
+            List<Game> games = GetGames(clientSocket);
+            
+            Game gameToModify = DialogUtils.SelectGame(games);
+            if(gameToModify == null){
+                Console.WriteLine("Retorno al menú.");
+                return;
+            }
+            
+            Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
+            Game modifiedGame = DialogUtils.InputGame();
+
+            var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
+            var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
+            Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+
+            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+        }
+
+        private static void DeleteGame(Socket clientSocket) {
+            List<Game> games = GetGames(clientSocket);
+
+            Game gameToDelete = DialogUtils.SelectGame(games);
+            if(gameToDelete == null){
+                Console.WriteLine("Retorno al menú.");
+                return ;
+            }
+
+            var deleteGameMessage = gameToDelete.Encode();
+            var deleteGameHeader = new Header(HeaderConstants.Request, CommandConstants.DeleteGame, deleteGameMessage.Length);
+            Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+
+            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+        }
     }
 }
