@@ -110,7 +110,7 @@ namespace DisplayUtils
             return selectedGame;
         }
 
-        public static void GameFilterOptions(List<Game> games)
+        public static void SearchFilteredGames(List<Game> games)
         {
             Console.WriteLine();
             Console.WriteLine("Seleccione una opción para filtrar juegos:");
@@ -152,12 +152,9 @@ namespace DisplayUtils
         {
             Game gameToShow = SelectGame(games);
             if(gameToShow == null){
-                Console.WriteLine("Juego inválido.");
                 return;
             }
-            Console.WriteLine();
             Console.WriteLine("Detalle del juego: ");
-            Console.WriteLine();
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine(gameToShow.Title);

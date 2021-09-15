@@ -26,8 +26,8 @@ namespace ServerSocket
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
 
-        public static Dictionary<string, string> ServerMenu = new Dictionary<string, string> {
-            {"1", "Ver catálogo de juegos"},
+        public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
+            {"1", "Ver juegos y detalles"},
             {"2", "Adquirir juego"},
             {"3", "Publicar juego"},
             {"4", "Publicar calificación de un juego"},
@@ -71,8 +71,11 @@ namespace ServerSocket
             
             while (!_exit)
             {
-                DialogUtils.Menu(ServerMenu);
+                DialogUtils.Menu(ServerMenuOptions);
                 var option = Console.ReadLine();
+                if(ServerMenuOptions.ContainsKey(option)){
+                    Console.WriteLine("Has seleccionado: " + ServerMenuOptions[option]);
+                }
                 switch (option)
                 {
                     case "exit":
@@ -103,7 +106,7 @@ namespace ServerSocket
                         Console.WriteLine("Funcionalidad no implementada.");
                         break;
                     case "5": 
-                        DialogUtils.GameFilterOptions(GameSystem.Games);
+                        DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
                     default:    
                         Console.WriteLine("Opción inválida.");

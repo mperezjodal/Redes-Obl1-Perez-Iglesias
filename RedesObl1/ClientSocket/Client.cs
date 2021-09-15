@@ -18,13 +18,13 @@ namespace ClientSocket
         public string ClientIpAddress  { get; set; }
         public int ClientPort  { get; set; }
 
-        public static Dictionary<string, string> ClientMenu = new Dictionary<string, string> {
+        public static Dictionary<string, string> ClientMenuOptions = new Dictionary<string, string> {
             {"1", "Publicar juego"},
             {"2", "Modificar juego"},
             {"3", "Eliminar juego"},
             {"4", "Buscar juego"},
             {"5", "Calificar juegos"},
-            {"6", "Ver juegos y su detalle"}
+            {"6", "Ver juegos y detalles"}
         };
 
         static void Main(string[] args)
@@ -52,8 +52,11 @@ namespace ClientSocket
             
             while (connected)
             {
-                DialogUtils.Menu(ClientMenu);
+                DialogUtils.Menu(ClientMenuOptions);
                 var option = Console.ReadLine();
+                if(ClientMenuOptions.ContainsKey(option)){
+                    Console.WriteLine("Has seleccionado: " + ClientMenuOptions[option]);
+                }
                 switch (option)
                 {
                     case "exit":
@@ -71,7 +74,7 @@ namespace ClientSocket
                         DeleteGame(clientSocket);
                         break;
                     case "4": 
-                        DialogUtils.GameFilterOptions(GetGames(clientSocket));
+                        DialogUtils.SearchFilteredGames(GetGames(clientSocket));
                         break;
                     case "5": 
                         Console.WriteLine("Funcionalidad no implementada.");
