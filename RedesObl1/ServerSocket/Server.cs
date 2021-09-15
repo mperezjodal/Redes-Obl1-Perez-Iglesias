@@ -22,6 +22,14 @@ namespace ServerSocket
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
 
+        public static Dictionary<string, string> ServerMenu = new Dictionary<string, string> {
+            {"1", "Ver catálogo de juegos"},
+            {"2", "Adquirir juego"},
+            {"3", "Publicar juego"},
+            {"4", "Publicar calificación de un juego"},
+            {"5", "Buscar juegos"}
+        };
+
         static void Main(string[] args)
         {
             GameSystem = new GameSystem();
@@ -49,8 +57,9 @@ namespace ServerSocket
             
             while (!_exit)
             {
-                Display.ServerMenu();
+                DialogUtils.Menu(ServerMenu);
                 var option = Console.ReadLine();
+                Console.WriteLine("Has seleccionado: " + ServerMenu[option]);
                 switch (option)
                 {
                     case "exit":
@@ -64,57 +73,31 @@ namespace ServerSocket
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
                         fakeSocket.Connect("127.0.0.1",20000);
                         break;
-                    case "1": // ver juegos
-                        Display.GameList(GameSystem.Games);
-                        Console.WriteLine();
-                        Display.ShowGameDetail(GameSystem.Games);
+                    case "1":
+                        DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
-                    case "2": // adquirir
+                    case "2": 
+                        Console.WriteLine("Funcionalidad no implementada.");
                         break;
-                    case "3": // publicar juego
-                        Game gameToPublish = Display.InputGame();
+                    case "3": 
+                        Game gameToPublish = DialogUtils.InputGame();
+
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+
                         break;
-                    case "4": // publicar califiacion
+                    case "4": 
+                        Console.WriteLine("Funcionalidad no implementada.");
                         break;
-                    case "5": // buscar juegos
-                        Display.GameFilterOptions();
-                        var filter = Console.ReadLine();
-                        List<Game> filtedGames = new List<Game>();
-                        switch (filter)
-                        {
-                            case "1":
-                                Console.WriteLine("Ingrese categoría.");
-                                var cat = Console.ReadLine();
-                                filtedGames = GameSystem.Games.FindAll(g => g.Genre.Equals(cat));
-                                Display.GameList(filtedGames);
-                                Display.ShowGameDetail(GameSystem.Games);
-                            break;
-                            case "2": 
-                            Console.WriteLine("Ingrese título.");
-                                var title = Console.ReadLine();
-                                filtedGames = GameSystem.Games.FindAll(g => g.Title.Equals(title));
-                                Display.GameList(filtedGames);
-                                Display.ShowGameDetail(GameSystem.Games);
-                            break;
-                            case "3": 
-                            Console.WriteLine("Ingrese calificación.");
-                                int rating;
-                                Int32.TryParse(Console.ReadLine(), out rating);
-                                filtedGames = GameSystem.Games.FindAll(g => g.Rating.Equals(rating));
-                                Display.GameList(filtedGames);
-                                Display.ShowGameDetail(GameSystem.Games);
-                            break;
-                            default:
-                            Console.WriteLine("option invalida");
-                            break;
-                        }
+                    case "5": 
+                        DialogUtils.GameFilterOptions(GameSystem.Games);
                         break;
-                        default:
+                    default:    
                         Console.WriteLine("option invalida");
                         break;
                 }
+                Console.WriteLine("Ingrese cualquier valor para volver al menú.");
+                Console.ReadLine();
             }
         }
 
@@ -157,12 +140,7 @@ namespace ServerSocket
                             Utils.ReceiveData(clientSocket, header.IDataLength, ref publishGameBufferData);
                             string jsonPublishGame = Encoding.UTF8.GetString(publishGameBufferData);
 
-                            Game newGame = Game.Decode(jsonPublishGame);
-                            GameSystem.AddGame(newGame);
-
-                            var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
-                            var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
-                            Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
+                            PublishGameManager(clientSocket, jsonPublishGame);
 
                             break;
                         case CommandConstants.GetGames:
@@ -172,57 +150,76 @@ namespace ServerSocket
 
                             break;
                         case CommandConstants.ModifyGame:
-                            try
-                            {
-                                var modifyGameBufferData = new byte[header.IDataLength];  
-                                Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
-                                string jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
-
-                                List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
-                                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
-                                gameToModify.Update(updatingGames[1]);
-                                
-                                var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
-                                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
-                                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
-                            }
-                            catch (Exception){
-                                var modifyGameMessage = "No se ha podido modificar el juego.";
-                                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
-                                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
-                            }
+                            var modifyGameBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
+                            string jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
+                            
+                            ModifyGameManager(clientSocket, jsonModifyGameData);
+                            
                             break;
                         case CommandConstants.DeleteGame:
-                            try
-                            {
-                                var deleteGameBufferData = new byte[header.IDataLength];  
-                                Utils.ReceiveData(clientSocket, header.IDataLength, ref deleteGameBufferData);
-                                string jsonDeleteGameData = Encoding.UTF8.GetString(deleteGameBufferData);
+                            var deleteGameBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref deleteGameBufferData);
+                            string jsonDeleteGameData = Encoding.UTF8.GetString(deleteGameBufferData);
 
-                                Game gameToDelete = Game.Decode(jsonDeleteGameData);
-                                GameSystem.DeleteGame(gameToDelete);
-                                
-                                var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
-                                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
-                                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
-                            }
-                            catch (Exception){
-                                var deleteGameMessage = "No se ha podido eliminar el juego.";
-                                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
-                                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
-                            }
+                            DeleteGameManager(clientSocket, jsonDeleteGameData);
+                            
                             break;
                     }
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine($"Error: {e.Message}..");    
+                    Console.WriteLine($"Socket error: {e.Message}..");    
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error: {e.Message}..");    
                 }
             }
+        }
+
+        private static void ModifyGameManager(Socket clientSocket, string jsonModifyGameData){
+            try
+            {
+                List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
+                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
+                gameToModify.Update(updatingGames[1]);
+                
+                var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+            }
+            catch (Exception){
+                var modifyGameMessage = "No se ha podido modificar el juego.";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+            }
+        }
+
+        private static void DeleteGameManager(Socket clientSocket, string jsonDeleteGameData){
+            try
+            {
+                Game gameToDelete = Game.Decode(jsonDeleteGameData);
+                GameSystem.DeleteGame(gameToDelete);
+                
+                var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
+                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
+                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+            }
+            catch (Exception){
+                var deleteGameMessage = "No se ha podido eliminar el juego.";
+                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
+                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+            }
+        }
+
+        private static void PublishGameManager(Socket clientSocket, string jsonPublishGame){
+            Game newGame = Game.Decode(jsonPublishGame);
+            GameSystem.AddGame(newGame);
+
+            var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
+            var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
+            Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
         }
     }
 }
