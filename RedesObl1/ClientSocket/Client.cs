@@ -9,24 +9,35 @@ using System.Threading;
 using Domain;
 using ProtocolLibrary;
 using SocketUtils;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace ClientSocket
 {
     public class Client
     {
-        private const string ServerIpAddress = "127.0.0.1";
-        private const int ServerPort = 6000;
-        private const string ClientIpAddress = "127.0.0.1";
-        private const int ClientPort = 0;
-        
+        public string ServerIpAddress  { get; set; }
+        public int ServerPort { get; set; }
+        public string ClientIpAddress  { get; set; }
+        public int ClientPort  { get; set; }
+
         static void Main(string[] args)
         {
+            string directory = Directory.GetCurrentDirectory();
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(directory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+
+            var section = configuration.GetSection(nameof(Client));
+		    var ClientConfig = section.Get<Client>();
+
             Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientIpAddress), ClientPort);
+            IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ClientIpAddress), ClientConfig.ClientPort);
             clientSocket.Bind(clientEndPoint);
             Console.WriteLine("Conectando al servidor...");
-            
-            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ServerIpAddress), ServerPort);
+
+            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ServerIpAddress), ClientConfig.ServerPort);
             clientSocket.Connect(serverEndPoint);
             var connected = true;
             Console.WriteLine("Conectado al servidor.");
@@ -94,11 +105,51 @@ namespace ClientSocket
 
                         Console.WriteLine(Utils.ReciveMessageData(clientSocket));
                         break;
-                    case "4": //buscar
-                        Console.WriteLine("Funcionalidad no implementada.");
+                    case "4":
+                        Display.GameFilterOptions();
+                        var filter = Console.ReadLine();
+                        Utils.SendData(clientSocket, headerRequestGameList, "");
+
+                        gamesJson = Utils.ReciveMessageData(clientSocket);
+                        gameList = GameSystem.DecodeGames(gamesJson);
+                        List<Game> filtedGames = new List<Game>();
+                        
+                        switch (filter)
+                        {
+                        case "1":
+                            Console.WriteLine("Ingrese categoría.");
+                            var cat = Console.ReadLine();
+                            filtedGames = gameList.FindAll(g => g.Genre.Equals(cat));
+                            Display.GameList(filtedGames);
+                        break;
+                        case "2": 
+                        Console.WriteLine("Ingrese tituilo.");
+                            var title = Console.ReadLine();
+                            filtedGames = gameList.FindAll(g => g.Title.Equals(title));
+                            Display.GameList(filtedGames);
+                        break;
+                        case "3": 
+                        Console.WriteLine("Ingrese categoría.");
+                            int rating;
+                            Int32.TryParse(Console.ReadLine(), out rating);
+                            filtedGames = gameList.FindAll(g => g.Rating.Equals(rating));
+                            Display.GameList(filtedGames);
+                        break;
+                        default:
+                        Console.WriteLine("Opción inválida.");
+                        break;
+                        }
                         break;
                     case "5": //calificar
                         Console.WriteLine("Funcionalidad no implementada.");
+                        break;
+                    case "6": //Ver juegos y su detalle.
+                        Utils.SendData(clientSocket, headerRequestGameList, "");
+                        gamesJson = Utils.ReciveMessageData(clientSocket);
+                        gameList = GameSystem.DecodeGames(gamesJson);
+                        Display.GameList(gameList);
+                        Console.WriteLine();
+                        Display.ShowGameDetail(gameList);
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");

@@ -66,6 +66,8 @@ namespace ServerSocket
                         break;
                     case "1": // ver juegos
                         Display.GameList(GameSystem.Games);
+                        Console.WriteLine();
+                        Display.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2": // adquirir
                         break;
@@ -77,8 +79,39 @@ namespace ServerSocket
                     case "4": // publicar califiacion
                         break;
                     case "5": // buscar juegos
+                        Display.GameFilterOptions();
+                        var filter = Console.ReadLine();
+                        List<Game> filtedGames = new List<Game>();
+                        switch (filter)
+                        {
+                            case "1":
+                                Console.WriteLine("Ingrese categoría.");
+                                var cat = Console.ReadLine();
+                                filtedGames = GameSystem.Games.FindAll(g => g.Genre.Equals(cat));
+                                Display.GameList(filtedGames);
+                                Display.ShowGameDetail(GameSystem.Games);
+                            break;
+                            case "2": 
+                            Console.WriteLine("Ingrese título.");
+                                var title = Console.ReadLine();
+                                filtedGames = GameSystem.Games.FindAll(g => g.Title.Equals(title));
+                                Display.GameList(filtedGames);
+                                Display.ShowGameDetail(GameSystem.Games);
+                            break;
+                            case "3": 
+                            Console.WriteLine("Ingrese calificación.");
+                                int rating;
+                                Int32.TryParse(Console.ReadLine(), out rating);
+                                filtedGames = GameSystem.Games.FindAll(g => g.Rating.Equals(rating));
+                                Display.GameList(filtedGames);
+                                Display.ShowGameDetail(GameSystem.Games);
+                            break;
+                            default:
+                            Console.WriteLine("option invalida");
+                            break;
+                        }
                         break;
-                    default:
+                        default:
                         Console.WriteLine("option invalida");
                         break;
                 }
