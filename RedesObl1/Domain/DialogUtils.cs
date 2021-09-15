@@ -150,6 +150,9 @@ namespace Domain
         public static void ShowGameDetail(List<Game> games)
         {
             Game gameToShow = SelectGame(games);
+            Console.WriteLine();
+            Console.WriteLine("Detalle del juego: ");
+            Console.WriteLine();
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine(gameToShow.Title);
