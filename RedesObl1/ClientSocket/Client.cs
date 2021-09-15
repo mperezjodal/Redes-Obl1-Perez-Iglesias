@@ -61,7 +61,7 @@ namespace ClientSocket
                         clientSocket.Close();
                         connected = false;
                         break;
-                    case "1": //
+                    case "1":
                         PublishGame(clientSocket);
                         break;
                     case "2": 
@@ -106,7 +106,6 @@ namespace ClientSocket
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
 
-
         private static void ModifyGame(Socket clientSocket) {
             List<Game> games = GetGames(clientSocket);
             
@@ -141,7 +140,5 @@ namespace ClientSocket
 
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
-
-        
     }
 }

@@ -45,8 +45,8 @@ namespace ServerSocket
                 Synopsis = "war game",
                 Rating = 9
             });
-            _clients = new List<Socket>();
 
+            _clients = new List<Socket>();
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerIpAddress), ServerPort);
             serverSocket.Bind(serverIpEndPoint);
@@ -93,7 +93,7 @@ namespace ServerSocket
                         DialogUtils.GameFilterOptions(GameSystem.Games);
                         break;
                     default:    
-                        Console.WriteLine("option invalida");
+                        Console.WriteLine("Opción inválida.");
                         break;
                 }
                 Console.WriteLine("Ingrese cualquier valor para volver al menú.");
