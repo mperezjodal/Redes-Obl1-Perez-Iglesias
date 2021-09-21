@@ -51,12 +51,16 @@ namespace ServerSocket
             GameSystem.AddGame(new Game {
                 Title = "FIFA",
                 Genre = "Sports",
-                Synopsis = "football game"
+                Synopsis = "football game",
+                Rating = 1,
+                Reviews = new List<Review>()
             });
             GameSystem.AddGame(new Game {
                 Title = "COD",
                 Genre = "War",
-                Synopsis = "war game"
+                Synopsis = "war game",
+                Rating = 1,
+                Reviews = new List<Review>()
             });
 
             _clients = new List<Socket>();
@@ -168,7 +172,7 @@ namespace ServerSocket
                         case CommandConstants.ModifyGame:
                             var modifyGameBufferData = new byte[header.IDataLength];  
                             Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
-                            string jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
+                            var jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
                             
                             ModifyGameManager(clientSocket, jsonModifyGameData);
                             

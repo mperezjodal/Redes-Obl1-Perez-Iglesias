@@ -77,7 +77,9 @@ namespace ClientSocket
                         DialogUtils.SearchFilteredGames(GetGames(clientSocket));
                         break;
                     case "5": 
-                        Console.WriteLine("Funcionalidad no implementada.");
+                        Game selectedGame = DialogUtils.SelectGame(GetGames(clientSocket));
+                        PublishReview(clientSocket, selectedGame);
+                        Console.WriteLine("Se ha publicado la review al juego " + selectedGame.Title + ".");
                         break;
                     case "6": 
                         DialogUtils.ShowGameDetail(GetGames(clientSocket));
@@ -104,6 +106,17 @@ namespace ClientSocket
 
             var message = gameToPublish.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
+            Utils.SendData(clientSocket, header, message);
+            
+            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+        }
+
+        private static void PublishReview(Socket clientSocket, Game game){
+            Review review = DialogUtils.InputReview();
+            game.AddReview(review);
+
+            var message = game.Encode();
+            var header = new Header(HeaderConstants.Request, CommandConstants.PublishReview, message.Length);
             Utils.SendData(clientSocket, header, message);
             
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));

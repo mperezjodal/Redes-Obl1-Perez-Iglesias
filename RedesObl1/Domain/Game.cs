@@ -11,19 +11,13 @@ namespace Domain
         public int Id { get; set; }
         public string Title { get; set; }
         public string Genre { get; set; }
-        public List<Review> Reviews;
-        public int Rating { get {
-            List<int> ratings = new List<int>();
-            foreach(var rev in Reviews){
-                ratings.Add(rev.Rating);
-            }
-            return (int)ratings.Average();
-        }}
+        public List<Review> Reviews { get; set; }
+        public int Rating { get; set; }
         public string Synopsis { get; set; }
         public string Cover { get; set; }
 
         public void AddReview(Review newReview){
-            Reviews.Add(newReview);
+            this.Reviews.Add(newReview);
         }
 
         public void Update(Game newGame){

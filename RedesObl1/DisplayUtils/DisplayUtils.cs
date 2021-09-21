@@ -179,12 +179,39 @@ namespace DisplayUtils
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine(gameToShow.Synopsis);
             Console.ResetColor();
-            Console.WriteLine("Promedio de Calificaciones:");
-            foreach(Review r in gameToShow.Reviews){
-                Console.WriteLine(r.Rating);
-                Console.WriteLine(r.Comment);
-            }
             
+            if(gameToShow.Reviews.Count>0){
+                int average = 0;
+                int cont = 0;
+                
+                foreach(Review r in gameToShow.Reviews){
+                    cont++;
+                    average += r.Rating;
+                    Console.WriteLine("Review " + cont);
+                    
+                    Console.WriteLine("Rating: ");
+                    
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Rating);
+                    Console.ResetColor();
+                    
+                    Console.WriteLine("Comentario: " + cont);
+                    
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Comment);
+                    Console.ResetColor();
+                }
+
+                
+                Console.WriteLine("Promedio de Calificaciones:");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine(average/cont);
+                Console.ResetColor();
+            }
+            else{
+                Console.WriteLine("No hay reviews para este juego en el sistema.");
+            }
+
         }
     }
 }
