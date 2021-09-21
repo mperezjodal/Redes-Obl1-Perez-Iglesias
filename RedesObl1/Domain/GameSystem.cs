@@ -41,5 +41,17 @@ namespace Domain
         public static List<Game> DecodeGames(string jsonString){
             return JsonSerializer.Deserialize<List<Game>>(jsonString);
         }
+
+         public string EncodeUsers(){
+            return JsonSerializer.Serialize(this.Users);
+        }
+
+        public static string EncodeUsers(List<User> users){
+            return JsonSerializer.Serialize(users);
+        }
+
+        public static List<User> DecodeUsers(string jsonString){
+            return JsonSerializer.Deserialize<List<User>>(jsonString);
+        }
     }
 }

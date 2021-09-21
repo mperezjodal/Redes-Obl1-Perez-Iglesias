@@ -13,6 +13,8 @@ namespace ProtocolLibrary
         public const int AdquireGame = 9;
         public const int GetAdquiredGames = 10;
         public const int NewUser = 11;
+        public const int GetUsers = 12;
+        public const int GetUsersOk = 20;
         public const int GetGamesOk = 21;
         public const int BuyGameOk = 22;
         public const int PublishGameOk = 23;

@@ -1,3 +1,4 @@
+using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -19,7 +20,7 @@ namespace ClientSocket
 
         public void Login()
         {
-            string userName = DialogUtils.Login();
+            string userName = DialogUtils.Login(GetUsers(), clientSocket);
             var header = new Header(HeaderConstants.Request, CommandConstants.Login, userName.Length);
             Utils.SendData(clientSocket, header, userName);
 
@@ -51,6 +52,15 @@ namespace ClientSocket
             var gamesJson = Utils.ReciveMessageData(clientSocket);
             
             return GameSystem.DecodeGames(gamesJson);
+        }
+
+        public List<User> GetUsers(){
+            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetUsers, 0);
+            Utils.SendData(clientSocket, headerRequestGameList, "");
+
+            var gamesJson = Utils.ReciveMessageData(clientSocket);
+            
+            return GameSystem.DecodeUsers(gamesJson);
         }
 
         public List<Game> GetAdquiredGames(){

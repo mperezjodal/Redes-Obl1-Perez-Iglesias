@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Net.Sockets;
+using System;
 using System.Collections.Generic;
 using Domain;
 
@@ -60,12 +61,38 @@ namespace DisplayUtils
             Console.ResetColor();
         }
 
-        public static string Login()
+        public static string Login(List<User> users, Socket clientSocket)
         {
             Console.WriteLine("Ingrese un nombre de usuario:");
-            return Console.ReadLine();
-        }
+            string userName = Console.ReadLine();
 
+            bool ret = false;
+            foreach(User u in users){
+                Console.WriteLine(u.Name);
+                if(u.Name.Equals(userName)){
+                    ret = true;
+                }
+            }
+
+            if (ret == true)
+            {
+                Console.WriteLine("Nombre de usuario invalido, ingrese otro:");
+                userName = Console.ReadLine();
+                ret = false;
+                foreach(User u in users){
+                if(u.Name.Equals(userName)){
+                    ret = true;
+                }
+            }
+
+            }
+            if (ret == true)
+            {
+                Console.WriteLine("Nombre de usuario invalido.");
+                clientSocket.Shutdown(SocketShutdown.Send);
+            }
+            return userName;
+        }
         public static void ReturnToMenu()
         {
             Console.WriteLine();

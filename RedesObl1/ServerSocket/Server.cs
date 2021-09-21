@@ -18,7 +18,6 @@ namespace ServerSocket
 {
     public class Server
     {
-
         public string ServerIpAddress  { get; set; }
         public int ProtocolFixedSize { get; set; }
         public int ServerPort  { get; set; }
@@ -173,6 +172,12 @@ namespace ServerSocket
                             Utils.SendData(clientSocket, gamesHeader, gamesMessage);
 
                             break;
+                        case CommandConstants.GetUsers:
+                            var usersMessage = GameSystem.EncodeUsers();
+                            var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
+                            Utils.SendData(clientSocket, usersHeader, usersMessage);
+
+                            break;
                         case CommandConstants.PublishReview:
                             var publishRatingBufferData = new byte[header.IDataLength];  
                             Utils.ReceiveData(clientSocket, header.IDataLength, ref publishRatingBufferData);
@@ -223,7 +228,6 @@ namespace ServerSocket
                 }
             }
         }
-
         private static void GetAdquiredGamesManager(Socket clientSocket, string jsonUser)
         {
             try
@@ -241,7 +245,6 @@ namespace ServerSocket
                 Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
             }
         }
-
         private static void AdquireGameManager(Socket clientSocket, string jsonAdquireGameData)
         {
             try
@@ -261,7 +264,6 @@ namespace ServerSocket
                 Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
             }
         }
-
         private static void LoginManager(Socket clientSocket, string userName){
             User newUser = GameSystem.AddUser(userName);
 
@@ -273,7 +275,6 @@ namespace ServerSocket
             var userHeader = new Header(HeaderConstants.Response, CommandConstants.NewUser, userMessage.Length);
             Utils.SendData(clientSocket, userHeader, userMessage);
         }
-
         private static void ModifyGameManager(Socket clientSocket, string jsonModifyGameData){
             try
             {
@@ -291,7 +292,6 @@ namespace ServerSocket
                 Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
             }
         }
-
         private static void DeleteGameManager(Socket clientSocket, string jsonDeleteGameData){
             try
             {
@@ -325,7 +325,6 @@ namespace ServerSocket
                 Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
             }
         }
-
         private static void PublishGameManager(Socket clientSocket, string jsonPublishGame){
             Game newGame = Game.Decode(jsonPublishGame);
             GameSystem.AddGame(newGame);
