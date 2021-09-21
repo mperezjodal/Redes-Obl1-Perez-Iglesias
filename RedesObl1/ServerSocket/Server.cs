@@ -29,10 +29,9 @@ namespace ServerSocket
 
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
-            {"2", "Adquirir juego"},
-            {"3", "Publicar juego"},
-            {"4", "Publicar calificación de un juego"},
-            {"5", "Buscar juegos"}
+            {"2", "Publicar juego"},
+            {"3", "Publicar calificación de un juego"},
+            {"4", "Buscar juegos"}
         };
 
         static void Main(string[] args)
@@ -97,20 +96,17 @@ namespace ServerSocket
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2": 
-                        Console.WriteLine("Funcionalidad no implementada.");
-                        break;
-                    case "3": 
                         Game gameToPublish = DialogUtils.InputGame();
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
                         break;
-                    case "4": 
+                    case "3": 
                         Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
                         Review selectedGameReview = DialogUtils.InputReview();
                         selectedGame.AddReview(selectedGameReview);
                         Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
                         break;
-                    case "5": 
+                    case "4": 
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
                     default:    
@@ -155,6 +151,14 @@ namespace ServerSocket
                     header.DecodeData(buffer);
                     switch (header.ICommand)
                     {
+                        case CommandConstants.Login:
+                            var loginBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref loginBufferData);
+                            string jsonLoginData = Encoding.UTF8.GetString(loginBufferData);
+
+                            LoginManager(clientSocket, jsonLoginData);
+                            
+                            break;
                         case CommandConstants.PublishGame:
                             var publishGameBufferData = new byte[header.IDataLength];  
                             Utils.ReceiveData(clientSocket, header.IDataLength, ref publishGameBufferData);
@@ -193,6 +197,20 @@ namespace ServerSocket
                             DeleteGameManager(clientSocket, jsonDeleteGameData);
                             
                             break;
+                        case CommandConstants.AdquireGame:
+                            var adquireGameBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref adquireGameBufferData);
+                            string jsonAduireGameData = Encoding.UTF8.GetString(adquireGameBufferData);
+
+                            AdquireGameManager(clientSocket, jsonAduireGameData);
+                            break;
+                        case CommandConstants.GetAdquiredGames:
+                            var getAdquireGamesBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref getAdquireGamesBufferData);
+                            string jsonUser = Encoding.UTF8.GetString(getAdquireGamesBufferData);
+
+                            GetAdquiredGamesManager(clientSocket, jsonUser);
+                            break;
                     }
                 }
                 catch (SocketException e)
@@ -204,6 +222,56 @@ namespace ServerSocket
                     Console.WriteLine($"Error: {e.Message}");    
                 }
             }
+        }
+
+        private static void GetAdquiredGamesManager(Socket clientSocket, string jsonUser)
+        {
+            try
+            {
+                User user = User.Decode(jsonUser);
+                var systemUser = GameSystem.Users.Find(u => u.Name.Equals(user.Name));
+
+                var gamesMessage = systemUser.EncodeGames();
+                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAdquiredGamesOk, gamesMessage.Length);
+                Utils.SendData(clientSocket, adquireGameHeader, gamesMessage);
+            }
+            catch (Exception){
+                var adquireGameMessage = "[]";
+                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAdquiredGamesError, adquireGameMessage.Length);
+                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+            }
+        }
+
+        private static void AdquireGameManager(Socket clientSocket, string jsonAdquireGameData)
+        {
+            try
+            {
+                UserGamePair userGame = UserGamePair.Decode(jsonAdquireGameData);
+                var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
+                var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
+                user.AquireGame(game);
+                
+                var adquireGameMessage = "Se ha adquirido el juego: " + game.Title + ".";
+                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AdquireGameOk, adquireGameMessage.Length);
+                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+            }
+            catch (Exception){
+                var adquireGameMessage = "No se ha podido adquirir el juego.";
+                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AdquireGameError, adquireGameMessage.Length);
+                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+            }
+        }
+
+        private static void LoginManager(Socket clientSocket, string userName){
+            User newUser = GameSystem.AddUser(userName);
+
+            var loginMessage = "Se ha creado el usuario: " + userName + ".";
+            var loginHeader = new Header(HeaderConstants.Response, CommandConstants.LoginOk, loginMessage.Length);
+            Utils.SendData(clientSocket, loginHeader, loginMessage);
+
+            var userMessage = newUser.Encode();
+            var userHeader = new Header(HeaderConstants.Response, CommandConstants.NewUser, userMessage.Length);
+            Utils.SendData(clientSocket, userHeader, userMessage);
         }
 
         private static void ModifyGameManager(Socket clientSocket, string jsonModifyGameData){

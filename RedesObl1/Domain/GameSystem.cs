@@ -24,9 +24,10 @@ namespace Domain
             Games.RemoveAll(g => g.Title == game.Title);
         }
 
-
-        public void AddUser(User user){
-            Users.Add(user);
+        public User AddUser(string userName){
+            User newUser = new User() { Name = userName };
+            Users.Add(newUser);
+            return newUser;
         }
 
         public string EncodeGames(){
