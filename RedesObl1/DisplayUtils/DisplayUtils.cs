@@ -60,6 +60,12 @@ namespace DisplayUtils
             Console.ResetColor();
         }
 
+        public static string Login()
+        {
+            Console.WriteLine("Ingrese un nombre de usuario:");
+            return Console.ReadLine();
+        }
+
         public static void ReturnToMenu()
         {
             Console.WriteLine();

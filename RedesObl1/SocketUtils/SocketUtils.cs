@@ -7,7 +7,6 @@ namespace SocketUtils
 {
     public static class Utils
     {
-        private const int ProtocolFixedSize = 4;
         public static string ReciveMessageData(Socket socket)
         {
             while (true)
@@ -66,6 +65,7 @@ namespace SocketUtils
                 }
             }
         }
+        
         public static void SendData(Socket socket, Header header, string mensaje) {
             var data = header.GetRequest();
             var sentBytes = 0;

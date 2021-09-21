@@ -52,6 +52,8 @@ namespace ClientSocket
 
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             
+            ClientUtils clientUtils = new ClientUtils(clientSocket);
+            clientUtils.Login();
             while (connected)
             {
                 DialogUtils.Menu(ClientMenuOptions);
@@ -67,26 +69,28 @@ namespace ClientSocket
                         connected = false;
                         break;
                     case "1":
-                        PublishGame(clientSocket);
+                        clientUtils.PublishGame();
                         break;
                     case "2": 
-                        ModifyGame(clientSocket);
+                        clientUtils.ModifyGame();
                         break;
                     case "3": 
-                        DeleteGame(clientSocket);
+                        clientUtils.DeleteGame();
                         break;
                     case "4": 
-                        DialogUtils.SearchFilteredGames(GetGames(clientSocket));
+                        DialogUtils.SearchFilteredGames(clientUtils.GetGames());
                         break;
                     case "5":
-                        PublishReview(clientSocket);
+                        clientUtils.PublishReview();
                         break;
                     case "6": 
+                        clientUtils.AdquireGame();
                         break;
                     case "7": 
+                        DialogUtils.ShowGameDetail(clientUtils.GetAdquiredGames());
                         break;
                     case "8": 
-                        DialogUtils.ShowGameDetail(GetGames(clientSocket));
+                        DialogUtils.ShowGameDetail(clientUtils.GetGames());
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -94,76 +98,6 @@ namespace ClientSocket
                 }
                 DialogUtils.ReturnToMenu();
             }
-        }
-
-        private static List<Game> GetGames(Socket clientSocket){
-            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
-            Utils.SendData(clientSocket, headerRequestGameList, "");
-            var gamesJson = Utils.ReciveMessageData(clientSocket);
-            
-            return GameSystem.DecodeGames(gamesJson);
-        }
-
-        private static void PublishGame(Socket clientSocket){
-            Game gameToPublish = DialogUtils.InputGame();
-
-            var message = gameToPublish.Encode();
-            var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
-            Utils.SendData(clientSocket, header, message);
-            
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
-        }
-
-        private static void PublishReview(Socket clientSocket){
-            Game game = DialogUtils.SelectGame(GetGames(clientSocket));
-            if(game == null){
-                Console.WriteLine("Retorno al menú.");
-                return ;
-            }
-
-            Review review = DialogUtils.InputReview();
-            game.AddReview(review);
-
-            var message = game.Encode();
-            var header = new Header(HeaderConstants.Request, CommandConstants.PublishReview, message.Length);
-            Utils.SendData(clientSocket, header, message);
-            
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
-        }
-
-        private static void ModifyGame(Socket clientSocket) {
-            List<Game> games = GetGames(clientSocket);
-            
-            Game gameToModify = DialogUtils.SelectGame(games);
-            if(gameToModify == null){
-                Console.WriteLine("Retorno al menú.");
-                return;
-            }
-            
-            Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
-            Game modifiedGame = DialogUtils.InputGame();
-
-            var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
-            var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
-            Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
-
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
-        }
-
-        private static void DeleteGame(Socket clientSocket) {
-            List<Game> games = GetGames(clientSocket);
-
-            Game gameToDelete = DialogUtils.SelectGame(games);
-            if(gameToDelete == null){
-                Console.WriteLine("Retorno al menú.");
-                return ;
-            }
-
-            var deleteGameMessage = gameToDelete.Encode();
-            var deleteGameHeader = new Header(HeaderConstants.Request, CommandConstants.DeleteGame, deleteGameMessage.Length);
-            Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
-
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
     }
 }
