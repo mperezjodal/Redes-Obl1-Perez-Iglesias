@@ -20,6 +20,10 @@ namespace Domain
             this.Reviews.Add(newReview);
         }
 
+        public void UpdateReviews(List<Review> newReviewList){
+            this.Reviews = newReviewList;
+        }
+
         public void Update(Game newGame){
             this.Title = newGame.Title;
             this.Genre = newGame.Genre;

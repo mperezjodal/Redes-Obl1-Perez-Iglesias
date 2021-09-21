@@ -23,8 +23,10 @@ namespace ClientSocket
             {"2", "Modificar juego"},
             {"3", "Eliminar juego"},
             {"4", "Buscar juego"},
-            {"5", "Calificar juegos"},
-            {"6", "Ver juegos y detalles"}
+            {"5", "Calificar juego"},
+            {"6", "Adquirir juego"},
+            {"7", "Ver juegos adquiridos"},
+            {"8", "Ver juegos y detalles"}
         };
 
         static void Main(string[] args)
@@ -76,28 +78,29 @@ namespace ClientSocket
                     case "4": 
                         DialogUtils.SearchFilteredGames(GetGames(clientSocket));
                         break;
-                    case "5": 
-                        Game selectedGame = DialogUtils.SelectGame(GetGames(clientSocket));
-                        PublishReview(clientSocket, selectedGame);
-                        Console.WriteLine("Se ha publicado la review al juego " + selectedGame.Title + ".");
+                    case "5":
+                        PublishReview(clientSocket);
                         break;
                     case "6": 
+                        break;
+                    case "7": 
+                        break;
+                    case "8": 
                         DialogUtils.ShowGameDetail(GetGames(clientSocket));
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
                         break;
                 }
-                Console.WriteLine("Ingrese cualquier valor para volver al menú.");
-                Console.ReadLine();
+                DialogUtils.ReturnToMenu();
             }
         }
 
         private static List<Game> GetGames(Socket clientSocket){
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             Utils.SendData(clientSocket, headerRequestGameList, "");
-
             var gamesJson = Utils.ReciveMessageData(clientSocket);
+            
             return GameSystem.DecodeGames(gamesJson);
         }
 
@@ -111,7 +114,13 @@ namespace ClientSocket
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
 
-        private static void PublishReview(Socket clientSocket, Game game){
+        private static void PublishReview(Socket clientSocket){
+            Game game = DialogUtils.SelectGame(GetGames(clientSocket));
+            if(game == null){
+                Console.WriteLine("Retorno al menú.");
+                return ;
+            }
+
             Review review = DialogUtils.InputReview();
             game.AddReview(review);
 
