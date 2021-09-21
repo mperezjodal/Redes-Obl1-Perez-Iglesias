@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Security.AccessControl;
+using System.Globalization;
 using System;
 using System.ComponentModel.Design;
 using System.Collections.Generic;
@@ -26,8 +27,8 @@ namespace ServerSocket
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
 
-        public static Dictionary<string, string> ServerMenu = new Dictionary<string, string> {
-            {"1", "Ver catálogo de juegos"},
+        public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
+            {"1", "Ver juegos y detalles"},
             {"2", "Adquirir juego"},
             {"3", "Publicar juego"},
             {"4", "Publicar calificación de un juego"},
@@ -51,13 +52,15 @@ namespace ServerSocket
                 Title = "FIFA",
                 Genre = "Sports",
                 Synopsis = "football game",
-                Rating = 10
+                Rating = 1,
+                Reviews = new List<Review>()
             });
             GameSystem.AddGame(new Game {
                 Title = "COD",
                 Genre = "War",
                 Synopsis = "war game",
-                Rating = 9
+                Rating = 1,
+                Reviews = new List<Review>()
             });
 
             _clients = new List<Socket>();
@@ -71,8 +74,11 @@ namespace ServerSocket
             
             while (!_exit)
             {
-                DialogUtils.Menu(ServerMenu);
+                DialogUtils.Menu(ServerMenuOptions);
                 var option = Console.ReadLine();
+                if(ServerMenuOptions.ContainsKey(option)){
+                    Console.WriteLine("Has seleccionado: " + ServerMenuOptions[option]);
+                }
                 switch (option)
                 {
                     case "exit":
@@ -86,6 +92,7 @@ namespace ServerSocket
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
                         fakeSocket.Connect("127.0.0.1",20000);
                         break;
+
                     case "1":
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
@@ -94,23 +101,23 @@ namespace ServerSocket
                         break;
                     case "3": 
                         Game gameToPublish = DialogUtils.InputGame();
-
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
-
                         break;
                     case "4": 
-                        Console.WriteLine("Funcionalidad no implementada.");
+                        Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
+                        Review selectedGameReview = DialogUtils.InputReview();
+                        selectedGame.AddReview(selectedGameReview);
+                        Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
                         break;
                     case "5": 
-                        DialogUtils.GameFilterOptions(GameSystem.Games);
+                        DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
                     default:    
                         Console.WriteLine("Opción inválida.");
                         break;
                 }
-                Console.WriteLine("Ingrese cualquier valor para volver al menú.");
-                Console.ReadLine();
+                DialogUtils.ReturnToMenu();
             }
         }
 
@@ -162,10 +169,18 @@ namespace ServerSocket
                             Utils.SendData(clientSocket, gamesHeader, gamesMessage);
 
                             break;
+                        case CommandConstants.PublishReview:
+                            var publishRatingBufferData = new byte[header.IDataLength];  
+                            Utils.ReceiveData(clientSocket, header.IDataLength, ref publishRatingBufferData);
+                            string jsonPublishRatingGame = Encoding.UTF8.GetString(publishRatingBufferData);
+
+                            PublishReviewManager(clientSocket, jsonPublishRatingGame);
+
+                            break;
                         case CommandConstants.ModifyGame:
                             var modifyGameBufferData = new byte[header.IDataLength];  
                             Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
-                            string jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
+                            var jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
                             
                             ModifyGameManager(clientSocket, jsonModifyGameData);
                             
@@ -182,11 +197,11 @@ namespace ServerSocket
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine($"Socket error: {e.Message}..");    
+                    Console.WriteLine($"Socket error: {e.Message}");    
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error: {e.Message}..");    
+                    Console.WriteLine($"Error: {e.Message}");    
                 }
             }
         }
@@ -223,6 +238,23 @@ namespace ServerSocket
                 var deleteGameMessage = "No se ha podido eliminar el juego.";
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
                 Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+            }
+        }
+        private static void PublishReviewManager(Socket clientSocket, string jsonPublishReviewData){
+            try
+            {
+                Game publishReviewGame = Game.Decode(jsonPublishReviewData);
+                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
+                gameToModify.UpdateReviews(publishReviewGame.Reviews);
+                
+                var publishReviewMessage = "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".";
+                var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewOk, publishReviewMessage.Length);
+                Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
+            }
+            catch (Exception){
+                var publishReviewMessage = "No se ha podido publicar la calificacion del juego.";
+                var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewError, publishReviewMessage.Length);
+                Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
             }
         }
 

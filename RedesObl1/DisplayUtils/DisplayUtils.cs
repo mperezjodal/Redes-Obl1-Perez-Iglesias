@@ -15,13 +15,13 @@ namespace DisplayUtils
             Console.ResetColor();
             DialogUtils.MenuTitle();
             Console.WriteLine();
-            Console.WriteLine("    Seleccione una opción:                     ");
+            Console.WriteLine("    Seleccione una opción:");
             Console.WriteLine();
             foreach (var menuOption in items)
             {
                 Console.WriteLine("    " + menuOption.Key + " -   " + menuOption.Value);
             }
-            Console.WriteLine("         exit                                  ");
+            Console.WriteLine("          exit");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -60,6 +60,13 @@ namespace DisplayUtils
             Console.ResetColor();
         }
 
+        public static void ReturnToMenu()
+        {
+            Console.WriteLine();
+            Console.WriteLine("ENTER para volver al menú.");
+            Console.ReadLine();
+        }
+
         public static void GameList(List<Game> games)
         {
             Console.WriteLine("Lista de juegos:");
@@ -77,14 +84,25 @@ namespace DisplayUtils
             newGame.Title = Console.ReadLine();
             Console.WriteLine("Género:");
             newGame.Genre = Console.ReadLine();
-            Console.WriteLine("Calificación (número del 1 al 10):");
-            int rating;
-            Int32.TryParse(Console.ReadLine(), out rating);
-            newGame.Rating = rating;
             Console.WriteLine("Sinópsis:");
             newGame.Synopsis = Console.ReadLine();
 
             return newGame;
+        }
+
+        public static Review InputReview()
+        {
+            Review Review = new Review();
+
+            Console.WriteLine("Rating:");
+            var rating = Console.ReadLine();
+            int rat;
+            Int32.TryParse(rating, out rat);
+            Review.Rating = rat;
+            Console.WriteLine("Comentario:");
+            Review.Comment = Console.ReadLine();
+
+            return Review;
         }
 
         public static Game SelectGame(List<Game> games)
@@ -110,7 +128,7 @@ namespace DisplayUtils
             return selectedGame;
         }
 
-        public static void GameFilterOptions(List<Game> games)
+        public static void SearchFilteredGames(List<Game> games)
         {
             Console.WriteLine();
             Console.WriteLine("Seleccione una opción para filtrar juegos:");
@@ -136,7 +154,7 @@ namespace DisplayUtils
                     DialogUtils.GameList(filtedGames);
                     break;
                 case "3":
-                    Console.WriteLine("Ingrese categoría:");
+                    Console.WriteLine("Ingrese rating:");
                     int rating;
                     Int32.TryParse(Console.ReadLine(), out rating);
                     filtedGames = games.FindAll(g => g.Rating.Equals(rating));
@@ -151,13 +169,12 @@ namespace DisplayUtils
         public static void ShowGameDetail(List<Game> games)
         {
             Game gameToShow = SelectGame(games);
-            if(gameToShow == null){
-                Console.WriteLine("Juego inválido.");
+            if (gameToShow == null)
+            {
+                Console.WriteLine("Retorno al menú");
                 return;
             }
-            Console.WriteLine();
             Console.WriteLine("Detalle del juego: ");
-            Console.WriteLine();
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine(gameToShow.Title);
@@ -170,7 +187,42 @@ namespace DisplayUtils
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine(gameToShow.Synopsis);
             Console.ResetColor();
-            Console.WriteLine("Promedio de Calificaciones:");
+
+            if ( gameToShow.Reviews.Count > 0 )
+            {
+                int totalRating = 0;
+                int cont = 0;
+
+                foreach (Review r in gameToShow.Reviews)
+                {
+                    cont++;
+                    totalRating += r.Rating;
+                    Console.WriteLine("Review " + cont);
+
+                    Console.Write("    Rating: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Rating);
+                    Console.ResetColor();
+
+                    Console.Write("    Comentario: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Comment);
+                    Console.ResetColor();
+                }
+
+
+                Console.Write("Promedio de Calificaciones: ");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine(totalRating / cont);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("No hay reviews para este juego en el sistema.");
+            }
+
         }
     }
 }
