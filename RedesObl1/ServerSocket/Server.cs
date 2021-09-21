@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Security.AccessControl;
+using System.Globalization;
 using System;
 using System.ComponentModel.Design;
 using System.Collections.Generic;
@@ -50,14 +51,12 @@ namespace ServerSocket
             GameSystem.AddGame(new Game {
                 Title = "FIFA",
                 Genre = "Sports",
-                Synopsis = "football game",
-                Rating = 10
+                Synopsis = "football game"
             });
             GameSystem.AddGame(new Game {
                 Title = "COD",
                 Genre = "War",
-                Synopsis = "war game",
-                Rating = 9
+                Synopsis = "war game"
             });
 
             _clients = new List<Socket>();
@@ -97,13 +96,14 @@ namespace ServerSocket
                         break;
                     case "3": 
                         Game gameToPublish = DialogUtils.InputGame();
-
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
-
                         break;
                     case "4": 
-                        Console.WriteLine("Funcionalidad no implementada.");
+                        Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
+                        Review selectedGameReview = DialogUtils.InputReview();
+                        selectedGame.AddReview(selectedGameReview);
+                        Console.WriteLine("Se ha publicado la review al juego " + selectedGame.Title + ".");
                         break;
                     case "5": 
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
@@ -185,11 +185,11 @@ namespace ServerSocket
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine($"Socket error: {e.Message}..");    
+                    Console.WriteLine($"Socket error: {e.Message}");    
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error: {e.Message}..");    
+                    Console.WriteLine($"Error: {e.Message}");    
                 }
             }
         }

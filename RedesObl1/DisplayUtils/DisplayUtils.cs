@@ -77,14 +77,25 @@ namespace DisplayUtils
             newGame.Title = Console.ReadLine();
             Console.WriteLine("Género:");
             newGame.Genre = Console.ReadLine();
-            Console.WriteLine("Calificación (número del 1 al 10):");
-            int rating;
-            Int32.TryParse(Console.ReadLine(), out rating);
-            newGame.Rating = rating;
             Console.WriteLine("Sinópsis:");
             newGame.Synopsis = Console.ReadLine();
 
             return newGame;
+        }
+
+        public static Review InputReview()
+        {
+            Review Review = new Review();
+
+            Console.WriteLine("Rating:");
+            var rating = Console.ReadLine();
+            int rat;
+            Int32.TryParse(rating, out rat);
+            Review.Rating = rat;
+            Console.WriteLine("Comentario:");
+            Review.Comment = Console.ReadLine();
+
+            return Review;
         }
 
         public static Game SelectGame(List<Game> games)
@@ -136,7 +147,7 @@ namespace DisplayUtils
                     DialogUtils.GameList(filtedGames);
                     break;
                 case "3":
-                    Console.WriteLine("Ingrese categoría:");
+                    Console.WriteLine("Ingrese rating:");
                     int rating;
                     Int32.TryParse(Console.ReadLine(), out rating);
                     filtedGames = games.FindAll(g => g.Rating.Equals(rating));
@@ -152,6 +163,7 @@ namespace DisplayUtils
         {
             Game gameToShow = SelectGame(games);
             if(gameToShow == null){
+                Console.WriteLine("Retorno al menú");
                 return;
             }
             Console.WriteLine("Detalle del juego: ");
@@ -168,6 +180,11 @@ namespace DisplayUtils
             Console.WriteLine(gameToShow.Synopsis);
             Console.ResetColor();
             Console.WriteLine("Promedio de Calificaciones:");
+            foreach(Review r in gameToShow.Reviews){
+                Console.WriteLine(r.Rating);
+                Console.WriteLine(r.Comment);
+            }
+            
         }
     }
 }
