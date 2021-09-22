@@ -18,6 +18,14 @@ namespace Domain
 
         public void AddReview(Review newReview){
             this.Reviews.Add(newReview);
+            int totalRating = 0;
+            int cont = 0;
+            foreach (Review r in this.Reviews)
+            {
+                cont++;
+                totalRating += r.Rating;
+            }
+            this.Rating = totalRating / cont;
         }
 
         public void UpdateReviews(List<Review> newReviewList){
