@@ -55,12 +55,12 @@ namespace ClientSocket
         }
 
         public List<User> GetUsers(){
-            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetUsers, 0);
-            Utils.SendData(clientSocket, headerRequestGameList, "");
+            var headerRequestUsersList = new Header(HeaderConstants.Request, CommandConstants.GetUsers, 0);
+            Utils.SendData(clientSocket, headerRequestUsersList, "");
 
-            var gamesJson = Utils.ReciveMessageData(clientSocket);
+            var usersJson = Utils.ReciveMessageData(clientSocket);
             
-            return GameSystem.DecodeUsers(gamesJson);
+            return GameSystem.DecodeUsers(usersJson);
         }
 
         public List<Game> GetAdquiredGames(){
