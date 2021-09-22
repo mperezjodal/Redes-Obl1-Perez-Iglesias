@@ -18,7 +18,6 @@ namespace ServerSocket
 {
     public class Server
     {
-
         public string ServerIpAddress  { get; set; }
         public int ProtocolFixedSize { get; set; }
         public int ServerPort  { get; set; }
@@ -173,6 +172,12 @@ namespace ServerSocket
                             var gamesMessage = GameSystem.EncodeGames();
                             var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
                             Utils.SendData(clientSocket, gamesHeader, gamesMessage);
+
+                            break;
+                        case CommandConstants.GetUsers:
+                            var usersMessage = GameSystem.EncodeUsers();
+                            var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
+                            Utils.SendData(clientSocket, usersHeader, usersMessage);
 
                             break;
                         case CommandConstants.PublishReview:
