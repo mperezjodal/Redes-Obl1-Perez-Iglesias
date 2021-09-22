@@ -68,7 +68,6 @@ namespace DisplayUtils
 
             bool ret = false;
             foreach(User u in users){
-                Console.WriteLine(u.Name);
                 if(u.Name.Equals(userName)){
                     ret = true;
                 }
@@ -76,7 +75,7 @@ namespace DisplayUtils
 
             if (ret == true)
             {
-                Console.WriteLine("Nombre de usuario invalido, ingrese otro:");
+                Console.WriteLine("Nombre de usuario inválido, ingrese otro:");
                 userName = Console.ReadLine();
                 ret = false;
                 foreach(User u in users){
@@ -88,7 +87,7 @@ namespace DisplayUtils
             }
             if (ret == true)
             {
-                Console.WriteLine("Nombre de usuario invalido.");
+                Console.WriteLine("Nombre de usuario inválido.");
                 clientSocket.Shutdown(SocketShutdown.Send);
             }
             return userName;
