@@ -18,11 +18,9 @@ namespace ServerSocket
 {
     public class ServerUtils
     {   
-        public Socket serverSocket;
         public GameSystem GameSystem;
-        public ServerUtils(Socket serverSocket, GameSystem gameSystem) 
+        public ServerUtils(GameSystem gameSystem) 
         {
-            this.serverSocket = serverSocket;
             this.GameSystem = gameSystem;
         }
 

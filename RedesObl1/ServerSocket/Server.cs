@@ -118,7 +118,7 @@ namespace ServerSocket
 
         private static void ListenForConnections(Socket socketServer)
         {
-            ServerUtils serverUtils = new ServerUtils(socketServer, GameSystem);
+            ServerUtils serverUtils = new ServerUtils(GameSystem);
             while (!_exit)
             {
                 try
@@ -150,22 +150,16 @@ namespace ServerSocket
                     Utils.ReceiveData(clientSocket, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
+                    var bufferData = new byte[header.IDataLength];  
+                    Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
+                    string jsonData = Encoding.UTF8.GetString(bufferData);
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            var loginBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref loginBufferData);
-                            string jsonLoginData = Encoding.UTF8.GetString(loginBufferData);
-
-                            serverUtils.LoginManager(clientSocket, jsonLoginData);
-                            
+                            serverUtils.LoginManager(clientSocket, jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            var publishGameBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref publishGameBufferData);
-                            string jsonPublishGame = Encoding.UTF8.GetString(publishGameBufferData);
-
-                            serverUtils.PublishGameManager(clientSocket, jsonPublishGame);
+                            serverUtils.PublishGameManager(clientSocket, jsonData);
 
                             break;
                         case CommandConstants.GetGames:
@@ -181,42 +175,19 @@ namespace ServerSocket
 
                             break;
                         case CommandConstants.PublishReview:
-                            var publishRatingBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref publishRatingBufferData);
-                            string jsonPublishRatingGame = Encoding.UTF8.GetString(publishRatingBufferData);
-
-                            serverUtils.PublishReviewManager(clientSocket, jsonPublishRatingGame);
-
+                            serverUtils.PublishReviewManager(clientSocket, jsonData);
                             break;
                         case CommandConstants.ModifyGame:
-                            var modifyGameBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref modifyGameBufferData);
-                            var jsonModifyGameData = Encoding.UTF8.GetString(modifyGameBufferData);
-                            
-                            serverUtils.ModifyGameManager(clientSocket, jsonModifyGameData);
-                            
+                            serverUtils.ModifyGameManager(clientSocket, jsonData);
                             break;
                         case CommandConstants.DeleteGame:
-                            var deleteGameBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref deleteGameBufferData);
-                            string jsonDeleteGameData = Encoding.UTF8.GetString(deleteGameBufferData);
-
-                            serverUtils.DeleteGameManager(clientSocket, jsonDeleteGameData);
-                            
+                            serverUtils.DeleteGameManager(clientSocket, jsonData);
                             break;
                         case CommandConstants.AdquireGame:
-                            var adquireGameBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref adquireGameBufferData);
-                            string jsonAduireGameData = Encoding.UTF8.GetString(adquireGameBufferData);
-
-                            serverUtils.AdquireGameManager(clientSocket, jsonAduireGameData);
+                            serverUtils.AdquireGameManager(clientSocket, jsonData);
                             break;
                         case CommandConstants.GetAdquiredGames:
-                            var getAdquireGamesBufferData = new byte[header.IDataLength];  
-                            Utils.ReceiveData(clientSocket, header.IDataLength, ref getAdquireGamesBufferData);
-                            string jsonUser = Encoding.UTF8.GetString(getAdquireGamesBufferData);
-
-                            serverUtils.GetAdquiredGamesManager(clientSocket, jsonUser);
+                            serverUtils.GetAdquiredGamesManager(clientSocket, jsonData);
                             break;
                     }
                 }
