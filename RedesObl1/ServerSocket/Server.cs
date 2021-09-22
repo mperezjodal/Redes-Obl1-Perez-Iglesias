@@ -46,20 +46,20 @@ namespace ServerSocket
 		    var ServerConfig = section.Get<Server>();
 
             GameSystem = new GameSystem();
-            GameSystem.AddGame(new Game {
-                Title = "FIFA",
-                Genre = "Sports",
-                Synopsis = "football game",
-                Rating = 1,
-                Reviews = new List<Review>()
-            });
-            GameSystem.AddGame(new Game {
-                Title = "COD",
-                Genre = "War",
-                Synopsis = "war game",
-                Rating = 1,
-                Reviews = new List<Review>()
-            });
+            // GameSystem.AddGame(new Game {
+            //     Title = "FIFA",
+            //     Genre = "Sports",
+            //     Synopsis = "football game",
+            //     Rating = 1,
+            //     Reviews = new List<Review>()
+            // });
+            // GameSystem.AddGame(new Game {
+            //     Title = "COD",
+            //     Genre = "War",
+            //     Synopsis = "war game",
+            //     Rating = 1,
+            //     Reviews = new List<Review>()
+            // });
 
             _clients = new List<Socket>();
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -72,11 +72,8 @@ namespace ServerSocket
             
             while (!_exit)
             {
-                DialogUtils.Menu(ServerMenuOptions);
-                var option = Console.ReadLine();
-                if(ServerMenuOptions.ContainsKey(option)){
-                    Console.WriteLine("Has seleccionado: " + ServerMenuOptions[option]);
-                }
+                var option = DialogUtils.Menu(ServerMenuOptions);
+
                 switch (option)
                 {
                     case "exit":
@@ -88,7 +85,7 @@ namespace ServerSocket
                             client.Close();
                         }
                         var fakeSocket = new Socket(AddressFamily.InterNetwork,SocketType.Stream,ProtocolType.Tcp);
-                        fakeSocket.Connect("127.0.0.1",20000);
+                        fakeSocket.Connect("127.0.0.1", 20000);
                         break;
 
                     case "1":
