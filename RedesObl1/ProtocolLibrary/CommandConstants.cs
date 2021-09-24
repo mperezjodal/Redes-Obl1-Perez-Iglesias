@@ -10,8 +10,8 @@ namespace ProtocolLibrary
         public const int PublishReview = 6;
         public const int SearchGames = 7;
         public const int Login = 8;
-        public const int AdquireGame = 9;
-        public const int GetAdquiredGames = 10;
+        public const int AcquireGame = 9;
+        public const int GetAcquiredGames = 10;
         public const int NewUser = 11;
         public const int GetUsers = 12;
         public const int GetUsersOk = 20;
@@ -23,8 +23,8 @@ namespace ProtocolLibrary
         public const int PublishReviewOk = 26;
         public const int SearchGamesOk = 27;
         public const int LoginOk = 28;
-        public const int AdquireGameOk = 29;
-        public const int GetAdquiredGamesOk = 30;
+        public const int AcquireGameOk = 29;
+        public const int GetAcquiredGamesOk = 30;
         public const int GetGamesError = 51;
         public const int BuyGameError = 52;
         public const int PublishGameError = 53;
@@ -33,7 +33,7 @@ namespace ProtocolLibrary
         public const int PublishReviewError = 56;
         public const int SearchGamesError = 57;
         public const int LoginError = 58;
-        public const int AdquireGameError = 59;
-        public const int GetAdquiredGamesError = 60;
+        public const int AcquireGameError = 59;
+        public const int GetAcquiredGamesError = 60;
     }
 }

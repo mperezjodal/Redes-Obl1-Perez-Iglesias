@@ -82,10 +82,10 @@ namespace ClientSocket
                         clientUtils.PublishReview();
                         break;
                     case "6": 
-                        clientUtils.AdquireGame();
+                        clientUtils.AcquireGame();
                         break;
                     case "7": 
-                        DialogUtils.ShowGameDetail(clientUtils.GetAdquiredGames());
+                        DialogUtils.ShowGameDetail(clientUtils.GetAcquiredGames());
                         break;
                     case "8": 
                         DialogUtils.ShowGameDetail(clientUtils.GetGames());

@@ -21,12 +21,30 @@ namespace ServerSocket
     {   
         public GameSystem GameSystem;
         public object lockObject = new object();
-        public ServerUtils(GameSystem gameSystem) 
+        public Socket clientSocket;
+        public ServerUtils(GameSystem gameSystem, Socket clientSocket) 
         {
             this.GameSystem = gameSystem;
+            this.clientSocket = clientSocket;
         }
 
-        public void GetAdquiredGamesManager(Socket clientSocket, string jsonUser)
+        public void GetGamesManager(Socket clientSocket)
+        {
+            var gamesMessage = GameSystem.EncodeGames();
+            var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
+            Utils.SendData(clientSocket, gamesHeader, gamesMessage);
+
+            foreach(Game g in GameSystem.Games){
+                var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+
+                if (File.Exists(path)){
+                    var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
+                    fileCommunicationGameList.SendFile(path);
+                }
+            }
+        }
+
+        public void GetAcquiredGamesManager(string jsonUser)
         {
             try
             {
@@ -34,37 +52,37 @@ namespace ServerSocket
                 var systemUser = GameSystem.Users.Find(u => u.Name.Equals(user.Name));
 
                 var gamesMessage = systemUser.EncodeGames();
-                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAdquiredGamesOk, gamesMessage.Length);
-                Utils.SendData(clientSocket, adquireGameHeader, gamesMessage);
+                var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesOk, gamesMessage.Length);
+                Utils.SendData(clientSocket, AcquireGameHeader, gamesMessage);
             }
             catch (Exception){
-                var adquireGameMessage = "[]";
-                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAdquiredGamesError, adquireGameMessage.Length);
-                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+                var AcquireGameMessage = "[]";
+                var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesError, AcquireGameMessage.Length);
+                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
             }
         }
 
-        public void AdquireGameManager(Socket clientSocket, string jsonAdquireGameData)
+        public void AcquireGameManager(string jsonAcquireGameData)
         {
             try
             {
-                UserGamePair userGame = UserGamePair.Decode(jsonAdquireGameData);
+                UserGamePair userGame = UserGamePair.Decode(jsonAcquireGameData);
                 var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
                 var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
                 user.AquireGame(game);
                 
-                var adquireGameMessage = "Se ha adquirido el juego: " + game.Title + ".";
-                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AdquireGameOk, adquireGameMessage.Length);
-                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+                var AcquireGameMessage = "Se ha adquirido el juego: " + game.Title + ".";
+                var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameOk, AcquireGameMessage.Length);
+                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
             }
             catch (Exception){
-                var adquireGameMessage = "No se ha podido adquirir el juego.";
-                var adquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AdquireGameError, adquireGameMessage.Length);
-                Utils.SendData(clientSocket, adquireGameHeader, adquireGameMessage);
+                var AcquireGameMessage = "No se ha podido adquirir el juego.";
+                var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameError, AcquireGameMessage.Length);
+                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
             }
         }
 
-        public void LoginManager(Socket clientSocket, string userName){
+        public void LoginManager(string userName){
             User newUser = GameSystem.AddUser(userName);
 
             var loginMessage = "Se ha creado el usuario: " + userName + ".";
@@ -76,7 +94,7 @@ namespace ServerSocket
             Utils.SendData(clientSocket, userHeader, userMessage);
         }
 
-        public void ModifyGameManager(Socket clientSocket, string jsonModifyGameData){
+        public void ModifyGameManager(string jsonModifyGameData){
             try
             {
                 lock(lockObject){
@@ -96,7 +114,7 @@ namespace ServerSocket
             }
         }
 
-        public void DeleteGameManager(Socket clientSocket, string jsonDeleteGameData){
+        public void DeleteGameManager(string jsonDeleteGameData){
             try
             {
                 //lock(lockObject){
@@ -114,7 +132,7 @@ namespace ServerSocket
                 Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
             }
         }
-        public void PublishReviewManager(Socket clientSocket, string jsonPublishReviewData){
+        public void PublishReviewManager(string jsonPublishReviewData){
             try
             {
                 //ock(lockObject){
@@ -134,7 +152,7 @@ namespace ServerSocket
             }
         }
 
-        public void PublishGameManager(Socket clientSocket, string jsonPublishGame, Socket serverSocket){
+        public void PublishGameManager(string jsonPublishGame, Socket serverSocket){
             //lock(lockObject){
                 Game newGame = Game.Decode(jsonPublishGame);
                 GameSystem.AddGame(newGame);

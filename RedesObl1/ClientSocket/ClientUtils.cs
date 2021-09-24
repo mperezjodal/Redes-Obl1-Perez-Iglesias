@@ -32,7 +32,7 @@ namespace ClientSocket
             myUser = User.Decode(userJson);
         }
         
-        public void AdquireGame()
+        public void AcquireGame()
         {
             Game game = DialogUtils.SelectGame(GetGames());
             if(game == null){
@@ -41,7 +41,7 @@ namespace ClientSocket
             }
 
             var message = new UserGamePair(myUser, game).Encode();
-            var header = new Header(HeaderConstants.Request, CommandConstants.AdquireGame, message.Length);
+            var header = new Header(HeaderConstants.Request, CommandConstants.AcquireGame, message.Length);
             Utils.SendData(clientSocket, header, message);
 
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
@@ -73,9 +73,9 @@ namespace ClientSocket
             return users;
         }
 
-        public List<Game> GetAdquiredGames(){
+        public List<Game> GetAcquiredGames(){
             var message = myUser.Encode();
-            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAdquiredGames, message.Length);
+            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAcquiredGames, message.Length);
             Utils.SendData(clientSocket, headerRequestGameList, message);
 
             var gamesJson = Utils.ReciveMessageData(clientSocket);

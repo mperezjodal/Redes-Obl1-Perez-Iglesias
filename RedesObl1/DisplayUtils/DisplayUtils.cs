@@ -271,11 +271,11 @@ namespace DisplayUtils
             }
 
             if(File.Exists(gameToShow.Cover)){
-                Console.Write("Caratula: ");
+                Console.Write("Carátula: ");
                 Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
             }
             else{
-                Console.Write("No hay caratula para este juego. ");
+                Console.Write("No hay carátula para este juego.");
             }
 
         }
