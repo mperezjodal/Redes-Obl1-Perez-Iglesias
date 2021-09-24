@@ -56,11 +56,8 @@ namespace ClientSocket
             clientUtils.Login();
             while (connected)
             {
-                DialogUtils.Menu(ClientMenuOptions);
-                var option = Console.ReadLine();
-                if(ClientMenuOptions.ContainsKey(option)){
-                    Console.WriteLine("Has seleccionado: " + ClientMenuOptions[option]);
-                }
+                var option = DialogUtils.Menu(ClientMenuOptions);
+
                 switch (option)
                 {
                     case "exit":

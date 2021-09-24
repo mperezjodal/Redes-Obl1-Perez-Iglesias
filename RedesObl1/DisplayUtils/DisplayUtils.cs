@@ -7,7 +7,7 @@ namespace DisplayUtils
 {
     public class DialogUtils
     {
-        public static void Menu(Dictionary<string, string> items)
+        public static string Menu(Dictionary<string, string> items)
         {
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -28,6 +28,11 @@ namespace DisplayUtils
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.ResetColor();
             Console.WriteLine();
+            var option = Console.ReadLine();
+            if(items.ContainsKey(option)){
+                Console.WriteLine("Has seleccionado: " + items[option]);
+            }
+            return option;
         }
 
         public static void MenuTitle()
@@ -94,10 +99,15 @@ namespace DisplayUtils
 
         public static void GameList(List<Game> games)
         {
-            Console.WriteLine("Lista de juegos:");
-            foreach (Game g in games)
-            {
-                Console.WriteLine(g.Title);
+            if(games.Count == 0){
+                Console.WriteLine("No hay juegos en el sistema.");
+            }
+            else{
+                Console.WriteLine("Lista de juegos:");
+                foreach (Game g in games)
+                {
+                    Console.WriteLine(g.Title);
+                }
             }
         }
 
@@ -111,6 +121,7 @@ namespace DisplayUtils
             newGame.Genre = Console.ReadLine();
             Console.WriteLine("Sinópsis:");
             newGame.Synopsis = Console.ReadLine();
+            newGame.Reviews = new List<Review>();
 
             return newGame;
         }
@@ -135,21 +146,21 @@ namespace DisplayUtils
             DialogUtils.GameList(games);
 
             Game selectedGame = null;
-            Console.WriteLine("Ingrese el título del juego:");
-            string gameTitle = Console.ReadLine();
-            selectedGame = games.Find(g => g.Title.Equals(gameTitle));
-
-            if (selectedGame == null)
-            {
-                Console.WriteLine("Juego inválido, ingrese el título nuevamente:");
-                gameTitle = Console.ReadLine();
+            if(games.Count > 0){
+                Console.WriteLine("Ingrese el título del juego:");
+                string gameTitle = Console.ReadLine();
                 selectedGame = games.Find(g => g.Title.Equals(gameTitle));
+                if (selectedGame == null)
+                {
+                    Console.WriteLine("Juego inválido, ingrese el título nuevamente:");
+                    gameTitle = Console.ReadLine();
+                    selectedGame = games.Find(g => g.Title.Equals(gameTitle));
+                }
+                if (selectedGame == null)
+                {
+                    Console.WriteLine("Juego inválido.");
+                }
             }
-            if (selectedGame == null)
-            {
-                Console.WriteLine("Juego inválido.");
-            }
-
             return selectedGame;
         }
 
@@ -196,7 +207,7 @@ namespace DisplayUtils
             Game gameToShow = SelectGame(games);
             if (gameToShow == null)
             {
-                Console.WriteLine("Retorno al menú");
+                Console.WriteLine("Retorno al menú.");
                 return;
             }
             Console.WriteLine("Detalle del juego: ");
