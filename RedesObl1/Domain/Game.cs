@@ -33,10 +33,18 @@ namespace Domain
         }
 
         public void Update(Game newGame){
-            this.Title = newGame.Title;
-            this.Genre = newGame.Genre;
-            this.Synopsis = newGame.Synopsis;
-            this.Cover = newGame.Cover;
+            if(newGame.Title != ""){
+                this.Title = newGame.Title;
+            }
+            if(newGame.Cover != ""){
+                this.Cover = newGame.Cover;
+            }
+            if(newGame.Synopsis != ""){
+                this.Synopsis = newGame.Synopsis;
+            }
+            if(newGame.Genre != ""){
+                this.Genre = newGame.Genre;
+            }
         }
 
         public string Encode(){

@@ -6,6 +6,8 @@ using DisplayUtils;
 using Domain;
 using ProtocolLibrary;
 using SocketUtils;
+using System.IO;
+using Common;
 
 namespace ClientSocket
 {
@@ -29,8 +31,8 @@ namespace ClientSocket
             var userJson = Utils.ReciveMessageData(clientSocket);
             myUser = User.Decode(userJson);
         }
-
-        public void AdquireGame()
+        
+        public void AcquireGame()
         {
             Game game = DialogUtils.SelectGame(GetGames());
             if(game == null){
@@ -39,7 +41,7 @@ namespace ClientSocket
             }
 
             var message = new UserGamePair(myUser, game).Encode();
-            var header = new Header(HeaderConstants.Request, CommandConstants.AdquireGame, message.Length);
+            var header = new Header(HeaderConstants.Request, CommandConstants.AcquireGame, message.Length);
             Utils.SendData(clientSocket, header, message);
 
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
@@ -48,10 +50,17 @@ namespace ClientSocket
         public List<Game> GetGames(){
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             Utils.SendData(clientSocket, headerRequestGameList, "");
-
             var gamesJson = Utils.ReciveMessageData(clientSocket);
-            
-            return GameSystem.DecodeGames(gamesJson);
+            List<Game> gameList = GameSystem.DecodeGames(gamesJson);
+
+            foreach(Game g in gameList){
+                if(g.Cover != null && g.Cover != ""){
+                    var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
+                    fileCommunicationGameList.ReceiveFile();
+                }
+            }
+
+            return gameList;
         }
 
         public List<User> GetUsers(){
@@ -59,13 +68,14 @@ namespace ClientSocket
             Utils.SendData(clientSocket, headerRequestUsersList, "");
 
             var usersJson = Utils.ReciveMessageData(clientSocket);
+            List<User> users = GameSystem.DecodeUsers(usersJson);
             
-            return GameSystem.DecodeUsers(usersJson);
+            return users;
         }
 
-        public List<Game> GetAdquiredGames(){
+        public List<Game> GetAcquiredGames(){
             var message = myUser.Encode();
-            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAdquiredGames, message.Length);
+            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAcquiredGames, message.Length);
             Utils.SendData(clientSocket, headerRequestGameList, message);
 
             var gamesJson = Utils.ReciveMessageData(clientSocket);
@@ -73,13 +83,23 @@ namespace ClientSocket
             return GameSystem.DecodeGames(gamesJson);
         }
 
+        public void SendFile(string path, Socket socket)
+        {
+            var fileCommunication = new FileCommunicationHandler(socket);
+            fileCommunication.SendFile(path);
+        }
+
         public void PublishGame(){
             Game gameToPublish = DialogUtils.InputGame();
 
             var message = gameToPublish.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
+
             Utils.SendData(clientSocket, header, message);
-            
+
+            if (File.Exists(gameToPublish.Cover)){
+                SendFile(gameToPublish.Cover, clientSocket);
+            }
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
 
