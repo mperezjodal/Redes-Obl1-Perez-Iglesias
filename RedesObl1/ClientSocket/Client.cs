@@ -8,6 +8,7 @@ using SocketUtils;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using DisplayUtils;
+using Common;
 
 namespace ClientSocket
 {
