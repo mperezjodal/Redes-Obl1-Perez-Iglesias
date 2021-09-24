@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using Domain;
+using Common;
+using System.IO;
 
 namespace DisplayUtils
 {
@@ -121,8 +123,18 @@ namespace DisplayUtils
             newGame.Genre = Console.ReadLine();
             Console.WriteLine("Sinópsis:");
             newGame.Synopsis = Console.ReadLine();
-            newGame.Reviews = new List<Review>();
 
+            Console.WriteLine("Path de la carátula:");
+            String path = @"" + Console.ReadLine();
+            if(File.Exists(path)){
+                newGame.Cover = path;
+            }
+            else{
+                Console.WriteLine("Archivo no disponible.");
+            }
+
+
+            newGame.Reviews = new List<Review>();
             return newGame;
         }
 
@@ -248,7 +260,6 @@ namespace DisplayUtils
                     Console.ResetColor();
                 }
 
-
                 Console.Write("Promedio de Calificaciones: ");
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine(totalRating / cont);
@@ -257,6 +268,14 @@ namespace DisplayUtils
             else
             {
                 Console.WriteLine("No hay reviews para este juego en el sistema.");
+            }
+
+            if(File.Exists(gameToShow.Cover)){
+                Console.Write("Caratula: ");
+                Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
+            }
+            else{
+                Console.Write("No hay caratula para este juego. ");
             }
 
         }
