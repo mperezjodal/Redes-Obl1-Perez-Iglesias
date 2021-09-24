@@ -150,9 +150,11 @@ namespace ServerSocket
                     Utils.ReceiveData(clientSocket, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
+
                     var bufferData = new byte[header.IDataLength];  
                     Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
                     string jsonData = Encoding.UTF8.GetString(bufferData);
+                    
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
@@ -160,7 +162,6 @@ namespace ServerSocket
                             break;
                         case CommandConstants.PublishGame:
                             serverUtils.PublishGameManager(clientSocket, jsonData);
-
                             break;
                         case CommandConstants.GetGames:
                             var gamesMessage = GameSystem.EncodeGames();
