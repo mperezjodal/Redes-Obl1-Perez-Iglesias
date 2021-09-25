@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,7 +9,7 @@ namespace Domain
 {
     public class Game
     {
-        public int Id { get; set; }
+        //public int Id { get; set; }
         public string Title { get; set; }
         public string Genre { get; set; }
         public List<Review> Reviews { get; set; }
@@ -36,7 +37,7 @@ namespace Domain
             if(newGame.Title != ""){
                 this.Title = newGame.Title;
             }
-            if(newGame.Cover != ""){
+            if(newGame.Cover != "" && File.Exists(newGame.Cover)){
                 this.Cover = newGame.Cover;
             }
             if(newGame.Synopsis != ""){
