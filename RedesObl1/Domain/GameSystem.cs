@@ -16,19 +16,22 @@ namespace Domain
             Users = new List<User>();
         }
 
-        public void AddGame(Game game){
-            if(Games.Find(g => g.Title.Equals(game.Title)) == null){
+        public void AddGame(Game game)
+        {
+            if(Games.Find(g => g.Title.Equals(game.Title)) == null)
+            {
                 Games.Add(game);
             }
-            else{
+            else
+            {
                 throw new Exception("Un juego con este título ya existe.");
             }
-
-            
         }
 
-        public void DeleteGame(Game game){
-            if(Games.Find(g => g.Title.Equals(game.Title)) != null){
+        public void DeleteGame(Game game)
+        {
+            if(Games.Find(g => g.Title.Equals(game.Title)) != null)
+            {
                 Games.RemoveAll(g => g.Title.Equals(game.Title));
             }
             else{
@@ -36,17 +39,20 @@ namespace Domain
             }
         }
 
-        public User AddUser(string userName){
+        public User AddUser(string userName)
+        {
             User newUser = new User() { Name = userName };
             Users.Add(newUser);
             return newUser;
         }
 
-        public string EncodeGames(){
+        public string EncodeGames()
+        {
             return CustomEncoder.EncodeList(Games, Game.GameListSeparator);
         }
 
-        public static string EncodeGames(List<Game> games){
+        public static string EncodeGames(List<Game> games)
+        {
             return CustomEncoder.EncodeList(games, Game.GameListSeparator);
         }
 
@@ -61,15 +67,18 @@ namespace Domain
             return games;
         }
 
-         public string EncodeUsers(){
+        public string EncodeUsers()
+        {
             return CustomEncoder.EncodeList(Users, User.UserListSeparator);
         }
 
-        public static string EncodeUsers(List<User> users){
+        public static string EncodeUsers(List<User> users)
+        {
             return CustomEncoder.EncodeList(users, User.UserListSeparator);
         }
 
-        public static List<User> DecodeUsers(string jsonString){
+        public static List<User> DecodeUsers(string jsonString)
+        {
             List<User> users = new List<User>();
             List<string> usersData = CustomEncoder.Decode(jsonString, User.UserListSeparator);
             foreach(string user in usersData)

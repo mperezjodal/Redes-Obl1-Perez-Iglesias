@@ -34,6 +34,7 @@ namespace ServerSocket
             {"3", "Publicar calificación de un juego"},
             {"4", "Buscar juegos"}
         };
+
         static void Main(string[] args)
         {
             string directory = Directory.GetCurrentDirectory();
@@ -47,20 +48,6 @@ namespace ServerSocket
 
             object lockObject = new object();
             GameSystem = new GameSystem();
-            // GameSystem.AddGame(new Game {
-            //     Title = "FIFA",
-            //     Genre = "Sports",
-            //     Synopsis = "football game",
-            //     Rating = 1,
-            //     Reviews = new List<Review>()
-            // });
-            // GameSystem.AddGame(new Game {
-            //     Title = "COD",
-            //     Genre = "War",
-            //     Synopsis = "war game",
-            //     Rating = 1,
-            //     Reviews = new List<Review>()
-            // });
 
             _clients = new List<Socket>();
             Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

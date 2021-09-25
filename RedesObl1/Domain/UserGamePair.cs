@@ -1,9 +1,11 @@
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace Domain
 {
     public class UserGamePair
     {
+        public static string UserGameSeparator = "@";
         public User User { get; set; }
         public Game Game { get; set; }
 
@@ -14,12 +16,14 @@ namespace Domain
         }
         public string Encode()
         {
-            return JsonSerializer.Serialize(this);
+            List<string> data = new List<string>() { User.Encode(), Game.Encode() };
+            return CustomEncoder.Encode(data, UserGameSeparator);
         }
 
-        public static UserGamePair Decode(string jsonString)
+        public static UserGamePair Decode(string dataString)
         {
-            return JsonSerializer.Deserialize<UserGamePair>(jsonString);
+            List<string> data = CustomEncoder.Decode(dataString, UserGameSeparator);
+            return new UserGamePair(User.Decode(data[0]), Game.Decode(data[1]));
         }
     }
 }
