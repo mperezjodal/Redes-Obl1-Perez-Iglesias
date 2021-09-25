@@ -12,7 +12,8 @@ namespace Domain
         public string Name { get; set; }
         public List<Game> Games { get; set; }
 
-        public User(){
+        public User()
+        {
             Games = new List<Game>();
         }
 
@@ -21,7 +22,8 @@ namespace Domain
             Games.Add(newGame);
         }
 
-        public void UpdateGames(List<Game> newGameList){
+        public void UpdateGames(List<Game> newGameList)
+        {
             this.Games = newGameList;
         }
 

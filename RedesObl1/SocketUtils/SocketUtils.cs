@@ -43,19 +43,6 @@ namespace SocketUtils
                 try
                 {
                     var localRecv = socket.Receive(buffer, iRecv, Length - iRecv, SocketFlags.None);
-                    // if (localRecv == 0) // Si recieve retorna 0 -> la conexion se cerro desde el endpoint remoto
-                    // {
-                    //     if (!_exit)
-                    //     {
-                    //         socket.Shutdown(SocketShutdown.Both);
-                    //         socket.Close();
-                    //     }
-                    //     else
-                    //     {
-                    //         throw new Exception("Server is closing");
-                    //     }
-                    // }
-
                     iRecv += localRecv;
                 }
                 catch (SocketException se)

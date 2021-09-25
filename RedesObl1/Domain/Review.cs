@@ -13,12 +13,14 @@ namespace Domain
         public int Rating { get; set; }
         public string Comment { get; set; }
 
-        public string Encode(){
+        public string Encode()
+        {
             List<string> data = new List<string>() { Id.ToString(), Rating.ToString(), Comment };
             return CustomEncoder.Encode(data, ReviewSeparator);
         }
 
-        public static Review Decode(string dataString){
+        public static Review Decode(string dataString)
+        {
             List<string> data = CustomEncoder.Decode(dataString, ReviewSeparator);
             return new Review()
             {

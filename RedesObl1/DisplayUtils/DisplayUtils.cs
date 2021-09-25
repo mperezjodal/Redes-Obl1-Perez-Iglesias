@@ -68,29 +68,10 @@ namespace DisplayUtils
             Console.ResetColor();
         }
 
-        public static string Login(List<User> users, Socket clientSocket)
+        public static string Login()
         {
             Console.WriteLine("Ingrese un nombre de usuario:");
-            string userName = Console.ReadLine();
-
-            bool ret = false;
-            foreach(User u in users){
-                if(u.Name.Equals(userName)){
-                    ret = true;
-                }
-            }
-            while (ret == true)
-            {
-                Console.WriteLine("Nombre de usuario inválido, ingrese otro:");
-                userName = Console.ReadLine();
-                ret = false;
-                foreach(User u in users){
-                    if(u.Name.Equals(userName)){
-                        ret = true;
-                    }
-                }
-            }
-            return userName;
+            return Console.ReadLine();
         }
         public static void ReturnToMenu()
         {
