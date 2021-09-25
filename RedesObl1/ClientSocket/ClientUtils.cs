@@ -132,9 +132,14 @@ namespace ClientSocket
             Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
             Game modifiedGame = DialogUtils.InputGame();
 
+
             var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
             var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
             Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+
+            if (File.Exists(gameToModify.Cover)){
+                SendFile(gameToModify.Cover, clientSocket);
+            }
 
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }

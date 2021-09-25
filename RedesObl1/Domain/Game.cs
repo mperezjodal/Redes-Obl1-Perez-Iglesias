@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -42,8 +43,7 @@ namespace Domain
             {
                 this.Title = newGame.Title;
             }
-            if (newGame.Cover != "")
-            {
+            if(newGame.Cover != "" && File.Exists(newGame.Cover)){
                 this.Cover = newGame.Cover;
             }
             if (newGame.Synopsis != "")
