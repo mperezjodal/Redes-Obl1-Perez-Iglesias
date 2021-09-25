@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System;
 
 namespace Domain
 {
@@ -19,7 +20,9 @@ namespace Domain
 
         public static List<string> Decode(string encodedData, string separator)
         {
-            return encodedData.Split(separator).ToList();
+            List<string> ret = encodedData.Split(separator).ToList();
+            ret.RemoveAt(0);
+            return ret;
         }
 
         public static string EncodeList<T>(IList<T> list, string separator) where T : Encodable
@@ -35,7 +38,9 @@ namespace Domain
 
         public static List<string> DecodeList(string encodedData, string separator)
         {
-            return encodedData.Split(separator).ToList();
+            List<string> ret = encodedData.Split(separator).ToList();
+            ret.RemoveAt(0);
+            return ret;
         }
     }
 

@@ -34,9 +34,8 @@ namespace Domain
         public static User Decode(string dataString)
         {
             List<string> data = CustomEncoder.Decode(dataString, UserSeparator);
-
             List<Game> games = new List<Game>();
-            List<string> gamesData = CustomEncoder.Decode(data[3], Game.GameListSeparator);
+            List<string> gamesData = CustomEncoder.Decode(data[2], Game.GameListSeparator);
             foreach(string game in gamesData)
             {
                 games.Add(Game.Decode(game));
@@ -44,8 +43,8 @@ namespace Domain
 
             return new User()
             {
-                Id = Int32.Parse(data[1]),
-                Name = data[2],
+                Id = Int32.Parse(data[0]),
+                Name = data[1],
                 Games = games
             };
         }

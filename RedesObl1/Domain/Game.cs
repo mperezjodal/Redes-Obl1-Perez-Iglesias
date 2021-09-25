@@ -67,7 +67,7 @@ namespace Domain
             List<string> data = CustomEncoder.Decode(dataString, GameSeparator);
 
             List<Review> reviews = new List<Review>();
-            List<string> reviewsData = CustomEncoder.Decode(data[7], Review.ReviewListSeparator);
+            List<string> reviewsData = CustomEncoder.Decode(data[6], Review.ReviewListSeparator);
             foreach(string rev in reviewsData)
             {
                 reviews.Add(Review.Decode(rev));
@@ -75,12 +75,12 @@ namespace Domain
 
             return new Game()
             {
-                Id = Int32.Parse(data[1]),
-                Rating = Int32.Parse(data[2]),
-                Title = data[3],
-                Genre = data[4],
-                Synopsis = data[5],
-                Cover = data[6],
+                Id = Int32.Parse(data[0]),
+                Rating = Int32.Parse(data[1]),
+                Title = data[2],
+                Genre = data[3],
+                Synopsis = data[4],
+                Cover = data[5],
                 Reviews = reviews
             };
         }

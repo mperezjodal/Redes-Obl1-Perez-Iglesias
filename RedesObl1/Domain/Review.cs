@@ -22,9 +22,9 @@ namespace Domain
             List<string> data = CustomEncoder.Decode(dataString, ReviewSeparator);
             return new Review()
             {
-                Id = Int32.Parse(data[1]),
-                Rating = Int32.Parse(data[2]),
-                Comment = data[3]
+                Id = Int32.Parse(data[0]),
+                Rating = Int32.Parse(data[1]),
+                Comment = data[2]
             };
         }
     }
