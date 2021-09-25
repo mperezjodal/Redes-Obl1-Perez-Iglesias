@@ -43,27 +43,41 @@ namespace Domain
         }
 
         public string EncodeGames(){
-            return JsonSerializer.Serialize(this.Games);
+            return CustomEncoder.EncodeList(Games, Game.GameListSeparator);
         }
 
         public static string EncodeGames(List<Game> games){
-            return JsonSerializer.Serialize(games);
+            return CustomEncoder.EncodeList(games, Game.GameListSeparator);
         }
 
         public static List<Game> DecodeGames(string jsonString){
-            return JsonSerializer.Deserialize<List<Game>>(jsonString);
+            List<Game> games = new List<Game>();
+            List<string> gamesData = CustomEncoder.Decode(jsonString, Game.GameListSeparator);
+            foreach(string game in gamesData)
+            {
+                games.Add(Game.Decode(game));
+            }
+
+            return games;
         }
 
          public string EncodeUsers(){
-            return JsonSerializer.Serialize(this.Users);
+            return CustomEncoder.EncodeList(Users, User.UserListSeparator);
         }
 
         public static string EncodeUsers(List<User> users){
-            return JsonSerializer.Serialize(users);
+            return CustomEncoder.EncodeList(users, User.UserListSeparator);
         }
 
         public static List<User> DecodeUsers(string jsonString){
-            return JsonSerializer.Deserialize<List<User>>(jsonString);
+            List<User> users = new List<User>();
+            List<string> usersData = CustomEncoder.Decode(jsonString, User.UserListSeparator);
+            foreach(string user in usersData)
+            {
+                users.Add(User.Decode(user));
+            }
+
+            return users;
         }
     }
 }

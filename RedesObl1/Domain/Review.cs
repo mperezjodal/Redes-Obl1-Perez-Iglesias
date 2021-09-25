@@ -1,19 +1,31 @@
+using System;
+using System.Globalization;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace Domain
 {
-    public class Review
+    public class Review : Encodable
     {
+        public static string ReviewSeparator = "+";
+        public static string ReviewListSeparator = "=";
         public int Id { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }
 
         public string Encode(){
-            return JsonSerializer.Serialize(this);
+            List<string> data = new List<string>() { Id.ToString(), Rating.ToString(), Comment };
+            return CustomEncoder.Encode(data, ReviewSeparator);
         }
 
-        public static Review Decode(string jsonString){
-            return JsonSerializer.Deserialize<Review>(jsonString);
+        public static Review Decode(string dataString){
+            List<string> data = CustomEncoder.Decode(dataString, ReviewSeparator);
+            return new Review()
+            {
+                Id = Int32.Parse(data[0]),
+                Rating = Int32.Parse(data[1]),
+                Comment = data[2]
+            };
         }
     }
 }
