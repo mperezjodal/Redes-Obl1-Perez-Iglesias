@@ -27,6 +27,7 @@ namespace ServerSocket
         private static GameSystem GameSystem;
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
+    
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
@@ -44,6 +45,7 @@ namespace ServerSocket
             var section = configuration.GetSection(nameof(Server));
             var ServerConfig = section.Get<Server>();
 
+            object lockObject = new object();
             GameSystem = new GameSystem();
             // GameSystem.AddGame(new Game {
             //     Title = "FIFA",
@@ -111,7 +113,7 @@ namespace ServerSocket
                 DialogUtils.ReturnToMenu();
             }
         }
-        private static void ListenForConnections(Socket socketServer)
+        public static void ListenForConnections(Socket socketServer)
         {
             while (!_exit)
             {
@@ -131,7 +133,7 @@ namespace ServerSocket
             Console.WriteLine("Saliendo...");
         }
 
-        private static void HandleClient(Socket clientSocket, Socket serverSocket)
+        public static void HandleClient(Socket clientSocket, Socket serverSocket)
         {
             ServerUtils serverUtils = new ServerUtils(GameSystem, clientSocket);
             while (!_exit)
@@ -163,7 +165,6 @@ namespace ServerSocket
                             var usersMessage = GameSystem.EncodeUsers();
                             var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
                             Utils.SendData(clientSocket, usersHeader, usersMessage);
-
                             break;
                         case CommandConstants.PublishReview:
                             serverUtils.PublishReviewManager(jsonData);

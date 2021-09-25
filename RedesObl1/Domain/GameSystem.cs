@@ -17,11 +17,23 @@ namespace Domain
         }
 
         public void AddGame(Game game){
-            Games.Add(game);
+            if(Games.Find(g => g.Title.Equals(game.Title)) == null){
+                Games.Add(game);
+            }
+            else{
+                throw new Exception("Un juego con este título ya existe.");
+            }
+
+            
         }
 
         public void DeleteGame(Game game){
-            Games.RemoveAll(g => g.Title == game.Title);
+            if(Games.Find(g => g.Title.Equals(game.Title)) != null){
+                Games.RemoveAll(g => g.Title.Equals(game.Title));
+            }
+            else{
+                throw new Exception("El juego ya no se encuentra en el sistema.");
+            }
         }
 
         public User AddUser(string userName){

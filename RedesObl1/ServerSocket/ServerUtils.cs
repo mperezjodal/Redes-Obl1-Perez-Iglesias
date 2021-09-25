@@ -20,8 +20,8 @@ namespace ServerSocket
     public class ServerUtils
     {   
         public GameSystem GameSystem;
-        public object lockObject = new object();
         public Socket clientSocket;
+        public object lockModifyObject = new object();
         public ServerUtils(GameSystem gameSystem, Socket clientSocket) 
         {
             this.GameSystem = gameSystem;
@@ -35,12 +35,14 @@ namespace ServerSocket
             Utils.SendData(clientSocket, gamesHeader, gamesMessage);
 
             foreach(Game g in GameSystem.Games){
-                var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-
-                if (File.Exists(path)){
-                    var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
-                    fileCommunicationGameList.SendFile(path);
+                if(g.Cover != null){
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+                    if (File.Exists(path)){
+                        var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
+                        fileCommunicationGameList.SendFile(path);
+                    }
                 }
+                
             }
         }
 
@@ -97,15 +99,20 @@ namespace ServerSocket
         public void ModifyGameManager(string jsonModifyGameData){
             try
             {
-                lock(lockObject){
-                    List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
-                    var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
-                    gameToModify.Update(updatingGames[1]);
-                    
-                    var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
-                    var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
-                    Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
+                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
+                gameToModify.Update(updatingGames[1]);
+                
+                var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+
+                if(File.Exists(gameToModify.Cover)){
+                    var fileCommunication = new FileCommunicationHandler(clientSocket);
+                    var fileName = fileCommunication.ReceiveFile();
+                    gameToModify.Cover = fileName;
                 }
+
             }
             catch (Exception){
                 var modifyGameMessage = "No se ha podido modificar el juego.";
@@ -117,14 +124,15 @@ namespace ServerSocket
         public void DeleteGameManager(string jsonDeleteGameData){
             try
             {
-                //lock(lockObject){
+                lock(lockModifyObject){
                     Game gameToDelete = Game.Decode(jsonDeleteGameData);
-                    this.GameSystem.DeleteGame(gameToDelete);
                     
+                    this.GameSystem.DeleteGame(gameToDelete);
+                        
                     var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
                     var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
                     Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
-                //}
+                }
             }
             catch (Exception){
                 var deleteGameMessage = "No se ha podido eliminar el juego.";
@@ -135,7 +143,7 @@ namespace ServerSocket
         public void PublishReviewManager(string jsonPublishReviewData){
             try
             {
-                //ock(lockObject){
+                //lock(lockObject){
                     Game publishReviewGame = Game.Decode(jsonPublishReviewData);
                     var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
                     gameToModify.UpdateReviews(publishReviewGame.Reviews);
@@ -153,7 +161,9 @@ namespace ServerSocket
         }
 
         public void PublishGameManager(string jsonPublishGame, Socket serverSocket){
-            //lock(lockObject){
+
+            try
+            {
                 Game newGame = Game.Decode(jsonPublishGame);
                 GameSystem.AddGame(newGame);
 
@@ -161,14 +171,19 @@ namespace ServerSocket
                 var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
                 Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
 
-
                 if(File.Exists(newGame.Cover)){
-                    Console.WriteLine(newGame.Cover);
                     var fileCommunication = new FileCommunicationHandler(clientSocket);
                     var fileName = fileCommunication.ReceiveFile();
                     newGame.Cover= fileName;
                 }
-            //}
+            
+            }
+            catch (Exception){
+                var publishGameMessage = "No se ha podido publicar juego.";
+                var publishGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameError, publishGameMessage.Length);
+                Utils.SendData(clientSocket, publishGameHeader, publishGameMessage);
+            }
+            
         }
     }
 }
