@@ -14,6 +14,7 @@ using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
 using Common;
+using System.Text.Json;
 
 namespace ServerSocket
 {
@@ -29,7 +30,7 @@ namespace ServerSocket
             this.clientSocket = clientSocket;
         }
 
-        public void GetGamesManager(Socket clientSocket)
+        public void GetGamesHandler(Socket clientSocket)
         {
             var gamesMessage = GameSystem.EncodeGames();
             var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
@@ -49,7 +50,7 @@ namespace ServerSocket
             }
         }
 
-        public void GetAcquiredGamesManager(string jsonUser)
+        public void GetAcquiredGamesHandler(string jsonUser)
         {
             try
             {
@@ -68,7 +69,7 @@ namespace ServerSocket
             }
         }
 
-        public void AcquireGameManager(string jsonAcquireGameData)
+        public void AcquireGameHandler(string jsonAcquireGameData)
         {
             try
             {
@@ -89,7 +90,7 @@ namespace ServerSocket
             }
         }
 
-        public void LoginManager(string userName)
+        public void LoginHandler(string userName)
         {
             if (this.GameSystem.Users.FindIndex(u => u.Name.Equals(userName)) != -1)
             {
@@ -110,7 +111,33 @@ namespace ServerSocket
             Utils.SendData(clientSocket, userHeader, userMessage);
         }
 
-        public void ModifyGameManager(string jsonModifyGameData)
+        public void BeingModifiedHandler(string jsonData, ref List<Game> gamesBeingModifiedByClient)
+        {
+            try
+            {
+                Game game = Game.Decode(jsonData);
+
+                if (GameSystem.GamesBeingModified.FindIndex(g => g.Title == game.Title) != -1)
+                {
+                    throw new Exception();
+                }
+                
+                GameSystem.AddGameBeingModified(game);
+                gamesBeingModifiedByClient.Add(game);
+
+                var modifyGameMessage = "Se puede modificar el juego: " + game.Title + ".";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyingGameOk, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+            }
+            catch (Exception)
+            {
+                var modifyGameMessage = "No se puede modificar el juego.";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyingGameError, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+            }
+        }
+
+        public void ModifyGameHandler(string jsonModifyGameData, ref List<Game> gamesBeingModifiedByClient)
         {
             try
             {
@@ -119,7 +146,15 @@ namespace ServerSocket
 
                 lock (lockModifyObject)
                 {
+                    if (GameSystem.GamesBeingModified.Contains(gameToModify) && !gamesBeingModifiedByClient.Contains(gameToModify))
+                    {
+                        throw new Exception();
+                    }
+
                     gameToModify.Update(updatingGames[1]);
+
+                    GameSystem.DeleteGameBeingModified(gameToModify);
+                    gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
                 }
 
                 if (File.Exists(gameToModify.Cover))
@@ -141,7 +176,7 @@ namespace ServerSocket
             }
         }
 
-        public void DeleteGameManager(string jsonDeleteGameData)
+        public void DeleteGameHandler(string jsonDeleteGameData)
         {
             try
             {
@@ -164,7 +199,7 @@ namespace ServerSocket
             }
         }
 
-        public void PublishReviewManager(string jsonPublishReviewData)
+        public void PublishReviewHandler(string jsonPublishReviewData)
         {
             try
             {
@@ -184,7 +219,7 @@ namespace ServerSocket
             }
         }
 
-        public void PublishGameManager(string jsonPublishGame, Socket serverSocket)
+        public void PublishGameHandler(string jsonPublishGame, Socket serverSocket)
         {
             try
             {

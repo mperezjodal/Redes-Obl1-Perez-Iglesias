@@ -16,7 +16,7 @@ namespace ClientSocket
     {
         private Socket clientSocket;
         private User myUser;
-        public ClientUtils(Socket clientSocket) 
+        public ClientUtils(Socket clientSocket)
         {
             this.clientSocket = clientSocket;
         }
@@ -25,39 +25,33 @@ namespace ClientSocket
         {
             var notLogin = true;
 
-            while(notLogin){
-
+            while (notLogin)
+            {
                 string userName = DialogUtils.Login();
                 var headerLoginRequest = new Header(HeaderConstants.Request, CommandConstants.Login, userName.Length);
                 Utils.SendData(clientSocket, headerLoginRequest, userName);
 
-                var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
-                                   HeaderConstants.DataLength;
-                var buffer = new byte[headerLength];
-                Utils.ReceiveData(clientSocket, headerLength, ref buffer);
-                var header = new Header();
-                header.DecodeData(buffer);
-                var bufferData = new byte[header.IDataLength];
-                Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
-                string jsonData = Encoding.UTF8.GetString(bufferData);
+                List<string> commandAndMessage = Utils.ReceiveCommandAndMessage(clientSocket);
 
-                Console.WriteLine(jsonData);
+                Console.WriteLine(commandAndMessage[1]);
 
-                if(header.ICommand == CommandConstants.LoginOk){
+                if (commandAndMessage[0] == CommandConstants.LoginOk.ToString())
+                {
                     notLogin = false;
                 }
             }
-            
+
             var userJson = Utils.ReciveMessageData(clientSocket);
             myUser = User.Decode(userJson);
         }
-        
+
         public void AcquireGame()
         {
             Game game = DialogUtils.SelectGame(GetGames());
-            if(game == null){
+            if (game == null)
+            {
                 Console.WriteLine("Retorno al menú.");
-                return ;
+                return;
             }
 
             var message = new UserGamePair(myUser, game).Encode();
@@ -74,8 +68,10 @@ namespace ClientSocket
             var gamesJson = Utils.ReciveMessageData(clientSocket);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
 
-            foreach(Game g in gameList){
-                if(g.Cover != null && g.Cover != ""){
+            foreach (Game g in gameList)
+            {
+                if (g.Cover != null && g.Cover != "")
+                {
                     var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
                     fileCommunicationGameList.ReceiveFile();
                 }
@@ -91,7 +87,7 @@ namespace ClientSocket
 
             var usersJson = Utils.ReciveMessageData(clientSocket);
             List<User> users = GameSystem.DecodeUsers(usersJson);
-            
+
             return users;
         }
 
@@ -121,7 +117,8 @@ namespace ClientSocket
 
             Utils.SendData(clientSocket, header, message);
 
-            if (File.Exists(gameToPublish.Cover)){
+            if (File.Exists(gameToPublish.Cover))
+            {
                 SendFile(gameToPublish.Cover, clientSocket);
             }
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
@@ -130,9 +127,10 @@ namespace ClientSocket
         public void PublishReview()
         {
             Game game = DialogUtils.SelectGame(GetGames());
-            if(game == null){
+            if (game == null)
+            {
                 Console.WriteLine("Retorno al menú.");
-                return ;
+                return;
             }
 
             Review review = DialogUtils.InputReview();
@@ -141,16 +139,31 @@ namespace ClientSocket
             var message = game.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishReview, message.Length);
             Utils.SendData(clientSocket, header, message);
-            
+
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
 
-        public void ModifyGame() 
+        public void ModifyGame()
         {
             List<Game> games = GetGames();
-            
             Game gameToModify = DialogUtils.SelectGame(games);
-            if(gameToModify == null){
+
+            if (gameToModify == null)
+            {
+                Console.WriteLine("Retorno al menú.");
+                return;
+            }
+
+            var modifyingGameMessage = gameToModify.Encode();
+            var modifyingGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyingGame, modifyingGameMessage.Length);
+            Utils.SendData(clientSocket, modifyingGameHeader, modifyingGameMessage);
+
+            List<string> headerAndMessage = Utils.ReceiveCommandAndMessage(clientSocket);
+
+            Console.WriteLine(headerAndMessage[1]);
+
+            if (headerAndMessage[0] == CommandConstants.ModifyingGameError.ToString())
+            {
                 Console.WriteLine("Retorno al menú.");
                 return;
             }
@@ -158,26 +171,27 @@ namespace ClientSocket
             Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
             Game modifiedGame = DialogUtils.InputGame();
 
-
-            var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() {gameToModify, modifiedGame});
+            var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() { gameToModify, modifiedGame });
             var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
             Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
 
-            if (File.Exists(gameToModify.Cover)){
+            if (File.Exists(gameToModify.Cover))
+            {
                 SendFile(gameToModify.Cover, clientSocket);
             }
 
             Console.WriteLine(Utils.ReciveMessageData(clientSocket));
         }
 
-        public void DeleteGame() 
+        public void DeleteGame()
         {
             List<Game> games = GetGames();
 
             Game gameToDelete = DialogUtils.SelectGame(games);
-            if(gameToDelete == null){
+            if (gameToDelete == null)
+            {
                 Console.WriteLine("Retorno al menú.");
-                return ;
+                return;
             }
 
             var deleteGameMessage = gameToDelete.Encode();

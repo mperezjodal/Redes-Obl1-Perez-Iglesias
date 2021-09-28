@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using ProtocolLibrary;
@@ -20,22 +21,43 @@ namespace SocketUtils
                     var header = new Header();
                     header.DecodeData(buffer);
 
-                    var bufferData = new byte[header.IDataLength];  
+                    var bufferData = new byte[header.IDataLength];
                     ReceiveData(socket, header.IDataLength, ref bufferData);
                     return Encoding.UTF8.GetString(bufferData);
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine($"Error: {e.Message}..");    
+                    Console.WriteLine($"Error: {e.Message}..");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error: {e.Message}..");    
+                    Console.WriteLine($"Error: {e.Message}..");
                 }
             }
         }
 
-        public static void ReceiveData(Socket socket,  int Length, ref byte[] buffer)
+        public static List<string> ReceiveCommandAndMessage(Socket socket)
+        {
+            List<string> commandAndMessage = new List<string>();
+
+            var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
+                                HeaderConstants.DataLength;
+            var buffer = new byte[headerLength];
+            Utils.ReceiveData(socket, headerLength, ref buffer);
+            var header = new Header();
+            header.DecodeData(buffer);
+            var bufferData = new byte[header.IDataLength];
+
+            Utils.ReceiveData(socket, header.IDataLength, ref bufferData);
+            string message = Encoding.UTF8.GetString(bufferData);
+
+            commandAndMessage.Add(header.ICommand.ToString());
+            commandAndMessage.Add(message);
+
+            return commandAndMessage;
+        }
+
+        public static void ReceiveData(Socket socket, int Length, ref byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < Length)
@@ -52,8 +74,9 @@ namespace SocketUtils
                 }
             }
         }
-        
-        public static void SendData(Socket socket, Header header, string mensaje) {
+
+        public static void SendData(Socket socket, Header header, string mensaje)
+        {
             var data = header.GetRequest();
             var sentBytes = 0;
             while (sentBytes < data.Length)

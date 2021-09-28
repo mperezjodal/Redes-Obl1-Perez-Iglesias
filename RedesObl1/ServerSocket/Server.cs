@@ -121,6 +121,8 @@ namespace ServerSocket
 
         public static void HandleClient(Socket clientSocket, Socket serverSocket)
         {
+            List<Game> gamesBeingModifiedByClient = new List<Game>();
+            
             ServerUtils serverUtils = new ServerUtils(GameSystem, clientSocket);
             while (!_exit)
             {
@@ -139,13 +141,13 @@ namespace ServerSocket
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            serverUtils.LoginManager(jsonData);
+                            serverUtils.LoginHandler(jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            serverUtils.PublishGameManager(jsonData, serverSocket);
+                            serverUtils.PublishGameHandler(jsonData, serverSocket);
                             break;
                         case CommandConstants.GetGames:
-                            serverUtils.GetGamesManager(clientSocket);
+                            serverUtils.GetGamesHandler(clientSocket);
                             break;
                         case CommandConstants.GetUsers:
                             var usersMessage = GameSystem.EncodeUsers();
@@ -153,19 +155,22 @@ namespace ServerSocket
                             Utils.SendData(clientSocket, usersHeader, usersMessage);
                             break;
                         case CommandConstants.PublishReview:
-                            serverUtils.PublishReviewManager(jsonData);
+                            serverUtils.PublishReviewHandler(jsonData);
+                            break;
+                        case CommandConstants.ModifyingGame:
+                            serverUtils.BeingModifiedHandler(jsonData, ref gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.ModifyGame:
-                            serverUtils.ModifyGameManager(jsonData);
+                            serverUtils.ModifyGameHandler(jsonData, ref gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.DeleteGame:
-                            serverUtils.DeleteGameManager(jsonData);
+                            serverUtils.DeleteGameHandler(jsonData);
                             break;
                         case CommandConstants.AcquireGame:
-                            serverUtils.AcquireGameManager(jsonData);
+                            serverUtils.AcquireGameHandler(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            serverUtils.GetAcquiredGamesManager(jsonData);
+                            serverUtils.GetAcquiredGamesHandler(jsonData);
                             break;
                     }
                 }

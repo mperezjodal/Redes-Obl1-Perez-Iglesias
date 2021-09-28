@@ -9,11 +9,25 @@ namespace Domain
     public class GameSystem
     {
         public List<Game> Games { get; set;}
+        public List<Game> GamesBeingModified { get; set;}
         public List<User> Users { get; set;}
 
         public GameSystem(){
             Games = new List<Game>();
+            GamesBeingModified = new List<Game>();
             Users = new List<User>();
+        }
+
+        public void AddGameBeingModified(Game game)
+        {
+            if(GamesBeingModified.Find(g => g.Title.Equals(game.Title)) == null)
+            {
+                GamesBeingModified.Add(game);
+            }
+            else
+            {
+                throw new Exception("Un juego con este ya está siendo modificado.");
+            }
         }
 
         public void AddGame(Game game)
@@ -25,6 +39,17 @@ namespace Domain
             else
             {
                 throw new Exception("Un juego con este título ya existe.");
+            }
+        }
+
+        public void DeleteGameBeingModified(Game game)
+        {
+            if(GamesBeingModified.Find(g => g.Title.Equals(game.Title)) != null)
+            {
+                GamesBeingModified.RemoveAll(g => g.Title.Equals(game.Title));
+            }
+            else{
+                throw new Exception("El juego ya no se encuentra en el sistema.");
             }
         }
 
