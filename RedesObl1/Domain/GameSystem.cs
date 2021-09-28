@@ -8,11 +8,12 @@ namespace Domain
 {
     public class GameSystem
     {
-        public List<Game> Games { get; set;}
-        public List<Game> GamesBeingModified { get; set;}
-        public List<User> Users { get; set;}
+        public List<Game> Games { get; set; }
+        public List<Game> GamesBeingModified { get; set; }
+        public List<User> Users { get; set; }
 
-        public GameSystem(){
+        public GameSystem()
+        {
             Games = new List<Game>();
             GamesBeingModified = new List<Game>();
             Users = new List<User>();
@@ -20,7 +21,7 @@ namespace Domain
 
         public void AddGameBeingModified(Game game)
         {
-            if(GamesBeingModified.Find(g => g.Title.Equals(game.Title)) == null)
+            if (GamesBeingModified.Find(g => g.Title.Equals(game.Title)) == null)
             {
                 GamesBeingModified.Add(game);
             }
@@ -32,7 +33,7 @@ namespace Domain
 
         public void AddGame(Game game)
         {
-            if(Games.Find(g => g.Title.Equals(game.Title)) == null)
+            if (Games.Find(g => g.Title.Equals(game.Title)) == null)
             {
                 Games.Add(game);
             }
@@ -44,22 +45,24 @@ namespace Domain
 
         public void DeleteGameBeingModified(Game game)
         {
-            if(GamesBeingModified.Find(g => g.Title.Equals(game.Title)) != null)
+            if (GamesBeingModified.Find(g => g.Title.Equals(game.Title)) != null)
             {
                 GamesBeingModified.RemoveAll(g => g.Title.Equals(game.Title));
             }
-            else{
+            else
+            {
                 throw new Exception("El juego ya no se encuentra en el sistema.");
             }
         }
 
         public void DeleteGame(Game game)
         {
-            if(Games.Find(g => g.Title.Equals(game.Title)) != null)
+            if (Games.Find(g => g.Title.Equals(game.Title)) != null)
             {
                 Games.RemoveAll(g => g.Title.Equals(game.Title));
             }
-            else{
+            else
+            {
                 throw new Exception("El juego ya no se encuentra en el sistema.");
             }
         }
@@ -81,10 +84,11 @@ namespace Domain
             return CustomEncoder.EncodeList(games, Game.GameListSeparator);
         }
 
-        public static List<Game> DecodeGames(string jsonString){
+        public static List<Game> DecodeGames(string jsonString)
+        {
             List<Game> games = new List<Game>();
             List<string> gamesData = CustomEncoder.Decode(jsonString, Game.GameListSeparator);
-            foreach(string game in gamesData)
+            foreach (string game in gamesData)
             {
                 games.Add(Game.Decode(game));
             }
@@ -106,7 +110,7 @@ namespace Domain
         {
             List<User> users = new List<User>();
             List<string> usersData = CustomEncoder.Decode(jsonString, User.UserListSeparator);
-            foreach(string user in usersData)
+            foreach (string user in usersData)
             {
                 users.Add(User.Decode(user));
             }

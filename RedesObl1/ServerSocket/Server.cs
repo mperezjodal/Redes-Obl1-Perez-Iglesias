@@ -85,6 +85,11 @@ namespace ServerSocket
                         break;
                     case "3":
                         Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
+                        if(selectedGame == null)
+                        {
+                            Console.WriteLine("Retorno al menú.");
+                            break;
+                        }
                         Review selectedGameReview = DialogUtils.InputReview();
                         selectedGame.AddReview(selectedGameReview);
                         Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
@@ -122,7 +127,7 @@ namespace ServerSocket
         public static void HandleClient(Socket clientSocket, Socket serverSocket)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
-            
+
             ServerUtils serverUtils = new ServerUtils(GameSystem, clientSocket);
             while (!_exit)
             {

@@ -121,7 +121,7 @@ namespace ServerSocket
                 {
                     throw new Exception();
                 }
-                
+
                 GameSystem.AddGameBeingModified(game);
                 gamesBeingModifiedByClient.Add(game);
 
@@ -151,10 +151,10 @@ namespace ServerSocket
                         throw new Exception();
                     }
 
-                    gameToModify.Update(updatingGames[1]);
-
                     GameSystem.DeleteGameBeingModified(gameToModify);
                     gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
+
+                    gameToModify.Update(updatingGames[1]);
                 }
 
                 if (File.Exists(gameToModify.Cover))
