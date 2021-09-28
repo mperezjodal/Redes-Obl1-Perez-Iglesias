@@ -17,7 +17,7 @@ namespace Domain
             Games = new List<Game>();
         }
 
-        public void AquireGame(Game newGame)
+        public void AcquireGame(Game newGame)
         {
             Games.Add(newGame);
         }

@@ -18,12 +18,12 @@ using Common;
 namespace ServerSocket
 {
     public class ServerUtils
-    {   
+    {
         public GameSystem GameSystem;
         public Socket clientSocket;
         public object lockModifyObject = new object();
         public object lockDeleteObject = new object();
-        public ServerUtils(GameSystem gameSystem, Socket clientSocket) 
+        public ServerUtils(GameSystem gameSystem, Socket clientSocket)
         {
             this.GameSystem = gameSystem;
             this.clientSocket = clientSocket;
@@ -35,10 +35,13 @@ namespace ServerSocket
             var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
             Utils.SendData(clientSocket, gamesHeader, gamesMessage);
 
-            foreach(Game g in GameSystem.Games){
-                if(g.Cover != null){
+            foreach (Game g in GameSystem.Games)
+            {
+                if (g.Cover != null)
+                {
                     var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-                    if (File.Exists(path)){
+                    if (File.Exists(path))
+                    {
                         var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
                         fileCommunicationGameList.SendFile(path);
                     }
@@ -57,7 +60,8 @@ namespace ServerSocket
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesOk, gamesMessage.Length);
                 Utils.SendData(clientSocket, AcquireGameHeader, gamesMessage);
             }
-            catch (Exception){
+            catch (Exception)
+            {
                 var AcquireGameMessage = "[]";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesError, AcquireGameMessage.Length);
                 Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
@@ -71,21 +75,24 @@ namespace ServerSocket
                 UserGamePair userGame = UserGamePair.Decode(jsonAcquireGameData);
                 var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
                 var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
-                user.AquireGame(game);
-                
+                user.AcquireGame(game);
+
                 var AcquireGameMessage = "Se ha adquirido el juego: " + game.Title + ".";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameOk, AcquireGameMessage.Length);
                 Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
             }
-            catch (Exception){
+            catch (Exception)
+            {
                 var AcquireGameMessage = "No se ha podido adquirir el juego.";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameError, AcquireGameMessage.Length);
                 Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
             }
         }
 
-        public void LoginManager(string userName){
-            if(this.GameSystem.Users.FindIndex(u => u.Name.Equals(userName)) != -1){
+        public void LoginManager(string userName)
+        {
+            if (this.GameSystem.Users.FindIndex(u => u.Name.Equals(userName)) != -1)
+            {
                 var loginError = "Usuario ya existe.";
                 var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
                 Utils.SendData(clientSocket, loginErrorHeader, loginError);
@@ -103,46 +110,54 @@ namespace ServerSocket
             Utils.SendData(clientSocket, userHeader, userMessage);
         }
 
-        public void ModifyGameManager(string jsonModifyGameData){
+        public void ModifyGameManager(string jsonModifyGameData)
+        {
             try
             {
-                lock(lockModifyObject){
-                    List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
-                    var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
-                    gameToModify.Update(updatingGames[1]);
-                    
-                    var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
-                    var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
-                    Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
+                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
-                    if(File.Exists(gameToModify.Cover)){
-                        var fileCommunication = new FileCommunicationHandler(clientSocket);
-                        var fileName = fileCommunication.ReceiveFile();
-                        gameToModify.Cover = fileName;
-                    }
+                lock (lockModifyObject)
+                {
+                    gameToModify.Update(updatingGames[1]);
                 }
+
+                if (File.Exists(gameToModify.Cover))
+                {
+                    var fileCommunication = new FileCommunicationHandler(clientSocket);
+                    var fileName = fileCommunication.ReceiveFile();
+                    gameToModify.Cover = fileName;
+                }
+
+                var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
+                var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
+                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
             }
-            catch (Exception){
+            catch (Exception)
+            {
                 var modifyGameMessage = "No se ha podido modificar el juego.";
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
                 Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
             }
         }
 
-        public void DeleteGameManager(string jsonDeleteGameData){
+        public void DeleteGameManager(string jsonDeleteGameData)
+        {
             try
             {
-                lock(lockDeleteObject){
-                    Game gameToDelete = Game.Decode(jsonDeleteGameData);
-                    
+                Game gameToDelete = Game.Decode(jsonDeleteGameData);
+
+                lock (lockDeleteObject)
+                {
                     this.GameSystem.DeleteGame(gameToDelete);
-                        
-                    var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
-                    var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
-                    Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
                 }
+
+                var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
+                var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
+                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
             }
-            catch (Exception e){
+            catch (Exception e)
+            {
                 var deleteGameMessage = e.Message;
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
                 Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
@@ -156,7 +171,7 @@ namespace ServerSocket
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
                 var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
                 gameToModify.UpdateReviews(publishReviewGame.Reviews);
-                
+
                 var publishReviewMessage = "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".";
                 var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewOk, publishReviewMessage.Length);
                 Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
@@ -180,13 +195,13 @@ namespace ServerSocket
                 var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
                 Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
 
-                if(File.Exists(newGame.Cover))
+                if (File.Exists(newGame.Cover))
                 {
                     var fileCommunication = new FileCommunicationHandler(clientSocket);
                     var fileName = fileCommunication.ReceiveFile();
-                    newGame.Cover= fileName;
+                    newGame.Cover = fileName;
                 }
-            
+
             }
             catch (Exception)
             {

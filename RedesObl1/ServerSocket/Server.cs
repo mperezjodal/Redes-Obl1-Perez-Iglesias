@@ -75,7 +75,6 @@ namespace ServerSocket
                         var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         fakeSocket.Connect("127.0.0.1", 20000);
                         break;
-
                     case "1":
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
