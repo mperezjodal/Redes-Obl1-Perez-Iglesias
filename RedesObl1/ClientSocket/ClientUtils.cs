@@ -41,7 +41,7 @@ namespace ClientSocket
                 }
             }
 
-            var userJson = Utils.ReciveMessageData(clientSocket);
+            var userJson = Utils.ReceiveMessageData(clientSocket);
             myUser = User.Decode(userJson);
         }
 
@@ -58,14 +58,14 @@ namespace ClientSocket
             var header = new Header(HeaderConstants.Request, CommandConstants.AcquireGame, message.Length);
             Utils.SendData(clientSocket, header, message);
 
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+            Console.WriteLine(Utils.ReceiveMessageData(clientSocket));
         }
 
         public List<Game> GetGames()
         {
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             Utils.SendData(clientSocket, headerRequestGameList, "");
-            var gamesJson = Utils.ReciveMessageData(clientSocket);
+            var gamesJson = Utils.ReceiveMessageData(clientSocket);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
 
             foreach (Game g in gameList)
@@ -85,7 +85,7 @@ namespace ClientSocket
             var headerRequestUsersList = new Header(HeaderConstants.Request, CommandConstants.GetUsers, 0);
             Utils.SendData(clientSocket, headerRequestUsersList, "");
 
-            var usersJson = Utils.ReciveMessageData(clientSocket);
+            var usersJson = Utils.ReceiveMessageData(clientSocket);
             List<User> users = GameSystem.DecodeUsers(usersJson);
 
             return users;
@@ -97,7 +97,7 @@ namespace ClientSocket
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAcquiredGames, message.Length);
             Utils.SendData(clientSocket, headerRequestGameList, message);
 
-            var gamesJson = Utils.ReciveMessageData(clientSocket);
+            var gamesJson = Utils.ReceiveMessageData(clientSocket);
 
             return GameSystem.DecodeGames(gamesJson);
         }
@@ -121,7 +121,7 @@ namespace ClientSocket
             {
                 SendFile(gameToPublish.Cover, clientSocket);
             }
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+            Console.WriteLine(Utils.ReceiveMessageData(clientSocket));
         }
 
         public void PublishReview()
@@ -134,13 +134,20 @@ namespace ClientSocket
             }
 
             Review review = DialogUtils.InputReview();
+
+            if(review == null)
+            {
+                Console.WriteLine("Retorno al menú.");
+                return;
+            }
+
             game.AddReview(review);
 
             var message = game.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishReview, message.Length);
             Utils.SendData(clientSocket, header, message);
 
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+            Console.WriteLine(Utils.ReceiveMessageData(clientSocket));
         }
 
         public void ModifyGame()
@@ -180,7 +187,7 @@ namespace ClientSocket
                 SendFile(gameToModify.Cover, clientSocket);
             }
 
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+            Console.WriteLine(Utils.ReceiveMessageData(clientSocket));
         }
 
         public void DeleteGame()
@@ -198,7 +205,7 @@ namespace ClientSocket
             var deleteGameHeader = new Header(HeaderConstants.Request, CommandConstants.DeleteGame, deleteGameMessage.Length);
             Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
 
-            Console.WriteLine(Utils.ReciveMessageData(clientSocket));
+            Console.WriteLine(Utils.ReceiveMessageData(clientSocket));
         }
     }
 }

@@ -8,7 +8,7 @@ namespace SocketUtils
 {
     public static class Utils
     {
-        public static string ReciveMessageData(Socket socket)
+        public static string ReceiveMessageData(Socket socket)
         {
             while (true)
             {

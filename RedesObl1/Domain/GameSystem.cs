@@ -1,8 +1,5 @@
-﻿using System.Globalization;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Text.Json;
 
 namespace Domain
 {
@@ -59,12 +56,52 @@ namespace Domain
         {
             if (Games.Find(g => g.Title.Equals(game.Title)) != null)
             {
+                foreach(User user in Users)
+                {
+                    user.Games.RemoveAll(g => g.Title == game.Title);
+                }
                 Games.RemoveAll(g => g.Title.Equals(game.Title));
             }
             else
             {
                 throw new Exception("El juego ya no se encuentra en el sistema.");
             }
+        }
+
+        public void UpdateGame(Game oldGame, Game newGame)
+        {
+            oldGame.Update(newGame);
+            foreach(User user in Users)
+            {
+                if(user.Games.FindIndex(g => g.Title == oldGame.Title) != -1)
+                {
+                    user.Games.RemoveAll(g => g.Title == oldGame.Title);
+                    user.AcquireGame(newGame);
+                }
+            }
+        }
+
+        public void UpdateReviews(Game game, List<Review> reviews)
+        {
+            game.UpdateReviews(reviews);
+            foreach(User user in Users)
+            {
+                if(user.Games.FindIndex(g => g.Title == game.Title) != -1)
+                {
+                    user.Games.RemoveAll(g => g.Title == game.Title);
+                    user.AcquireGame(game);
+                }
+            }
+        }
+
+        public bool GameExists(Game game)
+        {
+            return Games.FindIndex(g => g.Title == game.Title) != -1;
+        }
+
+        public bool IsGameBeingModified(Game game)
+        {
+            return GamesBeingModified.FindIndex(g => g.Title == game.Title) != -1;
         }
 
         public User AddUser(string userName)

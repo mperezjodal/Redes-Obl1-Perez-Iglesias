@@ -146,15 +146,15 @@ namespace ServerSocket
 
                 lock (lockModifyObject)
                 {
-                    if (GameSystem.GamesBeingModified.Contains(gameToModify) && !gamesBeingModifiedByClient.Contains(gameToModify))
+                    if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
                     {
                         throw new Exception();
                     }
 
                     GameSystem.DeleteGameBeingModified(gameToModify);
                     gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
-
-                    gameToModify.Update(updatingGames[1]);
+                    
+                    GameSystem.UpdateGame(gameToModify, updatingGames[1]);
                 }
 
                 if (File.Exists(gameToModify.Cover))
@@ -184,6 +184,11 @@ namespace ServerSocket
 
                 lock (lockDeleteObject)
                 {
+                    if (GameSystem.IsGameBeingModified(gameToDelete))
+                    {
+                        throw new Exception();
+                    }
+
                     this.GameSystem.DeleteGame(gameToDelete);
                 }
 
@@ -191,9 +196,9 @@ namespace ServerSocket
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
                 Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                var deleteGameMessage = e.Message;
+                var deleteGameMessage = "No se ha podido eliminado el juego.";
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
                 Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
             }
@@ -205,7 +210,13 @@ namespace ServerSocket
             {
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
                 var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
-                gameToModify.UpdateReviews(publishReviewGame.Reviews);
+
+                if (GameSystem.IsGameBeingModified(gameToModify))
+                {
+                    throw new Exception();
+                }
+
+                GameSystem.UpdateReviews(gameToModify, publishReviewGame.Reviews);
 
                 var publishReviewMessage = "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".";
                 var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewOk, publishReviewMessage.Length);

@@ -19,7 +19,14 @@ namespace Domain
 
         public void AcquireGame(Game newGame)
         {
-            Games.Add(newGame);
+            if (Games.Find(g => g.Title.Equals(newGame.Title)) == null)
+            {
+                Games.Add(newGame);
+            }
+            else
+            {
+                throw new Exception("Ya tiene este juego.");
+            }
         }
 
         public void UpdateGames(List<Game> newGameList)
@@ -38,7 +45,7 @@ namespace Domain
             List<string> data = CustomEncoder.Decode(dataString, UserSeparator);
             List<Game> games = new List<Game>();
             List<string> gamesData = CustomEncoder.Decode(data[2], Game.GameListSeparator);
-            foreach(string game in gamesData)
+            foreach (string game in gamesData)
             {
                 games.Add(Game.Decode(game));
             }
@@ -51,7 +58,8 @@ namespace Domain
             };
         }
 
-        public string EncodeGames(){
+        public string EncodeGames()
+        {
             return GameSystem.EncodeGames(this.Games);
         }
     }

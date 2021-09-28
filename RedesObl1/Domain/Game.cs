@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Domain
 {
@@ -35,6 +32,14 @@ namespace Domain
         public void UpdateReviews(List<Review> newReviewList)
         {
             this.Reviews = newReviewList;
+            int totalRating = 0;
+            int cont = 0;
+            foreach (Review r in this.Reviews)
+            {
+                cont++;
+                totalRating += r.Rating;
+            }
+            this.Rating = totalRating / cont;
         }
 
         public void Update(Game newGame)

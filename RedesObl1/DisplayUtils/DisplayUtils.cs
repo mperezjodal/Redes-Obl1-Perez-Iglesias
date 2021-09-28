@@ -83,7 +83,7 @@ namespace DisplayUtils
         public static void GameList(List<Game> games)
         {
             if(games.Count == 0){
-                Console.WriteLine("No hay juegos en el sistema.");
+                Console.WriteLine("No se han encontrado juegos.");
             }
             else{
                 Console.WriteLine("Lista de juegos:");
@@ -123,10 +123,17 @@ namespace DisplayUtils
         {
             Review Review = new Review();
 
-            Console.WriteLine("Rating:");
+            Console.WriteLine("Rating (entre 1 y 10):");
             var rating = Console.ReadLine();
             int rat;
             Int32.TryParse(rating, out rat);
+
+            if(rat > 10 || rat < 1)
+            {
+                Console.WriteLine("Rating inválido.");
+                return null;
+            }
+
             Review.Rating = rat;
             Console.WriteLine("Comentario:");
             Review.Comment = Console.ReadLine();
@@ -167,27 +174,26 @@ namespace DisplayUtils
             Console.WriteLine("    3-   Rating");
             Console.WriteLine();
             var filter = Console.ReadLine();
-            List<Game> filtedGames = new List<Game>();
+            List<Game> filteredGames = new List<Game>();
             switch (filter)
             {
                 case "1":
                     Console.WriteLine("Ingrese categoría:");
                     var cat = Console.ReadLine();
-                    filtedGames = games.FindAll(g => g.Genre.Equals(cat));
-                    DialogUtils.GameList(filtedGames);
+                    filteredGames = games.FindAll(g => g.Genre.Equals(cat));
+                    DialogUtils.GameList(filteredGames);
                     break;
                 case "2":
                     Console.WriteLine("Ingrese título:");
                     var title = Console.ReadLine();
-                    filtedGames = games.FindAll(g => g.Title.Equals(title));
-                    DialogUtils.GameList(filtedGames);
+                    filteredGames = games.FindAll(g => g.Title.Equals(title));
+                    DialogUtils.GameList(filteredGames);
                     break;
                 case "3":
                     Console.WriteLine("Ingrese rating:");
-                    int rating;
-                    Int32.TryParse(Console.ReadLine(), out rating);
-                    filtedGames = games.FindAll(g => g.Rating.Equals(rating));
-                    DialogUtils.GameList(filtedGames);
+                    string rating = Console.ReadLine();
+                    filteredGames = games.FindAll(g => g.Rating.ToString().Equals(rating));
+                    DialogUtils.GameList(filteredGames);
                     break;
                 default:
                     Console.WriteLine("Opción inválida.");

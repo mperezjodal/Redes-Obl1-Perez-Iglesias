@@ -87,10 +87,26 @@ namespace ServerSocket
                         Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
                         if(selectedGame == null)
                         {
-                            Console.WriteLine("Retorno al menú.");
                             break;
                         }
+                        if (GameSystem.IsGameBeingModified(selectedGame))
+                        {
+                            Console.WriteLine("No se puede publicar una califiación de este juego.");
+                            break;
+                        }
+
                         Review selectedGameReview = DialogUtils.InputReview();
+
+                        if(selectedGameReview == null)
+                        {
+                            break;
+                        }
+                        if (GameSystem.IsGameBeingModified(selectedGame) || !GameSystem.GameExists(selectedGame))
+                        {
+                            Console.WriteLine("No se puede publicar una califiación de este juego.");
+                            break;
+                        }
+
                         selectedGame.AddReview(selectedGameReview);
                         Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
                         break;
