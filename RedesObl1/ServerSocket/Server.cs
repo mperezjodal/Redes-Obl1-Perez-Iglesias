@@ -27,7 +27,7 @@ namespace ServerSocket
         private static GameSystem GameSystem;
         private static bool _exit = false;
         static List<Socket> _clients = new List<Socket>();
-    
+
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
@@ -85,7 +85,7 @@ namespace ServerSocket
                         break;
                     case "3":
                         Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
-                        if(selectedGame == null)
+                        if (selectedGame == null)
                         {
                             break;
                         }
@@ -97,7 +97,7 @@ namespace ServerSocket
 
                         Review selectedGameReview = DialogUtils.InputReview();
 
-                        if(selectedGameReview == null)
+                        if (selectedGameReview == null)
                         {
                             break;
                         }
@@ -158,7 +158,7 @@ namespace ServerSocket
                     var bufferData = new byte[header.IDataLength];
                     Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
                     string jsonData = Encoding.UTF8.GetString(bufferData);
-                    
+
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:

@@ -182,13 +182,13 @@ namespace ServerSocket
             {
                 Game gameToDelete = Game.Decode(jsonDeleteGameData);
 
+                if (GameSystem.IsGameBeingModified(gameToDelete))
+                {
+                    throw new Exception();
+                }
+
                 lock (lockDeleteObject)
                 {
-                    if (GameSystem.IsGameBeingModified(gameToDelete))
-                    {
-                        throw new Exception();
-                    }
-
                     this.GameSystem.DeleteGame(gameToDelete);
                 }
 
