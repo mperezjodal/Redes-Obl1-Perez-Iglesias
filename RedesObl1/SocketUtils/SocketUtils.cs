@@ -75,7 +75,7 @@ namespace SocketUtils
             }
         }
 
-        public static void SendData(Socket socket, Header header, string mensaje)
+        public static void SendData(Socket socket, Header header, string message)
         {
             var data = header.GetRequest();
             var sentBytes = 0;
@@ -84,7 +84,7 @@ namespace SocketUtils
                 sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
             }
             sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(mensaje);
+            var bytesMessage = Encoding.UTF8.GetBytes(message);
             while (sentBytes < bytesMessage.Length)
             {
                 sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
