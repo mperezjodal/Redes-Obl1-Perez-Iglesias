@@ -11,7 +11,7 @@
       <ProjectReference Include="..\Domain\Domain.csproj" />
       <ProjectReference Include="..\ProtocolLibrary\ProtocolLibrary.csproj" />
       <ProjectReference Include="..\DisplayUtils\DisplayUtils.csproj" />
-      <ProjectReference Include="..\Common\Common.csproj" />
+      <ProjectReference Include="..\FileStreamLibrary\FileStreamLibrary.csproj" />
     </ItemGroup>
 
     <ItemGroup>

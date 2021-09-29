@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using Domain;
 using ProtocolLibrary;
-using SocketUtils;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using DisplayUtils;
-using Common;
 
 namespace ClientSocket
 {

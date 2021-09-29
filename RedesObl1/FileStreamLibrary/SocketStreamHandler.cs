@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace Common
+namespace FileStreamLibrary
 {
     public class SocketStreamHandler
     {

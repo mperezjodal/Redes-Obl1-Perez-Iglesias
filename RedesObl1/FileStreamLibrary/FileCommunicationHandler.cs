@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
-using Common.Protocol;
+using FileStreamLibrary.Protocol;
 
-namespace Common
+namespace FileStreamLibrary
 {
     public class FileCommunicationHandler
     {

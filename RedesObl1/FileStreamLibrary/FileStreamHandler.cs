@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Common
+namespace FileStreamLibrary
 {
     public class FileStreamHandler
     {

@@ -1,4 +1,4 @@
-namespace Common.Protocol
+namespace FileStreamLibrary.Protocol
 {
     public static class Specification
     {
