@@ -1,4 +1,5 @@
-﻿using System.Security.AccessControl;
+﻿using System.Linq;
+using System.Security.AccessControl;
 using System.Globalization;
 using System;
 using System.ComponentModel.Design;
@@ -77,6 +78,14 @@ namespace ServerSocket
                         break;
                     case "2":
                         Game gameToPublish = DialogUtils.InputGame();
+
+                        if (gameToPublish.Cover != null)
+                        {
+                            var fileName = gameToPublish.Cover.Split("/").Last();
+                            System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
+                            gameToPublish.Cover = fileName;
+                        }
+
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
                         break;
