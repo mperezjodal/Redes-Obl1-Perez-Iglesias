@@ -43,18 +43,31 @@ namespace SocketUtils
             var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
                                 HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
-            Utils.ReceiveData(socket, headerLength, ref buffer);
-            var header = new Header();
-            header.DecodeData(buffer);
-            var bufferData = new byte[header.IDataLength];
+            try
+            {
+                Utils.ReceiveData(socket, headerLength, ref buffer);
+                var header = new Header();
+                header.DecodeData(buffer);
+                var bufferData = new byte[header.IDataLength];
 
-            Utils.ReceiveData(socket, header.IDataLength, ref bufferData);
-            string message = Encoding.UTF8.GetString(bufferData);
+                Utils.ReceiveData(socket, header.IDataLength, ref bufferData);
+                string message = Encoding.UTF8.GetString(bufferData);
 
-            commandAndMessage.Add(header.ICommand.ToString());
-            commandAndMessage.Add(message);
+                commandAndMessage.Add(header.ICommand.ToString());
+                commandAndMessage.Add(message);
 
-            return commandAndMessage;
+                return commandAndMessage;
+            }
+            catch (SocketException e)
+            {
+                //Console.WriteLine($"Error: {e.Message}..");
+                return commandAndMessage;
+            }
+            catch (Exception e)
+            {
+                //Console.WriteLine($"Error: {e.Message}..");
+                return commandAndMessage;
+            }
         }
 
         public static void ReceiveData(Socket socket, int Length, ref byte[] buffer)
@@ -77,18 +90,26 @@ namespace SocketUtils
 
         public static void SendData(Socket socket, Header header, string message)
         {
-            var data = header.GetRequest();
-            var sentBytes = 0;
-            while (sentBytes < data.Length)
+            try
             {
-                sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+                var data = header.GetRequest();
+                var sentBytes = 0;
+                while (sentBytes < data.Length)
+                {
+                    sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
+                }
+                sentBytes = 0;
+                var bytesMessage = Encoding.UTF8.GetBytes(message);
+                while (sentBytes < bytesMessage.Length)
+                {
+                    sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
+                        SocketFlags.None);
+                }
             }
-            sentBytes = 0;
-            var bytesMessage = Encoding.UTF8.GetBytes(message);
-            while (sentBytes < bytesMessage.Length)
+            catch (SocketException se)
             {
-                sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                    SocketFlags.None);
+                Console.WriteLine(se.Message);
+                return;
             }
         }
     }

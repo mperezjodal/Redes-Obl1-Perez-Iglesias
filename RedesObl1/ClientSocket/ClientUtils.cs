@@ -27,15 +27,26 @@ namespace ClientSocket
 
             while (notLogin)
             {
-                string userName = DialogUtils.Login();
-                var headerLoginRequest = new Header(HeaderConstants.Request, CommandConstants.Login, userName.Length);
-                Utils.SendData(clientSocket, headerLoginRequest, userName);
+                try{
+                    string userName = DialogUtils.Login();
+                    var headerLoginRequest = new Header(HeaderConstants.Request, CommandConstants.Login, userName.Length);
+                    Utils.SendData(clientSocket, headerLoginRequest, userName);
 
-                List<string> commandAndMessage = Utils.ReceiveCommandAndMessage(clientSocket);
+                    List<string> commandAndMessage = Utils.ReceiveCommandAndMessage(clientSocket);
 
-                Console.WriteLine(commandAndMessage[1]);
+                    Console.WriteLine(commandAndMessage[1]);
 
-                if (commandAndMessage[0] == CommandConstants.LoginOk.ToString())
+                    if (commandAndMessage[0] == CommandConstants.LoginOk.ToString())
+                    {
+                        notLogin = false;
+                    }
+                }
+                catch (SocketException)
+                {
+                    notLogin = false;
+                    
+                }
+                catch (Exception)
                 {
                     notLogin = false;
                 }
