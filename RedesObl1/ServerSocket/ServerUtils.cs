@@ -13,8 +13,10 @@ namespace ServerSocket
     {
         public GameSystem GameSystem;
         public Socket clientSocket;
-        public object lockModifyObject = new object();
-        public object lockDeleteObject = new object();
+        public object lockModifyGame = new object();
+        public object lockDeleteGame = new object();
+        public object lockGetGames = new object();
+        public object lockAddGame = new object();
         public ServerUtils(GameSystem gameSystem, Socket clientSocket)
         {
             this.GameSystem = gameSystem;
@@ -23,9 +25,12 @@ namespace ServerSocket
 
         public void GetGamesHandler(Socket clientSocket)
         {
-            var gamesMessage = GameSystem.EncodeGames();
-            var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
-            Utils.SendData(clientSocket, gamesHeader, gamesMessage);
+            lock(lockGetGames){
+                var gamesMessage = GameSystem.EncodeGames();
+                var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
+                Utils.SendData(clientSocket, gamesHeader, gamesMessage);
+            }
+            
 
             foreach (Game g in GameSystem.Games)
             {
@@ -135,7 +140,7 @@ namespace ServerSocket
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
                 var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
-                lock (lockModifyObject)
+                lock (lockModifyGame)
                 {
                     if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
                     {
@@ -178,7 +183,7 @@ namespace ServerSocket
                     throw new Exception();
                 }
 
-                lock (lockDeleteObject)
+                lock (lockDeleteGame)
                 {
                     this.GameSystem.DeleteGame(gameToDelete);
                 }
@@ -226,7 +231,10 @@ namespace ServerSocket
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
-                GameSystem.AddGame(newGame);
+                
+                lock(lockAddGame){
+                    GameSystem.AddGame(newGame);
+                }
 
                 var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
                 var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
