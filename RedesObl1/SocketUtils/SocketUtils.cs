@@ -58,14 +58,12 @@ namespace SocketUtils
 
                 return commandAndMessage;
             }
-            catch (SocketException e)
+            catch (SocketException)
             {
-                //Console.WriteLine($"Error: {e.Message}..");
                 return commandAndMessage;
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //Console.WriteLine($"Error: {e.Message}..");
                 return commandAndMessage;
             }
         }
