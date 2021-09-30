@@ -59,7 +59,7 @@ namespace ProtocolLibrary
         public byte[] GetRequest()
         {
             var header = new byte[HeaderConstants.Request.Length + HeaderConstants.CommandLength + HeaderConstants.DataLength];
-            Array.Copy(_direction, 0, header, 0, 3);
+            Array.Copy(_direction, 0, header, 0, 1);
             Array.Copy(_command, 0, header, HeaderConstants.Request.Length, 2);
             Array.Copy(_dataLength, 0, header, HeaderConstants.Request.Length + HeaderConstants.CommandLength, 4);
             return header;
