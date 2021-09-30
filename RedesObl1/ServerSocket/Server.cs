@@ -21,6 +21,7 @@ namespace ServerSocket
         public string ServerIpAddress { get; set; }
         public int ProtocolFixedSize { get; set; }
         public int ServerPort { get; set; }
+        public int FakeServerPort { get; set; }
         public int Backlog { get; set; }
         private static GameSystem GameSystem;
         private static bool _exit = false;
@@ -70,21 +71,23 @@ namespace ServerSocket
                             client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
-                        var fakeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        fakeSocket.Connect("127.0.0.1", 20000);
                         break;
                     case "1":
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2":
                         Game gameToPublish = DialogUtils.InputGame();
-
-                        if (gameToPublish.Cover != null)
+                        
+                        try
                         {
-                            var fileName = gameToPublish.Cover.Split("/").Last();
-                            System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
-                            gameToPublish.Cover = fileName;
+                            if (gameToPublish.Cover != null)
+                            {
+                                var fileName = gameToPublish.Cover.Split("/").Last();
+                                gameToPublish.Cover = fileName;
+                                System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
+                            }
                         }
+                        catch (Exception) { }
 
                         GameSystem.AddGame(gameToPublish);
                         Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
@@ -137,9 +140,8 @@ namespace ServerSocket
                     var threadClient = new Thread(() => HandleClient(clientConnected, socketServer));
                     threadClient.Start();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Console.WriteLine(e);
                     _exit = true;
                 }
             }

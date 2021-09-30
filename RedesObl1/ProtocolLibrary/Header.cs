@@ -50,9 +50,9 @@ namespace ProtocolLibrary
         {
 
             _direction = Encoding.UTF8.GetBytes(direction);
-            var stringCommand = command.ToString("D2");  //Maximo largo 2, si es menor a 2 cifras, completo con 0s a la izquierda 
+            var stringCommand = command.ToString("D2");
             _command = Encoding.UTF8.GetBytes(stringCommand);
-            var stringData = datalength.ToString("D4");  // 0 < Largo <= 9999 
+            var stringData = datalength.ToString("D4");
             _dataLength = Encoding.UTF8.GetBytes(stringData);
         }
 

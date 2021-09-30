@@ -68,7 +68,7 @@ namespace Domain
             }
         }
 
-        public void UpdateGame(Game oldGame, Game newGame)
+        public Game UpdateGame(Game oldGame, Game newGame)
         {
             oldGame.Update(newGame);
             foreach(User user in Users)
@@ -79,6 +79,7 @@ namespace Domain
                     user.AcquireGame(newGame);
                 }
             }
+            return newGame;
         }
 
         public void UpdateReviews(Game game, List<Review> reviews)

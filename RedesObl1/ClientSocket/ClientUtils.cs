@@ -182,9 +182,9 @@ namespace ClientSocket
             var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
             Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
 
-            if (File.Exists(gameToModify.Cover))
+            if (File.Exists(modifiedGame.Cover))
             {
-                SendFile(gameToModify.Cover, clientSocket);
+                SendFile(modifiedGame.Cover, clientSocket);
             }
 
             Console.WriteLine(Utils.ReceiveMessageData(clientSocket));

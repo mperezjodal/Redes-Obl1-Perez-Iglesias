@@ -6,6 +6,7 @@ using Domain;
 using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
+using System.Linq;
 
 namespace ServerSocket
 {
@@ -147,17 +148,17 @@ namespace ServerSocket
                         throw new Exception();
                     }
 
+                    if (File.Exists(updatingGames[1].Cover))
+                    {
+                        var fileCommunication = new FileCommunicationHandler(clientSocket);
+                        var fileName = fileCommunication.ReceiveFile();
+                        updatingGames[1].Cover = fileName;
+                    }
+
                     GameSystem.DeleteGameBeingModified(gameToModify);
                     gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
                     
                     GameSystem.UpdateGame(gameToModify, updatingGames[1]);
-                }
-
-                if (File.Exists(gameToModify.Cover))
-                {
-                    var fileCommunication = new FileCommunicationHandler(clientSocket);
-                    var fileName = fileCommunication.ReceiveFile();
-                    gameToModify.Cover = fileName;
                 }
 
                 var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
