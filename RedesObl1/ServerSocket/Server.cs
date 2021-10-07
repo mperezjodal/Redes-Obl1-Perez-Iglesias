@@ -83,8 +83,8 @@ namespace ServerSocket
                             if (gameToPublish.Cover != null)
                             {
                                 var fileName = gameToPublish.Cover.Split("/").Last();
-                                gameToPublish.Cover = fileName;
                                 System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
+                                gameToPublish.Cover = fileName;
                             }
                         }
                         catch (Exception) { }
