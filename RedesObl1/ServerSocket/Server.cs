@@ -77,7 +77,7 @@ namespace ServerSocket
                         break;
                     case "2":
                         Game gameToPublish = DialogUtils.InputGame();
-                        
+
                         try
                         {
                             if (gameToPublish.Cover != null)
@@ -171,6 +171,9 @@ namespace ServerSocket
                     {
                         case CommandConstants.Login:
                             serverUtils.LoginHandler(jsonData);
+                            break;
+                        case CommandConstants.Logout:
+                            serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
                             serverUtils.PublishGameHandler(jsonData, serverSocket);

@@ -59,6 +59,7 @@ namespace ClientSocket
                 switch (option)
                 {
                     case "exit":
+                        clientUtils.Logout();
                         clientSocket.Shutdown(SocketShutdown.Both);
                         clientSocket.Close();
                         connected = false;
