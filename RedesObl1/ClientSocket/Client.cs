@@ -6,6 +6,7 @@ using ProtocolLibrary;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using DisplayUtils;
+using networkStream;
 
 namespace ClientSocket
 {
@@ -38,61 +39,68 @@ namespace ClientSocket
             var section = configuration.GetSection(nameof(Client));
 		    var ClientConfig = section.Get<Client>();
 
-            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ClientIpAddress), ClientConfig.ClientPort);
-            clientSocket.Bind(clientEndPoint);
+            var tcpClient = new TcpClient(clientEndPoint);            
             Console.WriteLine("Conectando al servidor...");
 
             IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ClientConfig.ServerIpAddress), ClientConfig.ServerPort);
-            clientSocket.Connect(serverEndPoint);
-            var connected = true;
+            tcpClient.Connect(serverEndPoint);
             Console.WriteLine("Conectado al servidor.");
 
-            var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
-            
-            ClientUtils clientUtils = new ClientUtils(clientSocket);
-            clientUtils.Login();
-            while (connected)
-            {
-                var option = DialogUtils.Menu(ClientMenuOptions);
+            RunApp(tcpClient);
+            tcpClient.Close();
+        }
 
-                switch (option)
+        public static void RunApp(TcpClient tcpClient)
+        {
+            var connected = true;
+
+            using (var networkStream = tcpClient.GetStream())
+            {
+                var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
+            
+                ClientUtils clientUtils = new ClientUtils(networkStream);
+                clientUtils.Login();
+                while (connected)
                 {
-                    case "exit":
-                        clientUtils.Logout();
-                        clientSocket.Shutdown(SocketShutdown.Both);
-                        clientSocket.Close();
-                        connected = false;
-                        break;
-                    case "1":
-                        clientUtils.PublishGame();
-                        break;
-                    case "2": 
-                        clientUtils.ModifyGame();
-                        break;
-                    case "3": 
-                        clientUtils.DeleteGame();
-                        break;
-                    case "4": 
-                        DialogUtils.SearchFilteredGames(clientUtils.GetGames());
-                        break;
-                    case "5":
-                        clientUtils.PublishReview();
-                        break;
-                    case "6": 
-                        clientUtils.AcquireGame();
-                        break;
-                    case "7": 
-                        DialogUtils.ShowGameDetail(clientUtils.GetAcquiredGames());
-                        break;
-                    case "8": 
-                        DialogUtils.ShowGameDetail(clientUtils.GetGames());
-                        break;
-                    default:
-                        Console.WriteLine("Opción inválida.");
-                        break;
+                    var option = DialogUtils.Menu(ClientMenuOptions);
+
+                    switch (option)
+                    {
+                        case "exit":
+                            clientUtils.Logout();
+                            connected = false;
+                            break;
+                        case "1":
+                            clientUtils.PublishGame();
+                            break;
+                        case "2": 
+                            clientUtils.ModifyGame();
+                            break;
+                        case "3": 
+                            clientUtils.DeleteGame();
+                            break;
+                        case "4": 
+                            DialogUtils.SearchFilteredGames(clientUtils.GetGames());
+                            break;
+                        case "5":
+                            clientUtils.PublishReview();
+                            break;
+                        case "6": 
+                            clientUtils.AcquireGame();
+                            break;
+                        case "7": 
+                            DialogUtils.ShowGameDetail(clientUtils.GetAcquiredGames());
+                            break;
+                        case "8": 
+                            DialogUtils.ShowGameDetail(clientUtils.GetGames());
+                            break;
+                        default:
+                            Console.WriteLine("Opción inválida.");
+                            break;
+                    }
+                    DialogUtils.ReturnToMenu();
                 }
-                DialogUtils.ReturnToMenu();
             }
         }
     }

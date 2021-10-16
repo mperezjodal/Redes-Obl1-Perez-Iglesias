@@ -25,7 +25,7 @@ namespace ServerSocket
         public int Backlog { get; set; }
         private static GameSystem GameSystem;
         private static bool _exit = false;
-        static List<Socket> _clients = new List<Socket>();
+        static List<TcpClient> _clients = new List<TcpClient>();
 
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
@@ -48,13 +48,16 @@ namespace ServerSocket
             object lockObject = new object();
             GameSystem = new GameSystem();
 
-            _clients = new List<Socket>();
-            Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            // _clients = new List<Socket>();
+            // Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
-            serverSocket.Bind(serverIpEndPoint);
-            serverSocket.Listen(ServerConfig.Backlog);
+            
+            var tcpListener = new TcpListener(serverIpEndPoint);
+            tcpListener.Start(100);
+            // serverSocket.Bind(serverIpEndPoint);
+            // serverSocket.Listen(ServerConfig.Backlog);
 
-            var threadServer = new Thread(() => ListenForConnections(serverSocket));
+            var threadServer = new Thread(() => ListenForConnections(tcpListener));
             threadServer.Start();
 
             while (!_exit)
@@ -65,10 +68,10 @@ namespace ServerSocket
                 {
                     case "exit":
                         _exit = true;
-                        serverSocket.Close(0);
+                        // serverSocket.Close(0);
                         foreach (var client in _clients)
                         {
-                            client.Shutdown(SocketShutdown.Both);
+                            // client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
                         break;
@@ -129,16 +132,16 @@ namespace ServerSocket
                 DialogUtils.ReturnToMenu();
             }
         }
-        public static void ListenForConnections(Socket socketServer)
+        public static void ListenForConnections(TcpListener tcpListener)
         {
             while (!_exit)
             {
                 try
                 {
-                    var clientConnected = socketServer.Accept();
-                    _clients.Add(clientConnected);
-                    var threadClient = new Thread(() => HandleClient(clientConnected, socketServer));
-                    threadClient.Start();
+                    var acceptedTcpClient = tcpListener.AcceptTcpClient();
+                    new Thread(() => HandleClient(acceptedTcpClient)).Start();
+
+                    _clients.Add(acceptedTcpClient);
                 }
                 catch (Exception)
                 {
@@ -148,11 +151,12 @@ namespace ServerSocket
             Console.WriteLine("Saliendo...");
         }
 
-        public static void HandleClient(Socket clientSocket, Socket serverSocket)
+        public static void HandleClient(TcpClient tcpClient)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
+            var networkStream = tcpClient.GetStream();
 
-            ServerUtils serverUtils = new ServerUtils(GameSystem, clientSocket);
+            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient);
             while (!_exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -160,11 +164,11 @@ namespace ServerSocket
                 var buffer = new byte[headerLength];
                 try
                 {
-                    Utils.ReceiveData(clientSocket, headerLength, ref buffer);
+                    Utils.ReceiveData(networkStream, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
-                    Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
+                    Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
@@ -176,15 +180,15 @@ namespace ServerSocket
                             serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            serverUtils.PublishGameHandler(jsonData, serverSocket);
+                            serverUtils.PublishGameHandler(jsonData);
                             break;
                         case CommandConstants.GetGames:
-                            serverUtils.GetGamesHandler(clientSocket);
+                            serverUtils.GetGamesHandler();
                             break;
                         case CommandConstants.GetUsers:
                             var usersMessage = GameSystem.EncodeUsers();
                             var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
-                            Utils.SendData(clientSocket, usersHeader, usersMessage);
+                            Utils.SendData(networkStream, usersHeader, usersMessage);
                             break;
                         case CommandConstants.PublishReview:
                             serverUtils.PublishReviewHandler(jsonData);
