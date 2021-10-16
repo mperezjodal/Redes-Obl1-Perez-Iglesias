@@ -208,6 +208,9 @@ namespace ServerSocket
                         case CommandConstants.GetAcquiredGames:
                             serverUtils.GetAcquiredGamesHandler(jsonData);
                             break;
+                        case CommandConstants.GetGameCover:
+                            serverUtils.GetGameCover(jsonData);
+                            break;
                     }
                 }
                 catch (SocketException e)

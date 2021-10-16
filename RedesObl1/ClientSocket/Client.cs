@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using DisplayUtils;
 using networkStream;
+using Domain;
 
 namespace ClientSocket
 {
@@ -93,7 +94,9 @@ namespace ClientSocket
                             DialogUtils.ShowGameDetail(clientUtils.GetAcquiredGames());
                             break;
                         case "8": 
-                            DialogUtils.ShowGameDetail(clientUtils.GetGames());
+                            Game gameToShow = DialogUtils.SelectGame(clientUtils.GetGames());
+                            clientUtils.ReciveGameCover(gameToShow);
+                            DialogUtils.ShowGameDetail(gameToShow);
                             break;
                         default:
                             Console.WriteLine("Opción inválida.");

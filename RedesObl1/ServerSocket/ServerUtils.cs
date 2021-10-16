@@ -7,6 +7,7 @@ using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ServerSocket
 {
@@ -24,6 +25,18 @@ namespace ServerSocket
             this.tcpClient = tcpClient;
         }
 
+        public async Task SendFile(string path)
+        {
+            var fileCommunication = new FileCommunicationHandler(tcpClient.GetStream());
+            await fileCommunication.SendFileAsync(path);
+        }
+
+        public async Task ReciveFile()
+        {
+            var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
+            await fileCommunicationGameList.ReceiveFileAsync();
+        }
+
         public void GetGamesHandler()
         {
             lock (lockGetGames)
@@ -33,16 +46,27 @@ namespace ServerSocket
                 Utils.SendData(tcpClient.GetStream(), gamesHeader, gamesMessage);
             }
 
-            foreach (Game g in GameSystem.Games)
+            // foreach (Game g in GameSystem.Games)
+            // {
+            //     if (g.Cover != null)
+            //     {
+            //         var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+            //         if (File.Exists(path))
+            //         {
+            //             SendFile(path);
+            //         }
+            //     }
+            // }
+        }
+
+        public void GetGameCover(string jsonGame){
+            Game g = Game.Decode(jsonGame);
+            if (g.Cover != null)
             {
-                if (g.Cover != null)
+                var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+                if (File.Exists(path))
                 {
-                    var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-                    if (File.Exists(path))
-                    {
-                        // var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
-                        // fileCommunicationGameList.SendFile(path);
-                    }
+                    SendFile(path);
                 }
             }
         }
@@ -162,8 +186,9 @@ namespace ServerSocket
 
                     if (File.Exists(updatingGames[1].Cover))
                     {
-                        // var fileCommunication = new FileCommunicationHandler(tcpClient.GetStream());
-                        // var fileName = fileCommunication.ReceiveFile();
+                        ReciveFile();
+                        // var fileInfo = new FileInfo(updatingGames[1].Cover);
+                        // string fileName = fileInfo.Name;
                         // updatingGames[1].Cover = fileName;
                     }
 
@@ -256,9 +281,10 @@ namespace ServerSocket
 
                 if (File.Exists(newGame.Cover))
                 {
-                    // var fileCommunication = new FileCommunicationHandler(tcpClient.GetStream());
-                    // var fileName = fileCommunication.ReceiveFile();
-                    // newGame.Cover = fileName;
+                    ReciveFile();
+                    var fileInfo = new FileInfo(newGame.Cover);
+                    string fileName = fileInfo.Name;
+                    newGame.Cover = fileName;
                 }
 
             }

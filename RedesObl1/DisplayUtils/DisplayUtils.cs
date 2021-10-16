@@ -207,6 +207,7 @@ namespace DisplayUtils
                 Console.WriteLine("Retorno al menú.");
                 return;
             }
+            
             Console.WriteLine("Detalle del juego: ");
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -256,6 +257,76 @@ namespace DisplayUtils
             }
 
             if(File.Exists(gameToShow.Cover)){
+                //aca interaccion cn Server
+
+                Console.Write("Carátula: ");
+                Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
+            }
+            else{
+                Console.Write("No hay carátula para este juego.");
+            }
+
+        }
+
+        public static void ShowGameDetail(Game gameToShow)
+        {
+            if (gameToShow == null)
+            {
+                Console.WriteLine("Retorno al menú.");
+                return;
+            }
+            
+            Console.WriteLine("Detalle del juego: ");
+            Console.Write("Juego: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Title);
+            Console.ResetColor();
+            Console.Write("Género: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Genre);
+            Console.ResetColor();
+            Console.Write("Sinópsis: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Synopsis);
+            Console.ResetColor();
+
+            if ( gameToShow.Reviews.Count > 0 )
+            {
+                int totalRating = 0;
+                int cont = 0;
+
+                foreach (Review r in gameToShow.Reviews)
+                {
+                    cont++;
+                    totalRating += r.Rating;
+                    Console.WriteLine("Review " + cont);
+
+                    Console.Write("    Rating: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Rating);
+                    Console.ResetColor();
+
+                    Console.Write("    Comentario: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Comment);
+                    Console.ResetColor();
+                }
+
+                Console.Write("Promedio de Calificaciones: ");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine(totalRating / cont);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("No hay reviews para este juego en el sistema.");
+            }
+
+            if(File.Exists(gameToShow.Cover)){
+                //aca interaccion cn Server
+
                 Console.Write("Carátula: ");
                 Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
             }

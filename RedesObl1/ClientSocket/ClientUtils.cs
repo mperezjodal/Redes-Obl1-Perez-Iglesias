@@ -9,6 +9,7 @@ using SocketUtils;
 using System.IO;
 using FileStreamLibrary;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace networkStream
 {
@@ -85,17 +86,14 @@ namespace networkStream
             Utils.SendData(networkStream, headerRequestGameList, "");
             var gamesJson = Utils.ReceiveMessageData(networkStream);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
-
-            foreach (Game g in gameList)
-            {
-                if (g.Cover != null && g.Cover != "")
-                {
-                    // var fileCommunicationGameList = new FileCommunicationHandler(networkStream);
-                    // fileCommunicationGameList.ReceiveFile();
-                }
-            }
-
             return gameList;
+        }
+
+        public void ReciveGameCover(Game g)
+        {
+            var headerRequestGameCover = new Header(HeaderConstants.Request, CommandConstants.GetGameCover, 0);
+            Utils.SendData(networkStream, headerRequestGameCover, "");
+            ReciveFile();
         }
 
         public List<User> GetUsers()
@@ -120,10 +118,16 @@ namespace networkStream
             return GameSystem.DecodeGames(gamesJson);
         }
 
-        public void SendFile(string path, Socket socket)
+        public async Task SendFile(string path)
         {
-            var fileCommunication = new FileCommunicationHandler(socket);
-            fileCommunication.SendFile(path);
+            var fileCommunication = new FileCommunicationHandler(this.networkStream);
+            await fileCommunication.SendFileAsync(path);
+        }
+
+        public async Task ReciveFile()
+        {
+            var fileCommunicationGameList = new FileCommunicationHandler(this.networkStream);
+            await fileCommunicationGameList.ReceiveFileAsync();
         }
 
         public void PublishGame()
@@ -137,8 +141,9 @@ namespace networkStream
 
             if (File.Exists(gameToPublish.Cover))
             {
-                // SendFile(gameToPublish.Cover, networkStream);
+                SendFile(gameToPublish.Cover);
             }
+
             Console.WriteLine(Utils.ReceiveMessageData(networkStream));
         }
 
@@ -202,7 +207,7 @@ namespace networkStream
 
             if (File.Exists(modifiedGame.Cover))
             {
-                // SendFile(modifiedGame.Cover, networkStream);
+                SendFile(modifiedGame.Cover);
             }
 
             Console.WriteLine(Utils.ReceiveMessageData(networkStream));

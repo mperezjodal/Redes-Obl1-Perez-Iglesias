@@ -16,6 +16,7 @@ namespace ProtocolLibrary
         public const int GetUsers = 12;
         public const int ModifyingGame = 13;
         public const int Logout = 14;
+         public const int GetGameCover = 15;
         public const int GetUsersOk = 20;
         public const int GetGamesOk = 21;
         public const int BuyGameOk = 22;
