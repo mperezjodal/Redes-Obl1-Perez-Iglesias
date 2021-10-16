@@ -59,14 +59,14 @@ namespace ServerSocket
             // }
         }
 
-        public void GetGameCover(string jsonGame){
+        public async void GetGameCover(string jsonGame){
             Game g = Game.Decode(jsonGame);
             if (g.Cover != null)
             {
                 var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
                 if (File.Exists(path))
                 {
-                    SendFile(path);
+                    await SendFile(path);
                 }
             }
         }
@@ -187,9 +187,6 @@ namespace ServerSocket
                     if (File.Exists(updatingGames[1].Cover))
                     {
                         ReciveFile();
-                        // var fileInfo = new FileInfo(updatingGames[1].Cover);
-                        // string fileName = fileInfo.Name;
-                        // updatingGames[1].Cover = fileName;
                     }
 
                     GameSystem.DeleteGameBeingModified(gameToModify);

@@ -48,14 +48,10 @@ namespace ServerSocket
             object lockObject = new object();
             GameSystem = new GameSystem();
 
-            // _clients = new List<Socket>();
-            // Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
             
             var tcpListener = new TcpListener(serverIpEndPoint);
             tcpListener.Start(100);
-            // serverSocket.Bind(serverIpEndPoint);
-            // serverSocket.Listen(ServerConfig.Backlog);
 
             var threadServer = new Thread(() => ListenForConnections(tcpListener));
             threadServer.Start();
@@ -68,10 +64,8 @@ namespace ServerSocket
                 {
                     case "exit":
                         _exit = true;
-                        // serverSocket.Close(0);
                         foreach (var client in _clients)
                         {
-                            // client.Shutdown(SocketShutdown.Both);
                             client.Close();
                         }
                         break;

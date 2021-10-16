@@ -91,12 +91,10 @@ namespace ClientSocket
                             clientUtils.AcquireGame();
                             break;
                         case "7": 
-                            DialogUtils.ShowGameDetail(clientUtils.GetAcquiredGames());
+                            clientUtils.ShowGamesAndDetail(clientUtils.GetAcquiredGames());
                             break;
                         case "8": 
-                            Game gameToShow = DialogUtils.SelectGame(clientUtils.GetGames());
-                            clientUtils.ReciveGameCover(gameToShow);
-                            DialogUtils.ShowGameDetail(gameToShow);
+                            clientUtils.ShowGamesAndDetail(clientUtils.GetGames());
                             break;
                         default:
                             Console.WriteLine("Opción inválida.");

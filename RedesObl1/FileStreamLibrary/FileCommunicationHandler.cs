@@ -27,7 +27,6 @@ namespace FileStreamLibrary
             byte[] fileNameLengthData = BitConverter.GetBytes(fileNameLength);
 
             await _networkStreamHandler.SendDataAsync(fileNameLengthData);
-
             await _networkStreamHandler.SendDataAsync(fileNameData);
 
             long fileSize = fileInfo.Length;

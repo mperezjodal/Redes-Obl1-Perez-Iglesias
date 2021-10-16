@@ -83,17 +83,32 @@ namespace networkStream
         public List<Game> GetGames()
         {
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
+            Console.WriteLine("1");
             Utils.SendData(networkStream, headerRequestGameList, "");
+            Console.WriteLine("2");
             var gamesJson = Utils.ReceiveMessageData(networkStream);
+            Console.WriteLine("3");
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
             return gameList;
         }
 
-        public void ReciveGameCover(Game g)
+        public void ShowGamesAndDetail(List<Game> games)
         {
-            var headerRequestGameCover = new Header(HeaderConstants.Request, CommandConstants.GetGameCover, 0);
-            Utils.SendData(networkStream, headerRequestGameCover, "");
-            ReciveFile();
+            Game gameToShow = DialogUtils.SelectGame(games);
+            if(gameToShow != null && gameToShow.Cover != null)
+            {
+                ReciveGameCover(gameToShow);
+            }
+            DialogUtils.ShowGameDetail(gameToShow);
+        }
+
+        public async void ReciveGameCover(Game g)
+        {
+            var message = g.Encode();
+            var headerRequestGameCover = new Header(HeaderConstants.Request, CommandConstants.GetGameCover, message.Length);
+            Utils.SendData(networkStream, headerRequestGameCover, message);
+
+            await ReciveFile();
         }
 
         public List<User> GetUsers()
