@@ -77,14 +77,14 @@ namespace ServerSocket
                         break;
                     case "2":
                         Game gameToPublish = DialogUtils.InputGame();
-                        
+
                         try
                         {
                             if (gameToPublish.Cover != null)
                             {
                                 var fileName = gameToPublish.Cover.Split("/").Last();
-                                gameToPublish.Cover = fileName;
                                 System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
+                                gameToPublish.Cover = fileName;
                             }
                         }
                         catch (Exception) { }
@@ -171,6 +171,9 @@ namespace ServerSocket
                     {
                         case CommandConstants.Login:
                             serverUtils.LoginHandler(jsonData);
+                            break;
+                        case CommandConstants.Logout:
+                            serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
                             serverUtils.PublishGameHandler(jsonData, serverSocket);

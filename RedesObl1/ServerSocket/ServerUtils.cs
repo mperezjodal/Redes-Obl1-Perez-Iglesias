@@ -26,12 +26,12 @@ namespace ServerSocket
 
         public void GetGamesHandler(Socket clientSocket)
         {
-            lock(lockGetGames){
+            lock (lockGetGames)
+            {
                 var gamesMessage = GameSystem.EncodeGames();
                 var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
                 Utils.SendData(clientSocket, gamesHeader, gamesMessage);
             }
-            
 
             foreach (Game g in GameSystem.Games)
             {
@@ -89,23 +89,35 @@ namespace ServerSocket
 
         public void LoginHandler(string userName)
         {
-            if (this.GameSystem.Users.FindIndex(u => u.Name.Equals(userName)) != -1)
+            User existingUser = this.GameSystem.Users.Find(u => u.Name.Equals(userName));
+            if (existingUser != null && existingUser.Login)
             {
-                var loginError = "Usuario ya existe.";
+                var loginError = "Usuario tiene una sesion abierta.";
                 var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
                 Utils.SendData(clientSocket, loginErrorHeader, loginError);
                 return;
             }
 
             User newUser = GameSystem.AddUser(userName);
+            GameSystem.LoginUser(userName);
 
-            var loginMessage = "Se ha creado el usuario: " + userName + ".";
+            var loginMessage = "Se ha ingresado con el usuario: " + userName + ".";
             var loginHeader = new Header(HeaderConstants.Response, CommandConstants.LoginOk, loginMessage.Length);
             Utils.SendData(clientSocket, loginHeader, loginMessage);
 
             var userMessage = newUser.Encode();
             var userHeader = new Header(HeaderConstants.Response, CommandConstants.NewUser, userMessage.Length);
             Utils.SendData(clientSocket, userHeader, userMessage);
+        }
+
+        public void Logout(string jsonUser)
+        {
+            try
+            {
+                User userToLogout = User.Decode(jsonUser);
+                GameSystem.LogoutUser(userToLogout.Name);
+            }
+            catch { }
         }
 
         public void BeingModifiedHandler(string jsonData, ref List<Game> gamesBeingModifiedByClient)
@@ -157,7 +169,7 @@ namespace ServerSocket
 
                     GameSystem.DeleteGameBeingModified(gameToModify);
                     gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
-                    
+
                     GameSystem.UpdateGame(gameToModify, updatingGames[1]);
                 }
 
@@ -232,8 +244,9 @@ namespace ServerSocket
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
-                
-                lock(lockAddGame){
+
+                lock (lockAddGame)
+                {
                     GameSystem.AddGame(newGame);
                 }
 

@@ -11,6 +11,7 @@ namespace Domain
         public int Id { get; set; }
         public string Name { get; set; }
         public List<Game> Games { get; set; }
+        public bool Login { get; set; }
 
         public User()
         {
@@ -25,7 +26,7 @@ namespace Domain
             }
             else
             {
-                throw new Exception("Ya tiene este juego.");
+                throw new Exception("Ya se ha adquirido este juego.");
             }
         }
 

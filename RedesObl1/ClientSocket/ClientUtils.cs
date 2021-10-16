@@ -56,6 +56,13 @@ namespace ClientSocket
             myUser = User.Decode(userJson);
         }
 
+        public void Logout()
+        {
+            var message = myUser.Encode();
+            var header = new Header(HeaderConstants.Request, CommandConstants.Logout, message.Length);
+            Utils.SendData(clientSocket, header, message);
+        }
+
         public void AcquireGame()
         {
             Game game = DialogUtils.SelectGame(GetGames());

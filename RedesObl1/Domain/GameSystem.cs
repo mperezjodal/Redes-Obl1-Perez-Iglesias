@@ -134,6 +134,16 @@ namespace Domain
             return games;
         }
 
+        public void LoginUser(string user)
+        {
+            Users.Find(u => u.Name.Equals(user)).Login = true;
+        }
+
+        public void LogoutUser(string user)
+        {
+            Users.Find(u => u.Name.Equals(user)).Login = false;
+        }
+
         public string EncodeUsers()
         {
             return CustomEncoder.EncodeList(Users, User.UserListSeparator);
