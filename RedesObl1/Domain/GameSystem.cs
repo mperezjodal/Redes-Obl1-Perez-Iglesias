@@ -32,11 +32,17 @@ namespace Domain
         {
             if (Games.Find(g => g.Title.Equals(game.Title)) == null)
             {
-                Games.Add(game);
+                if(game.Title != ""){
+                    Games.Add(game);
+                }
+                else
+                {
+                    throw new Exception("El nombre del juego no puede ser vacío.");
+                }
             }
             else
             {
-                throw new Exception("Un juego con este título ya existe.");
+                throw new Exception("Error, no se pudo insertar juego. Un juego con este título ya existe.");
             }
         }
 
@@ -81,6 +87,11 @@ namespace Domain
             }
             return newGame;
         }
+        public User UpdateUser(User oldUser, User newUser)
+        {
+            oldUser.Update(newUser);
+            return newUser;
+        }
 
         public void UpdateReviews(Game game, List<Review> reviews)
         {
@@ -107,9 +118,15 @@ namespace Domain
 
         public User AddUser(string userName)
         {
-            User newUser = new User() { Name = userName };
-            Users.Add(newUser);
-            return newUser;
+            if(userName != ""){
+                User newUser = new User() { Name = userName };
+                Users.Add(newUser);
+                return newUser;
+            }
+            else{
+                throw new Exception("Error, no se pudo insertar usuario. El nombre del usuario no puede ser vacío.");
+            }
+            
         }
 
         public string EncodeGames()

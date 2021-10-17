@@ -30,6 +30,14 @@ namespace Domain
             }
         }
 
+        public void Update(User user)
+        {
+            if (user.Name != "")
+            {
+                this.Name = user.Name;
+            }
+        }
+
         public void UpdateGames(List<Game> newGameList)
         {
             this.Games = newGameList;

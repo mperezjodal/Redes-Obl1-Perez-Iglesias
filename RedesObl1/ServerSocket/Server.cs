@@ -32,7 +32,10 @@ namespace ServerSocket
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
             {"3", "Publicar calificación de un juego"},
-            {"4", "Buscar juegos"}
+            {"4", "Buscar juegos"},
+            {"5", "Insertar usuario"},
+            {"6", "Modificar usuario"},
+            {"7", "Eliminar usuario"}
         };
 
         static void Main(string[] args)
@@ -73,57 +76,146 @@ namespace ServerSocket
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2":
-                        Game gameToPublish = DialogUtils.InputGame();
-
-                        try
-                        {
-                            if (gameToPublish.Cover != null)
-                            {
-                                var fileName = gameToPublish.Cover.Split("/").Last();
-                                System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
-                                gameToPublish.Cover = fileName;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        GameSystem.AddGame(gameToPublish);
-                        Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+                        InsertGame();
                         break;
                     case "3":
-                        Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
-                        if (selectedGame == null)
-                        {
-                            break;
-                        }
-                        if (GameSystem.IsGameBeingModified(selectedGame))
-                        {
-                            Console.WriteLine("No se puede publicar una califiación de este juego.");
-                            break;
-                        }
-
-                        Review selectedGameReview = DialogUtils.InputReview();
-
-                        if (selectedGameReview == null)
-                        {
-                            break;
-                        }
-                        if (GameSystem.IsGameBeingModified(selectedGame) || !GameSystem.GameExists(selectedGame))
-                        {
-                            Console.WriteLine("No se puede publicar una califiación de este juego.");
-                            break;
-                        }
-
-                        selectedGame.AddReview(selectedGameReview);
-                        Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
+                        InsertReview();
                         break;
                     case "4":
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
+                    case "5":
+                        InsertUser();
+                        break;
+                    case "6":
+                        ModifyUser();
+                        break;
+                    case "7":
+                        DeleteUser();
+                    break;
                     default:
                         Console.WriteLine("Opción inválida.");
                         break;
                 }
                 DialogUtils.ReturnToMenu();
+            }
+        }
+
+        public static void InsertGame(){
+            Game gameToPublish = DialogUtils.InputGame();
+            try
+            {
+                if (gameToPublish.Cover != null)
+                {
+                    var fileName = gameToPublish.Cover.Split("/").Last();
+                    System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
+                    gameToPublish.Cover = fileName;
+                }
+
+                GameSystem.AddGame(gameToPublish);
+                Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+            }
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
+            }
+
+        }
+
+        public static void InsertReview(){
+            Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
+            if (selectedGame == null)
+            {
+                return;
+            }
+            if (GameSystem.IsGameBeingModified(selectedGame))
+            {
+                Console.WriteLine("No se puede publicar una califiación de este juego.");
+                return;
+            }
+
+            Review selectedGameReview = DialogUtils.InputReview();
+
+            if (selectedGameReview == null)
+            {
+                return;
+            }
+            if (GameSystem.IsGameBeingModified(selectedGame) || !GameSystem.GameExists(selectedGame))
+            {
+                Console.WriteLine("No se puede publicar una califiación de este juego.");
+                return;
+            }
+            try
+            {
+                selectedGame.AddReview(selectedGameReview);
+                Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
+            }
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void InsertUser(){
+            try
+            {
+                User userToInsert = DialogUtils.InputUser(GameSystem.Users);
+                userToInsert.Login=false;
+                if (userToInsert == null)
+                {
+                    Console.WriteLine("No se puede insertar este usuario.");
+                    return;
+                }
+                else
+                {
+                    GameSystem.AddUser(userToInsert.Name);
+                    Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
+                }
+            }
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void ModifyUser(){
+
+            try{
+                User userToModify = DialogUtils.SelectUser(GameSystem.Users);
+
+                if (userToModify == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
+
+                Console.WriteLine("Ingrese el nuevo nombre de usuario:");
+                User modifiedUser = DialogUtils.InputUser(GameSystem.Users);
+
+                if (modifiedUser == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
+                GameSystem.UpdateUser(userToModify, modifiedUser);
+                Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
+            }
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void DeleteUser(){
+            try{
+                User userToDelete = DialogUtils.SelectUser(GameSystem.Users);
+                if (userToDelete == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
+
+                GameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
+                Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
+            }
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
             }
         }
         public static void ListenForConnections(TcpListener tcpListener)
