@@ -45,21 +45,10 @@ namespace ServerSocket
                 var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
                 Utils.SendData(tcpClient.GetStream(), gamesHeader, gamesMessage);
             }
-
-            // foreach (Game g in GameSystem.Games)
-            // {
-            //     if (g.Cover != null)
-            //     {
-            //         var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-            //         if (File.Exists(path))
-            //         {
-            //             SendFile(path);
-            //         }
-            //     }
-            // }
         }
 
-        public async void GetGameCover(string jsonGame){
+        public async Task GetGameCover(string jsonGame)
+        {
             Game g = Game.Decode(jsonGame);
             if (g.Cover != null)
             {
@@ -170,23 +159,20 @@ namespace ServerSocket
             }
         }
 
-        public void ModifyGameHandler(string jsonModifyGameData, ref List<Game> gamesBeingModifiedByClient)
+        public async Task<List<Game>> ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
         {
             try
             {
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
                 var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
+                updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
+
                 lock (lockModifyGame)
                 {
                     if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
                     {
                         throw new Exception();
-                    }
-
-                    if (File.Exists(updatingGames[1].Cover))
-                    {
-                        ReciveFile();
                     }
 
                     GameSystem.DeleteGameBeingModified(gameToModify);
@@ -205,6 +191,8 @@ namespace ServerSocket
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
                 Utils.SendData(tcpClient.GetStream(), modifyGameHeader, modifyGameMessage);
             }
+
+            return gamesBeingModifiedByClient;
         }
 
         public void DeleteGameHandler(string jsonDeleteGameData)
@@ -261,11 +249,13 @@ namespace ServerSocket
             }
         }
 
-        public void PublishGameHandler(string jsonPublishGame)
+        public async void PublishGameHandler(string jsonPublishGame)
         {
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
+
+                newGame.Cover = await handleGameCover(newGame.Cover);
 
                 lock (lockAddGame)
                 {
@@ -276,14 +266,6 @@ namespace ServerSocket
                 var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
                 Utils.SendData(tcpClient.GetStream(), publishedGameHeader, publishedGameMessage);
 
-                if (File.Exists(newGame.Cover))
-                {
-                    ReciveFile();
-                    var fileInfo = new FileInfo(newGame.Cover);
-                    string fileName = fileInfo.Name;
-                    newGame.Cover = fileName;
-                }
-
             }
             catch (Exception)
             {
@@ -292,5 +274,20 @@ namespace ServerSocket
                 Utils.SendData(tcpClient.GetStream(), publishGameHeader, publishGameMessage);
             }
         }
+
+        public async Task<string> handleGameCover(string cover)
+        {
+            if (File.Exists(cover))
+            {
+                await ReciveFile();
+                var fileInfo = new FileInfo(cover);
+                string fileName = fileInfo.Name;
+                return fileName;
+            }
+            else
+            {
+                return null;
+            }
+        } 
     }
 }

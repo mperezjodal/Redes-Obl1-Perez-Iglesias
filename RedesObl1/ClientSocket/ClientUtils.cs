@@ -83,26 +83,25 @@ namespace networkStream
         public List<Game> GetGames()
         {
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
-            Console.WriteLine("1");
             Utils.SendData(networkStream, headerRequestGameList, "");
-            Console.WriteLine("2");
             var gamesJson = Utils.ReceiveMessageData(networkStream);
-            Console.WriteLine("3");
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
             return gameList;
         }
 
-        public void ShowGamesAndDetail(List<Game> games)
+        public async void ShowGamesAndDetail(List<Game> games)
         {
             Game gameToShow = DialogUtils.SelectGame(games);
-            if(gameToShow != null && gameToShow.Cover != null)
+            Console.WriteLine(gameToShow.Cover);
+            if(gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
             {
-                ReciveGameCover(gameToShow);
+                await ReciveGameCover(gameToShow);
             }
+
             DialogUtils.ShowGameDetail(gameToShow);
         }
 
-        public async void ReciveGameCover(Game g)
+        public async Task ReciveGameCover(Game g)
         {
             var message = g.Encode();
             var headerRequestGameCover = new Header(HeaderConstants.Request, CommandConstants.GetGameCover, message.Length);
@@ -145,7 +144,7 @@ namespace networkStream
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public void PublishGame()
+        public async void PublishGame()
         {
             Game gameToPublish = DialogUtils.InputGame();
 
@@ -156,7 +155,7 @@ namespace networkStream
 
             if (File.Exists(gameToPublish.Cover))
             {
-                SendFile(gameToPublish.Cover);
+                await SendFile(gameToPublish.Cover);
             }
 
             Console.WriteLine(Utils.ReceiveMessageData(networkStream));

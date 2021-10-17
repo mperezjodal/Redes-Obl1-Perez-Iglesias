@@ -145,7 +145,7 @@ namespace ServerSocket
             Console.WriteLine("Saliendo...");
         }
 
-        public static void HandleClient(TcpClient tcpClient)
+        public async static void HandleClient(TcpClient tcpClient)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
@@ -191,7 +191,7 @@ namespace ServerSocket
                             serverUtils.BeingModifiedHandler(jsonData, ref gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.ModifyGame:
-                            serverUtils.ModifyGameHandler(jsonData, ref gamesBeingModifiedByClient);
+                            gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.DeleteGame:
                             serverUtils.DeleteGameHandler(jsonData);
@@ -203,7 +203,7 @@ namespace ServerSocket
                             serverUtils.GetAcquiredGamesHandler(jsonData);
                             break;
                         case CommandConstants.GetGameCover:
-                            serverUtils.GetGameCover(jsonData);
+                            await serverUtils.GetGameCover(jsonData);
                             break;
                     }
                 }
