@@ -8,31 +8,47 @@ namespace SocketUtils
 {
     public static class Utils
     {
-        public static string ReceiveMessageData(NetworkStream networkStream)
+        public static string ClientReceiveMessageData(NetworkStream networkStream)
+        {
+            try
+            {
+                return ReceiveMessageData(networkStream);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Se ha cerrado la conexión con el servidor.");
+                return null;
+            }
+        }
+
+        private static string ReceiveMessageData(NetworkStream networkStream)
         {
             while (true)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
                                    HeaderConstants.DataLength;
                 var buffer = new byte[headerLength];
-                try
-                {
-                    ReceiveData(networkStream, headerLength, ref buffer);
-                    var header = new Header();
-                    header.DecodeData(buffer);
 
-                    var bufferData = new byte[header.IDataLength];
-                    ReceiveData(networkStream, header.IDataLength, ref bufferData);
-                    return Encoding.UTF8.GetString(bufferData);
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine($"Error: {e.Message}..");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error: {e.Message}..");
-                }
+                ReceiveData(networkStream, headerLength, ref buffer);
+                var header = new Header();
+                header.DecodeData(buffer);
+
+                var bufferData = new byte[header.IDataLength];
+                ReceiveData(networkStream, header.IDataLength, ref bufferData);
+                return Encoding.UTF8.GetString(bufferData);
+            }
+        }
+
+        public static List<string> ClientReceiveCommandAndMessage(NetworkStream networkStream)
+        {
+            try
+            {
+                return ReceiveCommandAndMessage(networkStream);
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Se ha cerrado la conexión con el servidor.");
+                return null;
             }
         }
 
@@ -43,63 +59,85 @@ namespace SocketUtils
             var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
                                 HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
+
+            Utils.ReceiveData(networkStream, headerLength, ref buffer);
+            var header = new Header();
+            header.DecodeData(buffer);
+            var bufferData = new byte[header.IDataLength];
+
+            Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
+            string message = Encoding.UTF8.GetString(bufferData);
+
+            commandAndMessage.Add(header.ICommand.ToString());
+            commandAndMessage.Add(message);
+
+            return commandAndMessage;
+        }
+
+        public static void ClientReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        {
             try
             {
-                Utils.ReceiveData(networkStream, headerLength, ref buffer);
-                var header = new Header();
-                header.DecodeData(buffer);
-                var bufferData = new byte[header.IDataLength];
-
-                Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
-                string message = Encoding.UTF8.GetString(bufferData);
-
-                commandAndMessage.Add(header.ICommand.ToString());
-                commandAndMessage.Add(message);
-
-                return commandAndMessage;
-            }
-            catch (SocketException)
-            {
-                return commandAndMessage;
+                ReceiveData(networkStream, Length, ref buffer);
             }
             catch (Exception)
             {
-                return commandAndMessage;
+                Console.WriteLine("Se ha cerrado la conexión con el servidor.");
             }
         }
 
-        public static void ReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        public static void ServerReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        {
+            try
+            {
+                ReceiveData(networkStream, Length, ref buffer);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private static void ReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < Length)
             {
-                try
-                {
-                    var localRecv = networkStream.Read(buffer, iRecv, Length - iRecv);
-                    iRecv += localRecv;
-                }
-                catch (SocketException se)
-                {
-                    Console.WriteLine(se.Message);
-                    return;
-                }
+                var localRecv = networkStream.Read(buffer, iRecv, Length - iRecv);
+                iRecv += localRecv;
             }
         }
 
-        public static void SendData(NetworkStream networkStream, Header header, string message)
+        public static void ClientSendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                byte[] headerData = header.GetRequest();
-                byte[] data = Encoding.UTF8.GetBytes(message);
-                networkStream.Write(header.GetRequest(), 0, headerData.Length);
-                networkStream.Write(data, 0, data.Length);
+                SendData(networkStream, header, message);
             }
-            catch (SocketException se)
+            catch (Exception)
             {
-                Console.WriteLine(se.Message);
-                return;
+                Console.WriteLine("Se ha cerrado la conexión con el servidor.");
             }
+        }
+
+        public static void ServerSendData(NetworkStream networkStream, Header header, string message)
+        {
+            try
+            {
+                SendData(networkStream, header, message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private static void SendData(NetworkStream networkStream, Header header, string message)
+        {
+            byte[] headerData = header.GetRequest();
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            networkStream.Write(header.GetRequest(), 0, headerData.Length);
+            networkStream.Write(data, 0, data.Length);
         }
     }
 }
