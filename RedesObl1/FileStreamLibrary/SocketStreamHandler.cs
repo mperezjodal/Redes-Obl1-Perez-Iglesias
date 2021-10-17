@@ -1,23 +1,27 @@
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace FileStreamLibrary
 {
-    public class SocketStreamHandler
+    public class NetworkStreamHandler
     {
-        private readonly Socket _socket;
+        private readonly NetworkStream _networkStream;
 
-        public SocketStreamHandler(Socket socket)
+        public NetworkStreamHandler(NetworkStream networkStream)
         {
-            _socket = socket;
+            _networkStream = networkStream;
         }
 
-        public byte[] ReceiveData(int length)
+        public async Task<byte[]> ReadDataAsync(int length)
         {
             int offset = 0;
             byte[] response = new byte[length];
             while (offset < length)
             {
-                int received = _socket.Receive(response, offset, length - offset, SocketFlags.None);
+                int received = await _networkStream.ReadAsync(
+                    response,
+                    offset,
+                    length - offset);
                 if (received == 0)
                 {
                     throw new SocketException();
@@ -28,19 +32,9 @@ namespace FileStreamLibrary
             return response;
         }
 
-        public void SendData(byte[] data)
+        public async Task SendDataAsync(byte[] data)
         {
-            int offset = 0;
-            int size = data.Length;
-            while (offset < data.Length)
-            {
-                int sent = _socket.Send(data, offset, size - offset, SocketFlags.None);
-                if (sent == 0)
-                {
-                    throw new SocketException();
-                }
-                offset += sent;
-            }
+            await _networkStream.WriteAsync(data, 0, data.Length);
         }
     }
 }

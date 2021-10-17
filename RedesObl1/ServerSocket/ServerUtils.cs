@@ -7,42 +7,55 @@ using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ServerSocket
 {
     public class ServerUtils
     {
         public GameSystem GameSystem;
-        public Socket clientSocket;
+        public TcpClient tcpClient;
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
         public object lockGetGames = new object();
         public object lockAddGame = new object();
-        public ServerUtils(GameSystem gameSystem, Socket clientSocket)
+        public ServerUtils(GameSystem gameSystem, TcpClient tcpClient)
         {
             this.GameSystem = gameSystem;
-            this.clientSocket = clientSocket;
+            this.tcpClient = tcpClient;
         }
 
-        public void GetGamesHandler(Socket clientSocket)
+        public async Task SendFile(string path)
+        {
+            var fileCommunication = new FileCommunicationHandler(tcpClient.GetStream());
+            await fileCommunication.SendFileAsync(path);
+        }
+
+        public async Task ReciveFile()
+        {
+            var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
+            await fileCommunicationGameList.ReceiveFileAsync();
+        }
+
+        public void GetGamesHandler()
         {
             lock (lockGetGames)
             {
                 var gamesMessage = GameSystem.EncodeGames();
                 var gamesHeader = new Header(HeaderConstants.Response, CommandConstants.GetGamesOk, gamesMessage.Length);
-                Utils.SendData(clientSocket, gamesHeader, gamesMessage);
+                Utils.SendData(tcpClient.GetStream(), gamesHeader, gamesMessage);
             }
+        }
 
-            foreach (Game g in GameSystem.Games)
+        public async Task GetGameCover(string jsonGame)
+        {
+            Game g = Game.Decode(jsonGame);
+            if (g.Cover != null)
             {
-                if (g.Cover != null)
+                var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+                if (File.Exists(path))
                 {
-                    var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-                    if (File.Exists(path))
-                    {
-                        var fileCommunicationGameList = new FileCommunicationHandler(clientSocket);
-                        fileCommunicationGameList.SendFile(path);
-                    }
+                    await SendFile(path);
                 }
             }
         }
@@ -56,13 +69,13 @@ namespace ServerSocket
 
                 var gamesMessage = systemUser.EncodeGames();
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesOk, gamesMessage.Length);
-                Utils.SendData(clientSocket, AcquireGameHeader, gamesMessage);
+                Utils.SendData(tcpClient.GetStream(), AcquireGameHeader, gamesMessage);
             }
             catch (Exception)
             {
                 var AcquireGameMessage = "[]";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.GetAcquiredGamesError, AcquireGameMessage.Length);
-                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
+                Utils.SendData(tcpClient.GetStream(), AcquireGameHeader, AcquireGameMessage);
             }
         }
 
@@ -77,13 +90,13 @@ namespace ServerSocket
 
                 var AcquireGameMessage = "Se ha adquirido el juego: " + game.Title + ".";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameOk, AcquireGameMessage.Length);
-                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
+                Utils.SendData(tcpClient.GetStream(), AcquireGameHeader, AcquireGameMessage);
             }
             catch (Exception)
             {
                 var AcquireGameMessage = "No se ha podido adquirir el juego.";
                 var AcquireGameHeader = new Header(HeaderConstants.Response, CommandConstants.AcquireGameError, AcquireGameMessage.Length);
-                Utils.SendData(clientSocket, AcquireGameHeader, AcquireGameMessage);
+                Utils.SendData(tcpClient.GetStream(), AcquireGameHeader, AcquireGameMessage);
             }
         }
 
@@ -94,7 +107,7 @@ namespace ServerSocket
             {
                 var loginError = "Usuario tiene una sesion abierta.";
                 var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
-                Utils.SendData(clientSocket, loginErrorHeader, loginError);
+                Utils.SendData(tcpClient.GetStream(), loginErrorHeader, loginError);
                 return;
             }
 
@@ -103,11 +116,11 @@ namespace ServerSocket
 
             var loginMessage = "Se ha ingresado con el usuario: " + userName + ".";
             var loginHeader = new Header(HeaderConstants.Response, CommandConstants.LoginOk, loginMessage.Length);
-            Utils.SendData(clientSocket, loginHeader, loginMessage);
+            Utils.SendData(tcpClient.GetStream(), loginHeader, loginMessage);
 
             var userMessage = newUser.Encode();
             var userHeader = new Header(HeaderConstants.Response, CommandConstants.NewUser, userMessage.Length);
-            Utils.SendData(clientSocket, userHeader, userMessage);
+            Utils.SendData(tcpClient.GetStream(), userHeader, userMessage);
         }
 
         public void Logout(string jsonUser)
@@ -136,35 +149,30 @@ namespace ServerSocket
 
                 var modifyGameMessage = "Se puede modificar el juego: " + game.Title + ".";
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyingGameOk, modifyGameMessage.Length);
-                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                Utils.SendData(tcpClient.GetStream(), modifyGameHeader, modifyGameMessage);
             }
             catch (Exception)
             {
                 var modifyGameMessage = "No se puede modificar el juego.";
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyingGameError, modifyGameMessage.Length);
-                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                Utils.SendData(tcpClient.GetStream(), modifyGameHeader, modifyGameMessage);
             }
         }
 
-        public void ModifyGameHandler(string jsonModifyGameData, ref List<Game> gamesBeingModifiedByClient)
+        public async Task<List<Game>> ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
         {
             try
             {
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
                 var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
+                updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
+
                 lock (lockModifyGame)
                 {
                     if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
                     {
                         throw new Exception();
-                    }
-
-                    if (File.Exists(updatingGames[1].Cover))
-                    {
-                        var fileCommunication = new FileCommunicationHandler(clientSocket);
-                        var fileName = fileCommunication.ReceiveFile();
-                        updatingGames[1].Cover = fileName;
                     }
 
                     GameSystem.DeleteGameBeingModified(gameToModify);
@@ -175,14 +183,16 @@ namespace ServerSocket
 
                 var modifyGameMessage = "Se ha modificado el juego: " + gameToModify.Title + ".";
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameOk, modifyGameMessage.Length);
-                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                Utils.SendData(tcpClient.GetStream(), modifyGameHeader, modifyGameMessage);
             }
             catch (Exception)
             {
                 var modifyGameMessage = "No se ha podido modificar el juego.";
                 var modifyGameHeader = new Header(HeaderConstants.Response, CommandConstants.ModifyGameError, modifyGameMessage.Length);
-                Utils.SendData(clientSocket, modifyGameHeader, modifyGameMessage);
+                Utils.SendData(tcpClient.GetStream(), modifyGameHeader, modifyGameMessage);
             }
+
+            return gamesBeingModifiedByClient;
         }
 
         public void DeleteGameHandler(string jsonDeleteGameData)
@@ -203,13 +213,13 @@ namespace ServerSocket
 
                 var deleteGameMessage = "Se ha eliminado el juego: " + gameToDelete.Title + ".";
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameOk, deleteGameMessage.Length);
-                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+                Utils.SendData(tcpClient.GetStream(), deleteGameHeader, deleteGameMessage);
             }
             catch (Exception)
             {
                 var deleteGameMessage = "No se ha podido eliminado el juego.";
                 var deleteGameHeader = new Header(HeaderConstants.Response, CommandConstants.DeleteGameError, deleteGameMessage.Length);
-                Utils.SendData(clientSocket, deleteGameHeader, deleteGameMessage);
+                Utils.SendData(tcpClient.GetStream(), deleteGameHeader, deleteGameMessage);
             }
         }
 
@@ -229,21 +239,23 @@ namespace ServerSocket
 
                 var publishReviewMessage = "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".";
                 var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewOk, publishReviewMessage.Length);
-                Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
+                Utils.SendData(tcpClient.GetStream(), publishReviewHeader, publishReviewMessage);
             }
             catch (Exception)
             {
                 var publishReviewMessage = "No se ha podido publicar la calificacion del juego.";
                 var publishReviewHeader = new Header(HeaderConstants.Response, CommandConstants.PublishReviewError, publishReviewMessage.Length);
-                Utils.SendData(clientSocket, publishReviewHeader, publishReviewMessage);
+                Utils.SendData(tcpClient.GetStream(), publishReviewHeader, publishReviewMessage);
             }
         }
 
-        public void PublishGameHandler(string jsonPublishGame, Socket serverSocket)
+        public async void PublishGameHandler(string jsonPublishGame)
         {
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
+
+                newGame.Cover = await handleGameCover(newGame.Cover);
 
                 lock (lockAddGame)
                 {
@@ -252,22 +264,30 @@ namespace ServerSocket
 
                 var publishedGameMessage = "Se ha publicado el juego: " + newGame.Title + ".";
                 var publishedGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameOk, publishedGameMessage.Length);
-                Utils.SendData(clientSocket, publishedGameHeader, publishedGameMessage);
-
-                if (File.Exists(newGame.Cover))
-                {
-                    var fileCommunication = new FileCommunicationHandler(clientSocket);
-                    var fileName = fileCommunication.ReceiveFile();
-                    newGame.Cover = fileName;
-                }
+                Utils.SendData(tcpClient.GetStream(), publishedGameHeader, publishedGameMessage);
 
             }
             catch (Exception)
             {
                 var publishGameMessage = "No se ha podido publicar juego.";
                 var publishGameHeader = new Header(HeaderConstants.Response, CommandConstants.PublishGameError, publishGameMessage.Length);
-                Utils.SendData(clientSocket, publishGameHeader, publishGameMessage);
+                Utils.SendData(tcpClient.GetStream(), publishGameHeader, publishGameMessage);
             }
         }
+
+        public async Task<string> handleGameCover(string cover)
+        {
+            if (File.Exists(cover))
+            {
+                await ReciveFile();
+                var fileInfo = new FileInfo(cover);
+                string fileName = fileInfo.Name;
+                return fileName;
+            }
+            else
+            {
+                return null;
+            }
+        } 
     }
 }

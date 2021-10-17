@@ -8,7 +8,7 @@ namespace SocketUtils
 {
     public static class Utils
     {
-        public static string ReceiveMessageData(Socket socket)
+        public static string ReceiveMessageData(NetworkStream networkStream)
         {
             while (true)
             {
@@ -17,12 +17,12 @@ namespace SocketUtils
                 var buffer = new byte[headerLength];
                 try
                 {
-                    ReceiveData(socket, headerLength, ref buffer);
+                    ReceiveData(networkStream, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
 
                     var bufferData = new byte[header.IDataLength];
-                    ReceiveData(socket, header.IDataLength, ref bufferData);
+                    ReceiveData(networkStream, header.IDataLength, ref bufferData);
                     return Encoding.UTF8.GetString(bufferData);
                 }
                 catch (SocketException e)
@@ -36,7 +36,7 @@ namespace SocketUtils
             }
         }
 
-        public static List<string> ReceiveCommandAndMessage(Socket socket)
+        public static List<string> ReceiveCommandAndMessage(NetworkStream networkStream)
         {
             List<string> commandAndMessage = new List<string>();
 
@@ -45,12 +45,12 @@ namespace SocketUtils
             var buffer = new byte[headerLength];
             try
             {
-                Utils.ReceiveData(socket, headerLength, ref buffer);
+                Utils.ReceiveData(networkStream, headerLength, ref buffer);
                 var header = new Header();
                 header.DecodeData(buffer);
                 var bufferData = new byte[header.IDataLength];
 
-                Utils.ReceiveData(socket, header.IDataLength, ref bufferData);
+                Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
                 string message = Encoding.UTF8.GetString(bufferData);
 
                 commandAndMessage.Add(header.ICommand.ToString());
@@ -68,14 +68,14 @@ namespace SocketUtils
             }
         }
 
-        public static void ReceiveData(Socket socket, int Length, ref byte[] buffer)
+        public static void ReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < Length)
             {
                 try
                 {
-                    var localRecv = socket.Receive(buffer, iRecv, Length - iRecv, SocketFlags.None);
+                    var localRecv = networkStream.Read(buffer, iRecv, Length - iRecv);
                     iRecv += localRecv;
                 }
                 catch (SocketException se)
@@ -86,23 +86,14 @@ namespace SocketUtils
             }
         }
 
-        public static void SendData(Socket socket, Header header, string message)
+        public static void SendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                var data = header.GetRequest();
-                var sentBytes = 0;
-                while (sentBytes < data.Length)
-                {
-                    sentBytes += socket.Send(data, sentBytes, data.Length - sentBytes, SocketFlags.None);
-                }
-                sentBytes = 0;
-                var bytesMessage = Encoding.UTF8.GetBytes(message);
-                while (sentBytes < bytesMessage.Length)
-                {
-                    sentBytes += socket.Send(bytesMessage, sentBytes, bytesMessage.Length - sentBytes,
-                        SocketFlags.None);
-                }
+                byte[] headerData = header.GetRequest();
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                networkStream.Write(header.GetRequest(), 0, headerData.Length);
+                networkStream.Write(data, 0, data.Length);
             }
             catch (SocketException se)
             {
