@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
+using System.Linq;
 using System.Security.AccessControl;
 using System.Globalization;
 using System;
@@ -53,8 +54,7 @@ namespace ServerSocket
             var tcpListener = new TcpListener(serverIpEndPoint);
             tcpListener.Start(100);
 
-            var threadServer = new Thread(() => ListenForConnections(tcpListener));
-            threadServer.Start();
+            Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
 
             while (!_exit)
             {
@@ -133,7 +133,7 @@ namespace ServerSocket
                 try
                 {
                     var acceptedTcpClient = tcpListener.AcceptTcpClient();
-                    new Thread(() => HandleClient(acceptedTcpClient)).Start();
+                    Task listenForConnectionsTask = Task.Run(() => HandleClient(acceptedTcpClient));
 
                     _clients.Add(acceptedTcpClient);
                 }
