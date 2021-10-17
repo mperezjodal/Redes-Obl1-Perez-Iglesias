@@ -114,7 +114,6 @@ namespace DisplayUtils
         public static Game InputGame()
         {
             Game newGame = new Game();
-
             Console.WriteLine("Título:");
             newGame.Title = Console.ReadLine();
             Console.WriteLine("Género:");
