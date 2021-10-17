@@ -32,7 +32,10 @@ namespace ServerSocket
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
             {"3", "Publicar calificación de un juego"},
-            {"4", "Buscar juegos"}
+            {"4", "Buscar juegos"},
+            {"5", "Insertar usuario"},
+            {"6", "Modificar usuario"},
+            {"7", "Eliminar usuario"}
         };
 
         static void Main(string[] args)
@@ -119,6 +122,53 @@ namespace ServerSocket
                     case "4":
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
+                    case "5":
+                        User userToInsert = DialogUtils.InputUser(GameSystem.Users);
+                        userToInsert.Login=false;
+                        if (userToInsert == null)
+                        {
+                            Console.WriteLine("No se puede insertar este usuario.");
+                            break;
+                        }
+                        else
+                        {
+                            GameSystem.Users.Add(userToInsert);
+                            Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
+                        }
+                        break;
+                    case "6":
+                        User userToModify = DialogUtils.SelectUser(GameSystem.Users);
+
+                        if (userToModify == null)
+                        {
+                            Console.WriteLine("Retorno al menú.");
+                            break;
+                        }
+
+                        Console.WriteLine("Ingrese el nuevo nombre de usuario:");
+                        User modifiedUser = DialogUtils.InputUser(GameSystem.Users);
+
+                        if (modifiedUser == null)
+                        {
+                            Console.WriteLine("Retorno al menú.");
+                            break;
+                        }
+                        GameSystem.UpdateUser(userToModify, modifiedUser);
+                        Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
+                        break;
+                    case "7":
+                        User userToDelete = DialogUtils.SelectUser(GameSystem.Users);
+
+                        if (userToDelete == null)
+                        {
+                            Console.WriteLine("Retorno al menú.");
+                            break;
+                        }
+
+                        GameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
+                        Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
+                        break;
+
                     default:
                         Console.WriteLine("Opción inválida.");
                         break;

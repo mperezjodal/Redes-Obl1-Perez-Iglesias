@@ -95,6 +95,22 @@ namespace DisplayUtils
             }
         }
 
+        public static void UserList(List<User> users)
+        {
+            if (users.Count == 0)
+            {
+                Console.WriteLine("No se han encontrado usuarios.");
+            }
+            else
+            {
+                Console.WriteLine("Lista de usuarios:");
+                foreach (User user in users)
+                {
+                    Console.WriteLine(user.Name);
+                }
+            }
+        }
+
         public static Game InputGame()
         {
             Game newGame = new Game();
@@ -143,6 +159,31 @@ namespace DisplayUtils
             return Review;
         }
 
+        public static User InputUser(List<User> users)
+        {
+            User user = new User();
+
+            Console.WriteLine("Nombre:");
+            var name = Console.ReadLine();
+
+            User existingUser = users.Find(u => u.Name.Equals(name));
+            if (existingUser != null)
+            {
+                Console.WriteLine("Ya existe un usuario con este nombre, ingrese otro porfavor");
+                Console.WriteLine("Nombre:");
+                name = Console.ReadLine();
+
+                existingUser = users.Find(u => u.Name.Equals(name));
+                if (existingUser != null)
+                {
+                    Console.WriteLine("Nombre invalido.");
+                    return null;
+                }
+            }
+            user.Name = name;
+            return user;
+        }
+
         public static Game SelectGame(List<Game> games)
         {
             DialogUtils.GameList(games);
@@ -165,6 +206,30 @@ namespace DisplayUtils
                 }
             }
             return selectedGame;
+        }
+
+        public static User SelectUser(List<User> users)
+        {
+            DialogUtils.UserList(users);
+
+            User selectedUser = null;
+            if (users.Count > 0)
+            {
+                Console.WriteLine("Ingrese el nombre del usuario:");
+                string selectedName = Console.ReadLine();
+                selectedUser = users.Find(u => u.Name.Equals(selectedName));
+                if (selectedUser == null)
+                {
+                    Console.WriteLine("Nombre de usuario inválido, intente nuevamente:");
+                    selectedName = Console.ReadLine();
+                    selectedUser = users.Find(u => u.Name.Equals(selectedName));
+                }
+                if (selectedUser == null)
+                {
+                    Console.WriteLine("Juego inválido.");
+                }
+            }
+            return selectedUser;
         }
 
         public static void SearchFilteredGames(List<Game> games)
@@ -331,8 +396,6 @@ namespace DisplayUtils
 
             if (File.Exists(gameToShow.Cover))
             {
-                //aca interaccion cn Server
-
                 Console.Write("Carátula: ");
                 Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
             }

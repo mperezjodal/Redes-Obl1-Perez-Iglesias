@@ -81,6 +81,11 @@ namespace Domain
             }
             return newGame;
         }
+        public User UpdateUser(User oldUser, User newUser)
+        {
+            oldUser.Update(newUser);
+            return newUser;
+        }
 
         public void UpdateReviews(Game game, List<Review> reviews)
         {
