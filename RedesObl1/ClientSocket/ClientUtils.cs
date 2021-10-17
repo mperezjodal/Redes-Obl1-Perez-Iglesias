@@ -31,7 +31,7 @@ namespace networkStream
                 try{
                     string userName = DialogUtils.Login();
                     var headerLoginRequest = new Header(HeaderConstants.Request, CommandConstants.Login, userName.Length);
-                    Utils.SendData(networkStream, headerLoginRequest, userName);
+                    Utils.ClientSendData(networkStream, headerLoginRequest, userName);
 
                     List<string> commandAndMessage = Utils.ReceiveCommandAndMessage(networkStream);
 
@@ -53,7 +53,7 @@ namespace networkStream
                 }
             }
 
-            var userJson = Utils.ReceiveMessageData(networkStream);
+            var userJson = Utils.ClientReceiveMessageData(networkStream);
             myUser = User.Decode(userJson);
         }
 
@@ -61,7 +61,7 @@ namespace networkStream
         {
             var message = myUser.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.Logout, message.Length);
-            Utils.SendData(networkStream, header, message);
+            Utils.ClientSendData(networkStream, header, message);
         }
 
         public void AcquireGame()
@@ -75,16 +75,16 @@ namespace networkStream
 
             var message = new UserGamePair(myUser, game).Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.AcquireGame, message.Length);
-            Utils.SendData(networkStream, header, message);
+            Utils.ClientSendData(networkStream, header, message);
 
-            Console.WriteLine(Utils.ReceiveMessageData(networkStream));
+            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
         }
 
         public List<Game> GetGames()
         {
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
-            Utils.SendData(networkStream, headerRequestGameList, "");
-            var gamesJson = Utils.ReceiveMessageData(networkStream);
+            Utils.ClientSendData(networkStream, headerRequestGameList, "");
+            var gamesJson = Utils.ClientReceiveMessageData(networkStream);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
             return gameList;
         }
@@ -105,7 +105,7 @@ namespace networkStream
         {
             var message = g.Encode();
             var headerRequestGameCover = new Header(HeaderConstants.Request, CommandConstants.GetGameCover, message.Length);
-            Utils.SendData(networkStream, headerRequestGameCover, message);
+            Utils.ClientSendData(networkStream, headerRequestGameCover, message);
 
             await ReciveFile();
         }
@@ -113,9 +113,9 @@ namespace networkStream
         public List<User> GetUsers()
         {
             var headerRequestUsersList = new Header(HeaderConstants.Request, CommandConstants.GetUsers, 0);
-            Utils.SendData(networkStream, headerRequestUsersList, "");
+            Utils.ClientSendData(networkStream, headerRequestUsersList, "");
 
-            var usersJson = Utils.ReceiveMessageData(networkStream);
+            var usersJson = Utils.ClientReceiveMessageData(networkStream);
             List<User> users = GameSystem.DecodeUsers(usersJson);
 
             return users;
@@ -125,9 +125,9 @@ namespace networkStream
         {
             var message = myUser.Encode();
             var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetAcquiredGames, message.Length);
-            Utils.SendData(networkStream, headerRequestGameList, message);
+            Utils.ClientSendData(networkStream, headerRequestGameList, message);
 
-            var gamesJson = Utils.ReceiveMessageData(networkStream);
+            var gamesJson = Utils.ClientReceiveMessageData(networkStream);
 
             return GameSystem.DecodeGames(gamesJson);
         }
@@ -151,14 +151,14 @@ namespace networkStream
             var message = gameToPublish.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishGame, message.Length);
 
-            Utils.SendData(networkStream, header, message);
+            Utils.ClientSendData(networkStream, header, message);
 
             if (File.Exists(gameToPublish.Cover))
             {
                 await SendFile(gameToPublish.Cover);
             }
 
-            Console.WriteLine(Utils.ReceiveMessageData(networkStream));
+            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
         }
 
         public void PublishReview()
@@ -182,9 +182,9 @@ namespace networkStream
 
             var message = game.Encode();
             var header = new Header(HeaderConstants.Request, CommandConstants.PublishReview, message.Length);
-            Utils.SendData(networkStream, header, message);
+            Utils.ClientSendData(networkStream, header, message);
 
-            Console.WriteLine(Utils.ReceiveMessageData(networkStream));
+            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
         }
 
         public void ModifyGame()
@@ -200,7 +200,7 @@ namespace networkStream
 
             var modifyingGameMessage = gameToModify.Encode();
             var modifyingGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyingGame, modifyingGameMessage.Length);
-            Utils.SendData(networkStream, modifyingGameHeader, modifyingGameMessage);
+            Utils.ClientSendData(networkStream, modifyingGameHeader, modifyingGameMessage);
 
             List<string> headerAndMessage = Utils.ReceiveCommandAndMessage(networkStream);
 
@@ -217,14 +217,14 @@ namespace networkStream
 
             var modifyGameMessage = GameSystem.EncodeGames(new List<Game>() { gameToModify, modifiedGame });
             var modifyGameHeader = new Header(HeaderConstants.Request, CommandConstants.ModifyGame, modifyGameMessage.Length);
-            Utils.SendData(networkStream, modifyGameHeader, modifyGameMessage);
+            Utils.ClientSendData(networkStream, modifyGameHeader, modifyGameMessage);
 
             if (File.Exists(modifiedGame.Cover))
             {
                 SendFile(modifiedGame.Cover);
             }
 
-            Console.WriteLine(Utils.ReceiveMessageData(networkStream));
+            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
         }
 
         public void DeleteGame()
@@ -240,9 +240,9 @@ namespace networkStream
 
             var deleteGameMessage = gameToDelete.Encode();
             var deleteGameHeader = new Header(HeaderConstants.Request, CommandConstants.DeleteGame, deleteGameMessage.Length);
-            Utils.SendData(networkStream, deleteGameHeader, deleteGameMessage);
+            Utils.ClientSendData(networkStream, deleteGameHeader, deleteGameMessage);
 
-            Console.WriteLine(Utils.ReceiveMessageData(networkStream));
+            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
         }
     }
 }

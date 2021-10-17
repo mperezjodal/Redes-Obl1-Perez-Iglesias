@@ -53,11 +53,12 @@ namespace ServerSocket
             GameSystem = new GameSystem();
 
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
-            
+
             var tcpListener = new TcpListener(serverIpEndPoint);
             tcpListener.Start(100);
 
             Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
+            ServerMenuUtils menu = new ServerMenuUtils(GameSystem);
 
             while (!_exit)
             {
@@ -67,32 +68,28 @@ namespace ServerSocket
                 {
                     case "exit":
                         _exit = true;
-                        foreach (var client in _clients)
-                        {
-                            client.Close();
-                        }
                         break;
                     case "1":
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2":
-                        InsertGame();
+                        menu.InsertGame();
                         break;
                     case "3":
-                        InsertReview();
+                        menu.InsertReview();
                         break;
                     case "4":
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
                     case "5":
-                        InsertUser();
+                        menu.InsertUser();
                         break;
                     case "6":
-                        ModifyUser();
+                        menu.ModifyUser();
                         break;
                     case "7":
-                        DeleteUser();
-                    break;
+                        menu.DeleteUser();
+                        break;
                     default:
                         Console.WriteLine("Opción inválida.");
                         break;
@@ -101,123 +98,6 @@ namespace ServerSocket
             }
         }
 
-        public static void InsertGame(){
-            Game gameToPublish = DialogUtils.InputGame();
-            try
-            {
-                if (gameToPublish.Cover != null)
-                {
-                    var fileName = gameToPublish.Cover.Split("/").Last();
-                    System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
-                    gameToPublish.Cover = fileName;
-                }
-
-                GameSystem.AddGame(gameToPublish);
-                Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
-            }
-            catch (Exception e) { 
-                Console.WriteLine(e.Message);
-            }
-
-        }
-
-        public static void InsertReview(){
-            Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
-            if (selectedGame == null)
-            {
-                return;
-            }
-            if (GameSystem.IsGameBeingModified(selectedGame))
-            {
-                Console.WriteLine("No se puede publicar una califiación de este juego.");
-                return;
-            }
-
-            Review selectedGameReview = DialogUtils.InputReview();
-
-            if (selectedGameReview == null)
-            {
-                return;
-            }
-            if (GameSystem.IsGameBeingModified(selectedGame) || !GameSystem.GameExists(selectedGame))
-            {
-                Console.WriteLine("No se puede publicar una califiación de este juego.");
-                return;
-            }
-            try
-            {
-                selectedGame.AddReview(selectedGameReview);
-                Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
-            }
-            catch (Exception e) { 
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        public static void InsertUser(){
-            try
-            {
-                User userToInsert = DialogUtils.InputUser(GameSystem.Users);
-                userToInsert.Login=false;
-                if (userToInsert == null)
-                {
-                    Console.WriteLine("No se puede insertar este usuario.");
-                    return;
-                }
-                else
-                {
-                    GameSystem.AddUser(userToInsert.Name);
-                    Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
-                }
-            }
-            catch (Exception e) { 
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        public static void ModifyUser(){
-
-            try{
-                User userToModify = DialogUtils.SelectUser(GameSystem.Users);
-
-                if (userToModify == null)
-                {
-                    Console.WriteLine("Retorno al menú.");
-                    return;
-                }
-
-                Console.WriteLine("Ingrese el nuevo nombre de usuario:");
-                User modifiedUser = DialogUtils.InputUser(GameSystem.Users);
-
-                if (modifiedUser == null)
-                {
-                    Console.WriteLine("Retorno al menú.");
-                    return;
-                }
-                GameSystem.UpdateUser(userToModify, modifiedUser);
-                Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
-            }
-            catch (Exception e) { 
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        public static void DeleteUser(){
-            try{
-                User userToDelete = DialogUtils.SelectUser(GameSystem.Users);
-                if (userToDelete == null)
-                {
-                    Console.WriteLine("Retorno al menú.");
-                    return;
-                }
-
-                GameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
-                Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
-            }
-            catch (Exception e) { 
-                Console.WriteLine(e.Message);
-            }
-        }
         public static void ListenForConnections(TcpListener tcpListener)
         {
             while (!_exit)
@@ -250,11 +130,11 @@ namespace ServerSocket
                 var buffer = new byte[headerLength];
                 try
                 {
-                    Utils.ReceiveData(networkStream, headerLength, ref buffer);
+                    Utils.ServerReceiveData(networkStream, headerLength, ref buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
-                    Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
+                    Utils.ServerReceiveData(networkStream, header.IDataLength, ref bufferData);
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
@@ -274,7 +154,7 @@ namespace ServerSocket
                         case CommandConstants.GetUsers:
                             var usersMessage = GameSystem.EncodeUsers();
                             var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
-                            Utils.SendData(networkStream, usersHeader, usersMessage);
+                            Utils.ServerSendData(networkStream, usersHeader, usersMessage);
                             break;
                         case CommandConstants.PublishReview:
                             serverUtils.PublishReviewHandler(jsonData);
