@@ -169,13 +169,12 @@ namespace DisplayUtils
             if (existingUser != null)
             {
                 Console.WriteLine("Ya existe un usuario con este nombre, ingrese otro porfavor");
-                Console.WriteLine("Nombre:");
                 name = Console.ReadLine();
 
                 existingUser = users.Find(u => u.Name.Equals(name));
                 if (existingUser != null)
                 {
-                    Console.WriteLine("Nombre invalido.");
+                    Console.WriteLine("Usuario inválido.");
                     return null;
                 }
             }
@@ -214,7 +213,7 @@ namespace DisplayUtils
             User selectedUser = null;
             if (users.Count > 0)
             {
-                Console.WriteLine("Ingrese el nombre del usuario:");
+                Console.WriteLine("Ingrese el nombre del usuario sobre el cual desea operar:");
                 string selectedName = Console.ReadLine();
                 selectedUser = users.Find(u => u.Name.Equals(selectedName));
                 if (selectedUser == null)
@@ -225,7 +224,7 @@ namespace DisplayUtils
                 }
                 if (selectedUser == null)
                 {
-                    Console.WriteLine("Juego inválido.");
+                    Console.WriteLine("Usuario inválido.");
                 }
             }
             return selectedUser;

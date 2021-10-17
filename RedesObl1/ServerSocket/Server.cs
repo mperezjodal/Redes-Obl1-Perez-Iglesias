@@ -155,52 +155,68 @@ namespace ServerSocket
         }
 
         public static void InsertUser(){
-            User userToInsert = DialogUtils.InputUser(GameSystem.Users);
-            userToInsert.Login=false;
-            if (userToInsert == null)
+            try
             {
-                Console.WriteLine("No se puede insertar este usuario.");
-                return;
+                User userToInsert = DialogUtils.InputUser(GameSystem.Users);
+                userToInsert.Login=false;
+                if (userToInsert == null)
+                {
+                    Console.WriteLine("No se puede insertar este usuario.");
+                    return;
+                }
+                else
+                {
+                    GameSystem.AddUser(userToInsert.Name);
+                    Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
+                }
             }
-            else
-            {
-                GameSystem.AddUser(userToInsert.Name);
-                Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
             }
         }
 
         public static void ModifyUser(){
-            User userToModify = DialogUtils.SelectUser(GameSystem.Users);
 
-            if (userToModify == null)
-            {
-                Console.WriteLine("Retorno al menú.");
-                return;
+            try{
+                User userToModify = DialogUtils.SelectUser(GameSystem.Users);
+
+                if (userToModify == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
+
+                Console.WriteLine("Ingrese el nuevo nombre de usuario:");
+                User modifiedUser = DialogUtils.InputUser(GameSystem.Users);
+
+                if (modifiedUser == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
+                GameSystem.UpdateUser(userToModify, modifiedUser);
+                Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
             }
-
-            Console.WriteLine("Ingrese el nuevo nombre de usuario:");
-            User modifiedUser = DialogUtils.InputUser(GameSystem.Users);
-
-            if (modifiedUser == null)
-            {
-                Console.WriteLine("Retorno al menú.");
-                return;
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
             }
-            GameSystem.UpdateUser(userToModify, modifiedUser);
-            Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
         }
 
         public static void DeleteUser(){
-            User userToDelete = DialogUtils.SelectUser(GameSystem.Users);
+            try{
+                User userToDelete = DialogUtils.SelectUser(GameSystem.Users);
+                if (userToDelete == null)
+                {
+                    Console.WriteLine("Retorno al menú.");
+                    return;
+                }
 
-            if (userToDelete == null)
-            {
-                Console.WriteLine("Retorno al menú.");
-                return;
+                GameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
+                Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
             }
-
-            GameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
-            Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
+            catch (Exception e) { 
+                Console.WriteLine(e.Message);
+            }
         }
         public static void ListenForConnections(TcpListener tcpListener)
         {

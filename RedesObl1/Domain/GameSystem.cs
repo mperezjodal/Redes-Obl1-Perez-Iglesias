@@ -124,7 +124,7 @@ namespace Domain
                 return newUser;
             }
             else{
-                throw new Exception("El nombre del usuario no puede ser vacío.");
+                throw new Exception("Error, no se pudo insertar usuario. El nombre del usuario no puede ser vacío.");
             }
             
         }
