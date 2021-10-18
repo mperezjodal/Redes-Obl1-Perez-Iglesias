@@ -92,7 +92,7 @@ namespace networkStream
         public async void ShowGamesAndDetail(List<Game> games)
         {
             Game gameToShow = DialogUtils.SelectGame(games);
-            Console.WriteLine(gameToShow.Cover);
+            
             if(gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
             {
                 await ReciveGameCover(gameToShow);
