@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # 
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketUtils", "SocketUtils\SocketUtils.csproj", "{B5D34300-57FA-4ED7-A377-7848077DCD33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionUtils", "ConnectionUtils\ConnectionUtils.csproj", "{B5D34300-57FA-4ED7-A377-7848077DCD33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientSocket", "ClientSocket\ClientSocket.csproj", "{63FB265D-6009-40B9-823A-D4F8327B2D67}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{63FB265D-6009-40B9-823A-D4F8327B2D67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerSocket", "ServerSocket\ServerSocket.csproj", "{EFB0F40E-AF4B-448D-A74C-6B787F897150}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{EFB0F40E-AF4B-448D-A74C-6B787F897150}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{FB9A27A4-1719-4845-B997-7B03CB12A37D}"
 EndProject
