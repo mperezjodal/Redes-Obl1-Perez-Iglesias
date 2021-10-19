@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using ProtocolLibrary;
 
 namespace ConnectionUtils
@@ -103,16 +104,16 @@ namespace ConnectionUtils
             var iRecv = 0;
             while (iRecv < Length)
             {
-                var localRecv = networkStream.Read(buffer, iRecv, Length - iRecv);
-                iRecv += localRecv;
+                var localRecv = networkStream.ReadAsync(buffer, iRecv, Length - iRecv);
+                iRecv += localRecv.Result;
             }
         }
 
-        public static void ClientSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ClientSendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                SendData(networkStream, header, message);
+                await SendData(networkStream, header, message);
             }
             catch (Exception)
             {
@@ -120,11 +121,11 @@ namespace ConnectionUtils
             }
         }
 
-        public static void ServerSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ServerSendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                SendData(networkStream, header, message);
+                await SendData(networkStream, header, message);
             }
             catch (Exception e)
             {
@@ -132,12 +133,12 @@ namespace ConnectionUtils
             }
         }
 
-        private static void SendData(NetworkStream networkStream, Header header, string message)
+        private static async Task SendData(NetworkStream networkStream, Header header, string message)
         {
             byte[] headerData = header.GetRequest();
             byte[] data = Encoding.UTF8.GetBytes(message);
-            networkStream.Write(header.GetRequest(), 0, headerData.Length);
-            networkStream.Write(data, 0, data.Length);
+            await networkStream.WriteAsync(header.GetRequest(), 0, headerData.Length);
+            await networkStream.WriteAsync(data, 0, data.Length);
         }
     }
 }

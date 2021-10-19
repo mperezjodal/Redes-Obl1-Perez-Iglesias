@@ -118,7 +118,7 @@ namespace Server
             Console.WriteLine("Saliendo...");
         }
 
-        public async static void HandleClient(TcpClient tcpClient)
+        public static async void HandleClient(TcpClient tcpClient)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
@@ -141,39 +141,37 @@ namespace Server
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            serverUtils.LoginHandler(jsonData);
+                            await serverUtils.LoginHandler(jsonData);
                             break;
                         case CommandConstants.Logout:
                             serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            serverUtils.PublishGameHandler(jsonData);
+                            await serverUtils.PublishGameHandler(jsonData);
                             break;
                         case CommandConstants.GetGames:
-                            serverUtils.GetGamesHandler();
+                            await serverUtils.GetGamesHandler();
                             break;
                         case CommandConstants.GetUsers:
-                            var usersMessage = GameSystem.EncodeUsers();
-                            var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
-                            Utils.ServerSendData(networkStream, usersHeader, usersMessage);
+                            await serverUtils.GetUsersHandler();
                             break;
                         case CommandConstants.PublishReview:
-                            serverUtils.PublishReviewHandler(jsonData);
+                            await serverUtils.PublishReviewHandler(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            serverUtils.BeingModifiedHandler(jsonData, ref gamesBeingModifiedByClient);
+                            gamesBeingModifiedByClient = await serverUtils.BeingModifiedHandler(jsonData, gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.ModifyGame:
                             gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.DeleteGame:
-                            serverUtils.DeleteGameHandler(jsonData);
+                            await serverUtils.DeleteGameHandler(jsonData);
                             break;
                         case CommandConstants.AcquireGame:
-                            serverUtils.AcquireGameHandler(jsonData);
+                            await serverUtils.AcquireGameHandler(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            serverUtils.GetAcquiredGamesHandler(jsonData);
+                            await serverUtils.GetAcquiredGamesHandler(jsonData);
                             break;
                         case CommandConstants.GetGameCover:
                             await serverUtils.GetGameCover(jsonData);

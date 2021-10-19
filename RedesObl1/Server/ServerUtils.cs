@@ -17,7 +17,6 @@ namespace Server
         public TcpClient tcpClient;
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
-        public object lockGetGames = new object();
         public object lockAddGame = new object();
         public ServerUtils(GameSystem gameSystem, TcpClient tcpClient)
         {
@@ -37,16 +36,19 @@ namespace Server
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public void GetGamesHandler()
+        public async Task GetGamesHandler()
         {
-            lock (lockGetGames)
-            {
-                SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames());
-            }
+            await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames());
+        }
+
+        public async Task GetUsersHandler()
+        {
+            await SendData(CommandConstants.GetUsersOk, GameSystem.EncodeUsers());
         }
 
         public async Task GetGameCover(string jsonGame)
         {
+            Console.WriteLine("GetGameCover");
             Game g = Game.Decode(jsonGame);
             if (g.Cover != null)
             {
@@ -58,22 +60,22 @@ namespace Server
             }
         }
 
-        public void GetAcquiredGamesHandler(string jsonUser)
+        public async Task GetAcquiredGamesHandler(string jsonUser)
         {
             try
             {
                 User user = User.Decode(jsonUser);
                 var systemUser = GameSystem.Users.Find(u => u.Name.Equals(user.Name));
 
-                SendData(CommandConstants.GetAcquiredGamesOk, systemUser.EncodeGames());
+                await SendData(CommandConstants.GetAcquiredGamesOk, systemUser.EncodeGames());
             }
             catch (Exception)
             {
-                SendData(CommandConstants.GetAcquiredGamesError, "[]");
+                await SendData(CommandConstants.GetAcquiredGamesError, "[]");
             }
         }
 
-        public void AcquireGameHandler(string jsonAcquireGameData)
+        public async Task AcquireGameHandler(string jsonAcquireGameData)
         {
             try
             {
@@ -82,22 +84,22 @@ namespace Server
                 var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
                 user.AcquireGame(game);
 
-                SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.AcquireGameError, "No se ha podido adquirir el juego.");
+                await SendData(CommandConstants.AcquireGameError, "No se ha podido adquirir el juego.");
             }
         }
 
-        public void LoginHandler(string userName)
+        public async Task LoginHandler(string userName)
         {
             User existingUser = this.GameSystem.Users.Find(u => u.Name.Equals(userName));
             if (existingUser != null && existingUser.Login)
             {
                 var loginError = "Usuario tiene una sesion abierta.";
                 var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
-                Utils.ServerSendData(tcpClient.GetStream(), loginErrorHeader, loginError);
+                await Utils.ServerSendData(tcpClient.GetStream(), loginErrorHeader, loginError);
                 return;
             }
 
@@ -109,9 +111,9 @@ namespace Server
 
             GameSystem.LoginUser(userName);
 
-            SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
+            await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
 
-            SendData(CommandConstants.NewUser, userName);
+            await SendData(CommandConstants.NewUser, userName);
         }
 
         public void Logout(string jsonUser)
@@ -124,7 +126,7 @@ namespace Server
             catch { }
         }
 
-        public void BeingModifiedHandler(string jsonData, ref List<Game> gamesBeingModifiedByClient)
+        public async Task<List<Game>> BeingModifiedHandler(string jsonData, List<Game> gamesBeingModifiedByClient)
         {
             try
             {
@@ -138,12 +140,13 @@ namespace Server
                 GameSystem.AddGameBeingModified(game);
                 gamesBeingModifiedByClient.Add(game);
 
-                SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
+                await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
+                await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
             }
+            return gamesBeingModifiedByClient;
         }
 
         public async Task<List<Game>> ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
@@ -168,17 +171,17 @@ namespace Server
                     GameSystem.UpdateGame(gameToModify, updatingGames[1]);
                 }
 
-                SendData(CommandConstants.ModifyGameOk, "Se ha modificado el juego: " + gameToModify.Title + ".");
+                await SendData(CommandConstants.ModifyGameOk, "Se ha modificado el juego: " + gameToModify.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
+                await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
             }
 
             return gamesBeingModifiedByClient;
         }
 
-        public void DeleteGameHandler(string jsonDeleteGameData)
+        public async Task DeleteGameHandler(string jsonDeleteGameData)
         {
             try
             {
@@ -194,15 +197,15 @@ namespace Server
                     this.GameSystem.DeleteGame(gameToDelete);
                 }
 
-                SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
+                await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
+                await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
             }
         }
 
-        public void PublishReviewHandler(string jsonPublishReviewData)
+        public async Task PublishReviewHandler(string jsonPublishReviewData)
         {
             try
             {
@@ -216,15 +219,15 @@ namespace Server
 
                 GameSystem.UpdateReviews(gameToModify, publishReviewGame.Reviews);
 
-                SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".");
+                await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
+                await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
             }
         }
 
-        public async void PublishGameHandler(string jsonPublishGame)
+        public async Task PublishGameHandler(string jsonPublishGame)
         {
             try
             {
@@ -237,11 +240,11 @@ namespace Server
                     GameSystem.AddGame(newGame);
                 }
 
-                SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
+                await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
             }
             catch (Exception)
             {
-                SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
+                await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
             }
         }
 
@@ -251,8 +254,7 @@ namespace Server
             {
                 await ReciveFile();
                 var fileInfo = new FileInfo(cover);
-                string fileName = fileInfo.Name;
-                return fileName;
+                return fileInfo.Name;
             }
             else
             {
@@ -260,10 +262,10 @@ namespace Server
             }
         }
 
-        public void SendData(int command, string message)
+        public async Task SendData(int command, string message)
         {
             var header = new Header(HeaderConstants.Response, command, message.Length);
-            Utils.ServerSendData(tcpClient.GetStream(), header, message);
+            await Utils.ServerSendData(tcpClient.GetStream(), header, message);
         }
     }
 }
