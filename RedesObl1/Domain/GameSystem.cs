@@ -32,7 +32,8 @@ namespace Domain
         {
             if (Games.Find(g => g.Title.Equals(game.Title)) == null)
             {
-                if(game.Title != ""){
+                if (game.Title != "")
+                {
                     Games.Add(game);
                 }
                 else
@@ -62,7 +63,7 @@ namespace Domain
         {
             if (Games.Find(g => g.Title.Equals(game.Title)) != null)
             {
-                foreach(User user in Users)
+                foreach (User user in Users)
                 {
                     user.Games.RemoveAll(g => g.Title == game.Title);
                 }
@@ -77,9 +78,9 @@ namespace Domain
         public Game UpdateGame(Game oldGame, Game newGame)
         {
             oldGame.Update(newGame);
-            foreach(User user in Users)
+            foreach (User user in Users)
             {
-                if(user.Games.FindIndex(g => g.Title == oldGame.Title) != -1)
+                if (user.Games.FindIndex(g => g.Title == oldGame.Title) != -1)
                 {
                     user.Games.RemoveAll(g => g.Title == oldGame.Title);
                     user.AcquireGame(newGame);
@@ -96,9 +97,9 @@ namespace Domain
         public void UpdateReviews(Game game, List<Review> reviews)
         {
             game.UpdateReviews(reviews);
-            foreach(User user in Users)
+            foreach (User user in Users)
             {
-                if(user.Games.FindIndex(g => g.Title == game.Title) != -1)
+                if (user.Games.FindIndex(g => g.Title == game.Title) != -1)
                 {
                     user.Games.RemoveAll(g => g.Title == game.Title);
                     user.AcquireGame(game);
@@ -118,15 +119,17 @@ namespace Domain
 
         public User AddUser(string userName)
         {
-            if(userName != ""){
+            if (userName != "")
+            {
                 User newUser = new User() { Name = userName };
                 Users.Add(newUser);
                 return newUser;
             }
-            else{
+            else
+            {
                 throw new Exception("Error, no se pudo insertar usuario. El nombre del usuario no puede ser vacío.");
             }
-            
+
         }
 
         public string EncodeGames()

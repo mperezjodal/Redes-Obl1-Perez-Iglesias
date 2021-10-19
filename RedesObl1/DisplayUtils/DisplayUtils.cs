@@ -22,7 +22,6 @@ namespace DisplayUtils
             {
                 Console.WriteLine("    " + menuOption.Key + " -   " + menuOption.Value);
             }
-            Console.WriteLine("          exit");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");

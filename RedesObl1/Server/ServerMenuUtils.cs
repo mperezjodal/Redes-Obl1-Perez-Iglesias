@@ -105,6 +105,11 @@ namespace Server
                     Console.WriteLine("Retorno al menú.");
                     return;
                 }
+                else if (userToModify.Login == true)
+                {
+                    Console.WriteLine("No se puede modificar un usuario con sesión abierta.");
+                    return;
+                }
 
                 Console.WriteLine("Ingrese el nuevo nombre de usuario:");
                 User modifiedUser = DialogUtils.InputUser(gameSystem.Users);
@@ -114,6 +119,7 @@ namespace Server
                     Console.WriteLine("Retorno al menú.");
                     return;
                 }
+
                 gameSystem.UpdateUser(userToModify, modifiedUser);
                 Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
             }
