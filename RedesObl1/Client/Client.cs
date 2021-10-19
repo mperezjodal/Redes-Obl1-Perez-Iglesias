@@ -26,7 +26,8 @@ namespace Client
             {"5", "Calificar juego"},
             {"6", "Adquirir juego"},
             {"7", "Ver juegos adquiridos"},
-            {"8", "Ver juegos y detalles"}
+            {"8", "Ver juegos y detalles"},
+            {" ", "logout"}
         };
 
         static void Main(string[] args)
@@ -68,7 +69,7 @@ namespace Client
 
                     switch (option)
                     {
-                        case "exit":
+                        case "logout":
                             clientUtils.Logout();
                             connected = false;
                             break;

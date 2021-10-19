@@ -35,7 +35,8 @@ namespace Server
             {"4", "Buscar juegos"},
             {"5", "Insertar usuario"},
             {"6", "Modificar usuario"},
-            {"7", "Eliminar usuario"}
+            {"7", "Eliminar usuario"},
+            {" ", "exit"}
         };
 
         static void Main(string[] args)

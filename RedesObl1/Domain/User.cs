@@ -18,6 +18,12 @@ namespace Domain
             Games = new List<Game>();
         }
 
+        public User(string userName)
+        {
+            Name = userName;
+            Games = new List<Game>();
+        }
+
         public void AcquireGame(Game newGame)
         {
             if (Games.Find(g => g.Title.Equals(newGame.Title)) == null)
