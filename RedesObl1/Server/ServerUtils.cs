@@ -48,7 +48,6 @@ namespace Server
 
         public async Task GetGameCover(string jsonGame)
         {
-            Console.WriteLine("GetGameCover");
             Game g = Game.Decode(jsonGame);
             if (g.Cover != null)
             {

@@ -146,11 +146,11 @@ namespace networkStream
         {
             Game gameToPublish = DialogUtils.InputGame();
 
-            Task request = Task.Run(() => SendData(CommandConstants.PublishGame, gameToPublish.Encode()));
+            SendData(CommandConstants.PublishGame, gameToPublish.Encode());
 
             if (File.Exists(gameToPublish.Cover))
             {
-                await request.ContinueWith(antecedent => SendFile(gameToPublish.Cover));
+                await SendFile(gameToPublish.Cover);
             }
 
             Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
