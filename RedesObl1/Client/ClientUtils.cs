@@ -35,7 +35,7 @@ namespace networkStream
                     {
                         await SendData(CommandConstants.Login, userName);
 
-                        List<string> commandAndMessage = Utils.ReceiveCommandAndMessage(networkStream);
+                        List<string> commandAndMessage = await Utils.ReceiveCommandAndMessage(networkStream);
 
                         Console.WriteLine(commandAndMessage[1]);
 
@@ -60,7 +60,7 @@ namespace networkStream
                 }
             }
 
-            var userJson = Utils.ClientReceiveMessageData(networkStream);
+            var userJson = await Utils.ClientReceiveMessageData(networkStream);
             myUser = new User(userJson);
         }
 
@@ -80,14 +80,14 @@ namespace networkStream
 
             await SendData(CommandConstants.AcquireGame, new UserGamePair(myUser, game).Encode());
 
-            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
 
         public async Task<List<Game>> GetGames()
         {
             await SendData(CommandConstants.GetGames, "");
 
-            var gamesJson = Utils.ClientReceiveMessageData(networkStream);
+            var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
             return gameList;
         }
@@ -115,7 +115,7 @@ namespace networkStream
         {
             await SendData(CommandConstants.GetUsers, "");
 
-            var usersJson = Utils.ClientReceiveMessageData(networkStream);
+            var usersJson = await Utils.ClientReceiveMessageData(networkStream);
             List<User> users = GameSystem.DecodeUsers(usersJson);
 
             return users;
@@ -125,7 +125,7 @@ namespace networkStream
         {
             await SendData(CommandConstants.GetAcquiredGames, myUser.Encode());
 
-            var gamesJson = Utils.ClientReceiveMessageData(networkStream);
+            var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
 
             return GameSystem.DecodeGames(gamesJson);
         }
@@ -142,18 +142,18 @@ namespace networkStream
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public async Task PublishGame()
+        public async Task cuando PublishGame()
         {
             Game gameToPublish = DialogUtils.InputGame();
 
-            SendData(CommandConstants.PublishGame, gameToPublish.Encode());
+            await SendData(CommandConstants.PublishGame, gameToPublish.Encode());
 
             if (File.Exists(gameToPublish.Cover))
             {
                 await SendFile(gameToPublish.Cover);
             }
 
-            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
 
         public async Task PublishReview()
@@ -177,7 +177,7 @@ namespace networkStream
 
             await SendData(CommandConstants.PublishReview, game.Encode());
 
-            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
 
         public async Task ModifyGame()
@@ -193,7 +193,7 @@ namespace networkStream
 
             await SendData(CommandConstants.ModifyingGame, gameToModify.Encode());
 
-            List<string> headerAndMessage = Utils.ReceiveCommandAndMessage(networkStream);
+            List<string> headerAndMessage = await Utils.ReceiveCommandAndMessage(networkStream);
 
             Console.WriteLine(headerAndMessage[1]);
 
@@ -213,7 +213,7 @@ namespace networkStream
                 await SendFile(modifiedGame.Cover);
             }
 
-            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
 
         public async Task DeleteGame()
@@ -229,7 +229,7 @@ namespace networkStream
 
             await SendData(CommandConstants.DeleteGame, gameToDelete.Encode());
 
-            Console.WriteLine(Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
 
         public async Task SendData(int command, string message)

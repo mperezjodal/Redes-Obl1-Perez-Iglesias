@@ -131,11 +131,12 @@ namespace Server
                 var buffer = new byte[headerLength];
                 try
                 {
-                    Utils.ServerReceiveData(networkStream, headerLength, ref buffer);
+                    buffer = await Utils.ServerReceiveData(networkStream, headerLength, buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
-                    Utils.ServerReceiveData(networkStream, header.IDataLength, ref bufferData);
+                    bufferData = await Utils.ServerReceiveData(networkStream, header.IDataLength, bufferData);
+                    
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)

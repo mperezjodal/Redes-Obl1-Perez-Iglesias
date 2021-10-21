@@ -50,7 +50,7 @@ namespace Client
             Console.WriteLine("Conectado al servidor.");
 
             RunApp(tcpClient);
-            tcpClient.Close();
+            // tcpClient.Close();
         }
 
         public static async void RunApp(TcpClient tcpClient)
