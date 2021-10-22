@@ -8,6 +8,7 @@ using System.IO;
 using DisplayUtils;
 using networkStream;
 using Domain;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -30,7 +31,7 @@ namespace Client
             {" ", "logout"}
         };
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -49,11 +50,11 @@ namespace Client
             tcpClient.Connect(serverEndPoint);
             Console.WriteLine("Conectado al servidor.");
 
-            RunApp(tcpClient);
+            await RunApp(tcpClient);
             tcpClient.Close();
         }
 
-        public static void RunApp(TcpClient tcpClient)
+        public static async Task RunApp(TcpClient tcpClient)
         {
             var connected = true;
 
@@ -62,7 +63,7 @@ namespace Client
                 var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             
                 ClientUtils clientUtils = new ClientUtils(networkStream);
-                clientUtils.Login();
+                await clientUtils.Login();
                 while (connected)
                 {
                     var option = DialogUtils.Menu(ClientMenuOptions);
@@ -70,32 +71,32 @@ namespace Client
                     switch (option)
                     {
                         case "logout":
-                            clientUtils.Logout();
+                            await clientUtils.Logout();
                             connected = false;
                             break;
                         case "1":
-                            clientUtils.PublishGame();
+                            await clientUtils.PublishGame();
                             break;
                         case "2": 
-                            clientUtils.ModifyGame();
+                            await clientUtils.ModifyGame();
                             break;
                         case "3": 
-                            clientUtils.DeleteGame();
+                            await clientUtils.DeleteGame();
                             break;
                         case "4": 
-                            DialogUtils.SearchFilteredGames(clientUtils.GetGames());
+                            DialogUtils.SearchFilteredGames(await clientUtils.GetGames());
                             break;
                         case "5":
-                            clientUtils.PublishReview();
+                            await clientUtils.PublishReview();
                             break;
                         case "6": 
-                            clientUtils.AcquireGame();
+                            await clientUtils.AcquireGame();
                             break;
                         case "7": 
-                            clientUtils.ShowGamesAndDetail(clientUtils.GetAcquiredGames());
+                            await clientUtils.ShowGamesAndDetail(await clientUtils.GetAcquiredGames());
                             break;
                         case "8": 
-                            clientUtils.ShowGamesAndDetail(clientUtils.GetGames());
+                            await clientUtils.ShowGamesAndDetail(await clientUtils.GetGames());
                             break;
                         default:
                             Console.WriteLine("Opción inválida.");

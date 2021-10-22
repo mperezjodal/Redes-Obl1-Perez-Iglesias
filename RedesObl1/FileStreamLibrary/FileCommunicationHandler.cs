@@ -39,19 +39,17 @@ namespace FileStreamLibrary
 
         public async Task ReceiveFileAsync()
         {
-
             byte[] fileNameLengthData = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileNameLength);
             int fileNameLength = BitConverter.ToInt32(fileNameLengthData);
 
             byte[] fileNameData = await _networkStreamHandler.ReadDataAsync(fileNameLength);
             string fileName = Encoding.UTF8.GetString(fileNameData);
 
-
             byte[] fileSizeDataLength = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileSizeLength);
             long fileSize = BitConverter.ToInt64(fileSizeDataLength);
 
+
             await ReceiveFileAsync(fileSize, fileName);
-            //return fileName;
         }
 
         private async Task SendFileAsync(long fileSize, string path)

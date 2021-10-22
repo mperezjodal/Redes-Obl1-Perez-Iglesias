@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using ProtocolLibrary;
 
 namespace ConnectionUtils
 {
     public static class Utils
     {
-        public static string ClientReceiveMessageData(NetworkStream networkStream)
+        public static async Task<string> ClientReceiveMessageData(NetworkStream networkStream)
         {
             try
             {
-                return ReceiveMessageData(networkStream);
+                return await ReceiveMessageData(networkStream);
             }
             catch (Exception)
             {
@@ -21,7 +22,7 @@ namespace ConnectionUtils
             }
         }
 
-        private static string ReceiveMessageData(NetworkStream networkStream)
+        private static async Task<string> ReceiveMessageData(NetworkStream networkStream)
         {
             while (true)
             {
@@ -29,21 +30,21 @@ namespace ConnectionUtils
                                    HeaderConstants.DataLength;
                 var buffer = new byte[headerLength];
 
-                ReceiveData(networkStream, headerLength, ref buffer);
+                buffer = await ReceiveData(networkStream, headerLength, buffer);
                 var header = new Header();
                 header.DecodeData(buffer);
 
                 var bufferData = new byte[header.IDataLength];
-                ReceiveData(networkStream, header.IDataLength, ref bufferData);
+                bufferData = await ReceiveData(networkStream, header.IDataLength, bufferData);
                 return Encoding.UTF8.GetString(bufferData);
             }
         }
 
-        public static List<string> ClientReceiveCommandAndMessage(NetworkStream networkStream)
+        public static async Task<List<string>> ClientReceiveCommandAndMessage(NetworkStream networkStream)
         {
             try
             {
-                return ReceiveCommandAndMessage(networkStream);
+                return await ReceiveCommandAndMessage(networkStream);
             }
             catch (Exception)
             {
@@ -52,7 +53,7 @@ namespace ConnectionUtils
             }
         }
 
-        public static List<string> ReceiveCommandAndMessage(NetworkStream networkStream)
+        public static async Task<List<string>> ReceiveCommandAndMessage(NetworkStream networkStream)
         {
             List<string> commandAndMessage = new List<string>();
 
@@ -60,12 +61,12 @@ namespace ConnectionUtils
                                 HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
 
-            Utils.ReceiveData(networkStream, headerLength, ref buffer);
+            buffer = await ReceiveData(networkStream, headerLength, buffer);
             var header = new Header();
             header.DecodeData(buffer);
             var bufferData = new byte[header.IDataLength];
 
-            Utils.ReceiveData(networkStream, header.IDataLength, ref bufferData);
+            bufferData = await ReceiveData(networkStream, header.IDataLength, bufferData);
             string message = Encoding.UTF8.GetString(bufferData);
 
             commandAndMessage.Add(header.ICommand.ToString());
@@ -74,45 +75,48 @@ namespace ConnectionUtils
             return commandAndMessage;
         }
 
-        public static void ClientReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        public static async Task<byte[]> ClientReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
         {
             try
             {
-                ReceiveData(networkStream, Length, ref buffer);
+                return await ReceiveData(networkStream, Length, buffer);
             }
             catch (Exception)
             {
                 Console.WriteLine("Se ha cerrado la conexión con el servidor.");
             }
+            return buffer;
         }
 
-        public static void ServerReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        public static async Task<byte[]> ServerReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
         {
             try
             {
-                ReceiveData(networkStream, Length, ref buffer);
+                return await ReceiveData(networkStream, Length, buffer);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
+            return buffer;
         }
 
-        private static void ReceiveData(NetworkStream networkStream, int Length, ref byte[] buffer)
+        private static async Task<byte[]> ReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < Length)
             {
-                var localRecv = networkStream.Read(buffer, iRecv, Length - iRecv);
+                var localRecv = await networkStream.ReadAsync(buffer, iRecv, Length - iRecv);
                 iRecv += localRecv;
             }
+            return buffer;
         }
 
-        public static void ClientSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ClientSendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                SendData(networkStream, header, message);
+                await SendData(networkStream, header, message);
             }
             catch (Exception)
             {
@@ -120,11 +124,11 @@ namespace ConnectionUtils
             }
         }
 
-        public static void ServerSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ServerSendData(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                SendData(networkStream, header, message);
+                await SendData(networkStream, header, message);
             }
             catch (Exception e)
             {
@@ -132,12 +136,12 @@ namespace ConnectionUtils
             }
         }
 
-        private static void SendData(NetworkStream networkStream, Header header, string message)
+        private static async Task SendData(NetworkStream networkStream, Header header, string message)
         {
             byte[] headerData = header.GetRequest();
             byte[] data = Encoding.UTF8.GetBytes(message);
-            networkStream.Write(header.GetRequest(), 0, headerData.Length);
-            networkStream.Write(data, 0, data.Length);
+            await networkStream.WriteAsync(header.GetRequest(), 0, headerData.Length);
+            await networkStream.WriteAsync(data, 0, data.Length);
         }
     }
 }
