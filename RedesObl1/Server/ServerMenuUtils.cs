@@ -139,6 +139,11 @@ namespace Server
                     Console.WriteLine("Retorno al menú.");
                     return;
                 }
+                else if (userToDelete.Login == true)
+                {
+                    Console.WriteLine("No se puede modificar un usuario con sesión abierta.");
+                    return;
+                }
 
                 gameSystem.Users.RemoveAll(u => u.Name.Equals(userToDelete.Name));
                 Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");

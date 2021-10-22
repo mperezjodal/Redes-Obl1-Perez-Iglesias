@@ -8,6 +8,7 @@ using System.IO;
 using DisplayUtils;
 using networkStream;
 using Domain;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -30,7 +31,7 @@ namespace Client
             {" ", "logout"}
         };
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -49,11 +50,11 @@ namespace Client
             tcpClient.Connect(serverEndPoint);
             Console.WriteLine("Conectado al servidor.");
 
-            RunApp(tcpClient);
-            // tcpClient.Close();
+            await RunApp(tcpClient);
+            tcpClient.Close();
         }
 
-        public static async void RunApp(TcpClient tcpClient)
+        public static async Task RunApp(TcpClient tcpClient)
         {
             var connected = true;
 

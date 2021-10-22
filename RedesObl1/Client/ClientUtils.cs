@@ -34,7 +34,6 @@ namespace networkStream
                     if (userName != "")
                     {
                         await SendData(CommandConstants.Login, userName);
-
                         List<string> commandAndMessage = await Utils.ReceiveCommandAndMessage(networkStream);
 
                         Console.WriteLine(commandAndMessage[1]);
@@ -59,8 +58,8 @@ namespace networkStream
                     notLogin = false;
                 }
             }
-
             var userJson = await Utils.ClientReceiveMessageData(networkStream);
+
             myUser = new User(userJson);
         }
 
@@ -142,7 +141,7 @@ namespace networkStream
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public async Task cuando PublishGame()
+        public async Task PublishGame()
         {
             Game gameToPublish = DialogUtils.InputGame();
 
