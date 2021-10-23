@@ -82,8 +82,8 @@ namespace Domain
             {
                 if (user.Games.FindIndex(g => g.Title == oldGame.Title) != -1)
                 {
-                    user.Games.RemoveAll(g => g.Title == oldGame.Title);
-                    user.AcquireGame(newGame);
+                    Game g = user.Games.Find(g => g.Title == oldGame.Title);
+                    g.Update(newGame);
                 }
             }
             return newGame;
@@ -101,8 +101,8 @@ namespace Domain
             {
                 if (user.Games.FindIndex(g => g.Title == game.Title) != -1)
                 {
-                    user.Games.RemoveAll(g => g.Title == game.Title);
-                    user.AcquireGame(game);
+                    Game g = user.Games.Find(g => g.Title == game.Title);
+                    g.Update(game);
                 }
             }
         }
