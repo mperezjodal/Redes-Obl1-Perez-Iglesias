@@ -106,7 +106,7 @@ namespace Server
                 try
                 {
                     var acceptedTcpClient = tcpListener.AcceptTcpClient();
-                    Task listenForConnectionsTask = Task.Run(() => HandleClient(acceptedTcpClient));
+                    Task listenForConnectionsTask = Task.Run(async () => await HandleClient(acceptedTcpClient));
 
                     _clients.Add(acceptedTcpClient);
                 }
@@ -118,7 +118,7 @@ namespace Server
             Console.WriteLine("Saliendo...");
         }
 
-        public static async void HandleClient(TcpClient tcpClient)
+        public static async Task HandleClient(TcpClient tcpClient)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
