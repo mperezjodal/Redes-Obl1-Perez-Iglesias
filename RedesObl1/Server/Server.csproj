@@ -2,11 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>Server5</RootNamespace>
         <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SocketUtils\SocketUtils.csproj" />
+      <ProjectReference Include="..\ConnectionUtils\ConnectionUtils.csproj" />
       <ProjectReference Include="..\Domain\Domain.csproj" />
       <ProjectReference Include="..\ProtocolLibrary\ProtocolLibrary.csproj" />
       <ProjectReference Include="..\DisplayUtils\DisplayUtils.csproj" />

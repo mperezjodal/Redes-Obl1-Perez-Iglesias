@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Threading.Tasks;
+using System.Linq;
 using System.Security.AccessControl;
 using System.Globalization;
 using System;
@@ -8,13 +9,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using SocketUtils;
+using ConnectionUtils;
 using Domain;
 using ProtocolLibrary;
 using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
-namespace ServerSocket
+namespace Server
 {
     public class Server
     {
@@ -25,13 +26,17 @@ namespace ServerSocket
         public int Backlog { get; set; }
         private static GameSystem GameSystem;
         private static bool _exit = false;
-        static List<Socket> _clients = new List<Socket>();
+        static List<TcpClient> _clients = new List<TcpClient>();
 
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
             {"3", "Publicar calificación de un juego"},
-            {"4", "Buscar juegos"}
+            {"4", "Buscar juegos"},
+            {"5", "Insertar usuario"},
+            {"6", "Modificar usuario"},
+            {"7", "Eliminar usuario"},
+            {" ", "exit"}
         };
 
         static void Main(string[] args)
@@ -48,14 +53,13 @@ namespace ServerSocket
             object lockObject = new object();
             GameSystem = new GameSystem();
 
-            _clients = new List<Socket>();
-            Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
-            serverSocket.Bind(serverIpEndPoint);
-            serverSocket.Listen(ServerConfig.Backlog);
 
-            var threadServer = new Thread(() => ListenForConnections(serverSocket));
-            threadServer.Start();
+            var tcpListener = new TcpListener(serverIpEndPoint);
+            tcpListener.Start(100);
+
+            Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
+            ServerMenuUtils menu = new ServerMenuUtils(GameSystem);
 
             while (!_exit)
             {
@@ -65,62 +69,27 @@ namespace ServerSocket
                 {
                     case "exit":
                         _exit = true;
-                        serverSocket.Close(0);
-                        foreach (var client in _clients)
-                        {
-                            client.Shutdown(SocketShutdown.Both);
-                            client.Close();
-                        }
                         break;
                     case "1":
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2":
-                        Game gameToPublish = DialogUtils.InputGame();
-                        
-                        try
-                        {
-                            if (gameToPublish.Cover != null)
-                            {
-                                var fileName = gameToPublish.Cover.Split("/").Last();
-                                System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
-                                gameToPublish.Cover = fileName;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        GameSystem.AddGame(gameToPublish);
-                        Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+                        menu.InsertGame();
                         break;
                     case "3":
-                        Game selectedGame = DialogUtils.SelectGame(GameSystem.Games);
-                        if (selectedGame == null)
-                        {
-                            break;
-                        }
-                        if (GameSystem.IsGameBeingModified(selectedGame))
-                        {
-                            Console.WriteLine("No se puede publicar una califiación de este juego.");
-                            break;
-                        }
-
-                        Review selectedGameReview = DialogUtils.InputReview();
-
-                        if (selectedGameReview == null)
-                        {
-                            break;
-                        }
-                        if (GameSystem.IsGameBeingModified(selectedGame) || !GameSystem.GameExists(selectedGame))
-                        {
-                            Console.WriteLine("No se puede publicar una califiación de este juego.");
-                            break;
-                        }
-
-                        selectedGame.AddReview(selectedGameReview);
-                        Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
+                        menu.InsertReview();
                         break;
                     case "4":
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
+                        break;
+                    case "5":
+                        menu.InsertUser();
+                        break;
+                    case "6":
+                        menu.ModifyUser();
+                        break;
+                    case "7":
+                        menu.DeleteUser();
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -129,16 +98,17 @@ namespace ServerSocket
                 DialogUtils.ReturnToMenu();
             }
         }
-        public static void ListenForConnections(Socket socketServer)
+
+        public static void ListenForConnections(TcpListener tcpListener)
         {
             while (!_exit)
             {
                 try
                 {
-                    var clientConnected = socketServer.Accept();
-                    _clients.Add(clientConnected);
-                    var threadClient = new Thread(() => HandleClient(clientConnected, socketServer));
-                    threadClient.Start();
+                    var acceptedTcpClient = tcpListener.AcceptTcpClient();
+                    Task listenForConnectionsTask = Task.Run(async () => await HandleClient(acceptedTcpClient));
+
+                    _clients.Add(acceptedTcpClient);
                 }
                 catch (Exception)
                 {
@@ -148,11 +118,12 @@ namespace ServerSocket
             Console.WriteLine("Saliendo...");
         }
 
-        public static void HandleClient(Socket clientSocket, Socket serverSocket)
+        public static async Task HandleClient(TcpClient tcpClient)
         {
             List<Game> gamesBeingModifiedByClient = new List<Game>();
+            var networkStream = tcpClient.GetStream();
 
-            ServerUtils serverUtils = new ServerUtils(GameSystem, clientSocket);
+            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient);
             while (!_exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -160,46 +131,51 @@ namespace ServerSocket
                 var buffer = new byte[headerLength];
                 try
                 {
-                    Utils.ReceiveData(clientSocket, headerLength, ref buffer);
+                    buffer = await Utils.ServerReceiveData(networkStream, headerLength, buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
-                    Utils.ReceiveData(clientSocket, header.IDataLength, ref bufferData);
+                    bufferData = await Utils.ServerReceiveData(networkStream, header.IDataLength, bufferData);
+                    
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            serverUtils.LoginHandler(jsonData);
+                            await serverUtils.LoginHandler(jsonData);
+                            break;
+                        case CommandConstants.Logout:
+                            serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            serverUtils.PublishGameHandler(jsonData, serverSocket);
+                            await serverUtils.PublishGameHandler(jsonData);
                             break;
                         case CommandConstants.GetGames:
-                            serverUtils.GetGamesHandler(clientSocket);
+                            await serverUtils.GetGamesHandler();
                             break;
                         case CommandConstants.GetUsers:
-                            var usersMessage = GameSystem.EncodeUsers();
-                            var usersHeader = new Header(HeaderConstants.Response, CommandConstants.GetUsersOk, usersMessage.Length);
-                            Utils.SendData(clientSocket, usersHeader, usersMessage);
+                            await serverUtils.GetUsersHandler();
                             break;
                         case CommandConstants.PublishReview:
-                            serverUtils.PublishReviewHandler(jsonData);
+                            await serverUtils.PublishReviewHandler(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            serverUtils.BeingModifiedHandler(jsonData, ref gamesBeingModifiedByClient);
+                            gamesBeingModifiedByClient = await serverUtils.BeingModifiedHandler(jsonData, gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.ModifyGame:
-                            serverUtils.ModifyGameHandler(jsonData, ref gamesBeingModifiedByClient);
+                            gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
                             break;
                         case CommandConstants.DeleteGame:
-                            serverUtils.DeleteGameHandler(jsonData);
+                            await serverUtils.DeleteGameHandler(jsonData);
                             break;
                         case CommandConstants.AcquireGame:
-                            serverUtils.AcquireGameHandler(jsonData);
+                            await serverUtils.AcquireGameHandler(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            serverUtils.GetAcquiredGamesHandler(jsonData);
+                            await serverUtils.GetAcquiredGamesHandler(jsonData);
+                            break;
+                        case CommandConstants.GetGameCover:
+                            await serverUtils.GetGameCover(jsonData);
                             break;
                     }
                 }

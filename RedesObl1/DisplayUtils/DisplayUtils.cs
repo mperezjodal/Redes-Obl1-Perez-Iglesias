@@ -22,14 +22,14 @@ namespace DisplayUtils
             {
                 Console.WriteLine("    " + menuOption.Key + " -   " + menuOption.Value);
             }
-            Console.WriteLine("          exit");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             Console.ResetColor();
             Console.WriteLine();
             var option = Console.ReadLine();
-            if(items.ContainsKey(option)){
+            if (items.ContainsKey(option))
+            {
                 Console.WriteLine("Has seleccionado: " + items[option]);
             }
             return option;
@@ -80,10 +80,12 @@ namespace DisplayUtils
 
         public static void GameList(List<Game> games)
         {
-            if(games.Count == 0){
+            if (games.Count == 0)
+            {
                 Console.WriteLine("No se han encontrado juegos.");
             }
-            else{
+            else
+            {
                 Console.WriteLine("Lista de juegos:");
                 foreach (Game g in games)
                 {
@@ -92,10 +94,25 @@ namespace DisplayUtils
             }
         }
 
+        public static void UserList(List<User> users)
+        {
+            if (users.Count == 0)
+            {
+                Console.WriteLine("No se han encontrado usuarios.");
+            }
+            else
+            {
+                Console.WriteLine("Lista de usuarios:");
+                foreach (User user in users)
+                {
+                    Console.WriteLine(user.Name);
+                }
+            }
+        }
+
         public static Game InputGame()
         {
             Game newGame = new Game();
-
             Console.WriteLine("Título:");
             newGame.Title = Console.ReadLine();
             Console.WriteLine("Género:");
@@ -105,13 +122,14 @@ namespace DisplayUtils
 
             Console.WriteLine("Path de la carátula:");
             String path = @"" + Console.ReadLine();
-            if(File.Exists(path)){
+            if (File.Exists(path))
+            {
                 newGame.Cover = path;
             }
-            else{
+            else
+            {
                 Console.WriteLine("Archivo no disponible.");
             }
-
 
             newGame.Reviews = new List<Review>();
             return newGame;
@@ -126,7 +144,7 @@ namespace DisplayUtils
             int rat;
             Int32.TryParse(rating, out rat);
 
-            if(rat > 10 || rat < 1)
+            if (rat > 10 || rat < 1)
             {
                 Console.WriteLine("Rating inválido.");
                 return null;
@@ -139,12 +157,37 @@ namespace DisplayUtils
             return Review;
         }
 
+        public static User InputUser(List<User> users)
+        {
+            User user = new User();
+
+            Console.WriteLine("Nombre:");
+            var name = Console.ReadLine();
+
+            User existingUser = users.Find(u => u.Name.Equals(name));
+            if (existingUser != null)
+            {
+                Console.WriteLine("Ya existe un usuario con este nombre, ingrese otro porfavor");
+                name = Console.ReadLine();
+
+                existingUser = users.Find(u => u.Name.Equals(name));
+                if (existingUser != null)
+                {
+                    Console.WriteLine("Usuario inválido.");
+                    return null;
+                }
+            }
+            user.Name = name;
+            return user;
+        }
+
         public static Game SelectGame(List<Game> games)
         {
             DialogUtils.GameList(games);
 
             Game selectedGame = null;
-            if(games.Count > 0){
+            if (games.Count > 0)
+            {
                 Console.WriteLine("Ingrese el título del juego:");
                 string gameTitle = Console.ReadLine();
                 selectedGame = games.Find(g => g.Title.Equals(gameTitle));
@@ -160,6 +203,30 @@ namespace DisplayUtils
                 }
             }
             return selectedGame;
+        }
+
+        public static User SelectUser(List<User> users)
+        {
+            DialogUtils.UserList(users);
+
+            User selectedUser = null;
+            if (users.Count > 0)
+            {
+                Console.WriteLine("Ingrese el nombre del usuario sobre el cual desea operar:");
+                string selectedName = Console.ReadLine();
+                selectedUser = users.Find(u => u.Name.Equals(selectedName));
+                if (selectedUser == null)
+                {
+                    Console.WriteLine("Nombre de usuario inválido, intente nuevamente:");
+                    selectedName = Console.ReadLine();
+                    selectedUser = users.Find(u => u.Name.Equals(selectedName));
+                }
+                if (selectedUser == null)
+                {
+                    Console.WriteLine("Usuario inválido.");
+                }
+            }
+            return selectedUser;
         }
 
         public static void SearchFilteredGames(List<Game> games)
@@ -207,6 +274,7 @@ namespace DisplayUtils
                 Console.WriteLine("Retorno al menú.");
                 return;
             }
+
             Console.WriteLine("Detalle del juego: ");
             Console.Write("Juego: ");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -221,7 +289,7 @@ namespace DisplayUtils
             Console.WriteLine(gameToShow.Synopsis);
             Console.ResetColor();
 
-            if ( gameToShow.Reviews.Count > 0 )
+            if (gameToShow.Reviews.Count > 0)
             {
                 int totalRating = 0;
                 int cont = 0;
@@ -255,11 +323,81 @@ namespace DisplayUtils
                 Console.WriteLine("No hay reviews para este juego en el sistema.");
             }
 
-            if(File.Exists(gameToShow.Cover)){
+            if (File.Exists(gameToShow.Cover))
+            {
                 Console.Write("Carátula: ");
                 Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
             }
-            else{
+            else
+            {
+                Console.Write("No hay carátula para este juego.");
+            }
+
+        }
+
+        public static void ShowGameDetail(Game gameToShow)
+        {
+            if (gameToShow == null)
+            {
+                Console.WriteLine("Retorno al menú.");
+                return;
+            }
+
+            Console.WriteLine("Detalle del juego: ");
+            Console.Write("Juego: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Title);
+            Console.ResetColor();
+            Console.Write("Género: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Genre);
+            Console.ResetColor();
+            Console.Write("Sinópsis: ");
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine(gameToShow.Synopsis);
+            Console.ResetColor();
+
+            if (gameToShow.Reviews.Count > 0)
+            {
+                int totalRating = 0;
+                int cont = 0;
+
+                foreach (Review r in gameToShow.Reviews)
+                {
+                    cont++;
+                    totalRating += r.Rating;
+                    Console.WriteLine("Review " + cont);
+
+                    Console.Write("    Rating: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Rating);
+                    Console.ResetColor();
+
+                    Console.Write("    Comentario: ");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(r.Comment);
+                    Console.ResetColor();
+                }
+
+                Console.Write("Promedio de Calificaciones: ");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine(totalRating / cont);
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("No hay reviews para este juego en el sistema.");
+            }
+
+            if (File.Exists(gameToShow.Cover))
+            {
+                Console.Write("Carátula: ");
+                Console.WriteLine("Se encuentra en: " + gameToShow.Cover);
+            }
+            else
+            {
                 Console.Write("No hay carátula para este juego.");
             }
 
