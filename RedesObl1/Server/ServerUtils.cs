@@ -7,7 +7,9 @@ using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using RabbitMQ.Client;
 
 namespace Server
 {
@@ -18,10 +20,23 @@ namespace Server
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
         public object lockAddGame = new object();
+
+        private const string SimpleQueue = "m6bBasicQueue";
+
         public ServerUtils(GameSystem gameSystem, TcpClient tcpClient)
         {
             this.GameSystem = gameSystem;
             this.tcpClient = tcpClient;
+        }
+
+        public void PublishMessage(IModel channel, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
 
         public async Task SendFile(string path)

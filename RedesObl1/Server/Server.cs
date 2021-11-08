@@ -15,6 +15,8 @@ using ProtocolLibrary;
 using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using RabbitMQ.Client;
+
 namespace Server
 {
     public class Server
@@ -39,8 +41,15 @@ namespace Server
             {" ", "exit"}
         };
 
+        private const string SimpleQueue = "m6bBasicQueue";
+
         static void Main(string[] args)
         {
+            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
+            using IConnection connection = connectionFactory.CreateConnection();
+            using IModel channel = connection.CreateModel();
+            DeclareQueue(channel);
+
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)
@@ -59,7 +68,7 @@ namespace Server
             tcpListener.Start(100);
 
             Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
-            ServerMenuUtils menu = new ServerMenuUtils(GameSystem);
+            ServerMenuUtils menu = new ServerMenuUtils(GameSystem, channel);
 
             while (!_exit)
             {
@@ -74,7 +83,10 @@ namespace Server
                         DialogUtils.ShowGameDetail(GameSystem.Games);
                         break;
                     case "2":
-                        menu.InsertGame();
+                        Game gameToPublish = menu.InsertGame();
+                        LogEntry logEntry = new LogEntry() { Game = gameToPublish, Date = DateTime.Now };
+                        PublishMessage(channel, logEntry.Encode());
+                        Console.WriteLine(logEntry.Encode());
                         break;
                     case "3":
                         menu.InsertReview();
@@ -97,6 +109,26 @@ namespace Server
                 }
                 DialogUtils.ReturnToMenu();
             }
+        }
+
+        private static void DeclareQueue(IModel channel)
+        {
+            channel.QueueDeclare(
+                queue: SimpleQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+
+        public static void PublishMessage(IModel channel, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
 
         public static void ListenForConnections(TcpListener tcpListener)

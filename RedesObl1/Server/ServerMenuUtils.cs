@@ -1,20 +1,27 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using DisplayUtils;
 using Domain;
+using RabbitMQ.Client;
 
 namespace Server
 {
     public class ServerMenuUtils
     {
         private GameSystem gameSystem;
-        public ServerMenuUtils(GameSystem gs)
+        private ServerUtils serverUtils;
+        private IModel channel;
+        private const string SimpleQueue = "m6bBasicQueue";
+        public ServerMenuUtils(GameSystem gs, IModel channel)
         {
             gameSystem = gs;
+            channel = channel;
         }
 
-        public void InsertGame()
+        public Game InsertGame()
         {
             Game gameToPublish = DialogUtils.InputGame();
             try
@@ -28,12 +35,23 @@ namespace Server
 
                 gameSystem.AddGame(gameToPublish);
                 Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+                return gameToPublish;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                return null;
             }
 
+        }
+        public void PublishMessage(IModel channel, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
 
         public void InsertReview()
