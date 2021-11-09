@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "GRPCLibrary";
+
+service UsersService {
+  rpc CreateNewUser (UserModel) returns (UserModel);
+}
+
+message UserModel {
+	int32 id = 1;
+	string name = 2;
+	bool login = 3;
+	repeated GameModel games = 8;
+}
+
+message GameModel {
+	int32 id = 1;
+	string title = 2;
+	bool genre = 3;
+	int32 rating = 4;
+	string synopsis = 5;
+	string cover = 6;
+	repeated ReviewModel reviews = 7;
+}
+
+message ReviewModel {
+	int32 id = 1;
+	int32 rating = 2;
+	string comment = 3;
+}

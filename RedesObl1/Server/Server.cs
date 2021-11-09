@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Globalization;
@@ -15,6 +16,9 @@ using ProtocolLibrary;
 using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using GRPCLibrary;
+using Grpc.Core;
+
 namespace Server
 {
     public class Server
@@ -41,6 +45,10 @@ namespace Server
 
         static void Main(string[] args)
         {
+            GrpcChannel buddyGuyChannel = GrpcChannel.ForAddress(serverUrl);
+            buddyGuyClient = new BuddyGuy.BuddyGuyClient(buddyGuyChannel);
+
+
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)

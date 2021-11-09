@@ -102,6 +102,8 @@ namespace Server
                 return;
             }
 
+            
+
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(userName);
