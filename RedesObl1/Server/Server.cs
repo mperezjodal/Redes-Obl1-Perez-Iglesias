@@ -84,24 +84,42 @@ namespace Server
                         break;
                     case "2":
                         Game gameToPublish = menu.InsertGame();
-                        LogEntry logEntry = new LogEntry() { Game = gameToPublish, Date = DateTime.Now };
-                        PublishMessage(channel, logEntry.Encode());
-                        Console.WriteLine(logEntry.Encode());
+                        if (gameToPublish != null)
+                        {
+                            WriteInLog(channel, gameToPublish, "Insert Game");
+                        }
                         break;
                     case "3":
-                        menu.InsertReview();
+                        Game game = menu.InsertReview();
+                        if (game != null)
+                        {
+                            WriteInLog(channel, game, "Insert Review");
+                        }
                         break;
                     case "4":
                         DialogUtils.SearchFilteredGames(GameSystem.Games);
                         break;
                     case "5":
-                        menu.InsertUser();
+                        User user = menu.InsertUser();
+                        if (user != null)
+                        {
+                            WriteInLog(channel, null, "Insert User", user);
+                        }
+
                         break;
                     case "6":
-                        menu.ModifyUser();
+                        User userModified = menu.ModifyUser();
+                        if (userModified != null)
+                        {
+                            WriteInLog(channel, null, "Modify User", userModified);
+                        }
                         break;
                     case "7":
-                        menu.DeleteUser();
+                        User deletedUser = menu.DeleteUser();
+                        if (deletedUser != null)
+                        {
+                            WriteInLog(channel, null, "Delete User", deletedUser);
+                        }
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -109,6 +127,12 @@ namespace Server
                 }
                 DialogUtils.ReturnToMenu();
             }
+        }
+
+        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
+        {
+            LogEntry logEntry = new LogEntry() {User = user, Game = game, Date = DateTime.Now, Action = action};
+            PublishMessage(channel, logEntry.Encode());
         }
 
         private static void DeclareQueue(IModel channel)

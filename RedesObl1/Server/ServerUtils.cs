@@ -20,6 +20,8 @@ namespace Server
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
         public object lockAddGame = new object();
+        public IConnection connection;
+        public IModel channel;
 
         private const string SimpleQueue = "m6bBasicQueue";
 
@@ -27,9 +29,32 @@ namespace Server
         {
             this.GameSystem = gameSystem;
             this.tcpClient = tcpClient;
+            ConnectionFactory connectionFactory = new ConnectionFactory { HostName = "localhost" };
+            using IConnection connection = connectionFactory.CreateConnection();
+            using IModel channel = connection.CreateModel();
+            DeclareQueue(channel);
+
+            this.connection = connection;
+            this.channel = channel;
         }
 
-        public void PublishMessage(IModel channel, string message)
+        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
+        {
+            LogEntry logEntry = new LogEntry() { User = user, Game = game, Date = DateTime.Now, Action = action };
+            PublishMessage(channel, logEntry.Encode());
+        }
+
+        private static void DeclareQueue(IModel channel)
+        {
+            channel.QueueDeclare(
+                queue: SimpleQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+
+        public static void PublishMessage(IModel channel, string message)
         {
             byte[] data = Encoding.UTF8.GetBytes(message);
             channel.BasicPublish(
@@ -97,6 +122,7 @@ namespace Server
                 var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
                 var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
                 user.AcquireGame(game);
+                WriteInLog(this.channel, game, "Adquire Game", user);
 
                 await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
             }
@@ -120,6 +146,7 @@ namespace Server
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(userName);
+                WriteInLog(this.channel, null, "Insert User", newUser);
             }
 
 
@@ -153,6 +180,7 @@ namespace Server
 
                 GameSystem.AddGameBeingModified(game);
                 gamesBeingModifiedByClient.Add(game);
+                WriteInLog(this.channel, game, "Added Game to Games to Modify", GameSystem.GetLoggedUser());
 
                 await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
             }
@@ -163,7 +191,8 @@ namespace Server
             return gamesBeingModifiedByClient;
         }
 
-        public async Task<List<Game>> ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
+        public async Task<List<Game>> 
+            ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
         {
             try
             {
@@ -183,6 +212,7 @@ namespace Server
                     gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
 
                     GameSystem.UpdateGame(gameToModify, updatingGames[1]);
+                    WriteInLog(this.channel, gameToModify, "Modify Game", GameSystem.GetLoggedUser());
                 }
 
                 await SendData(CommandConstants.ModifyGameOk, "Se ha modificado el juego: " + gameToModify.Title + ".");
@@ -209,6 +239,7 @@ namespace Server
                 lock (lockDeleteGame)
                 {
                     this.GameSystem.DeleteGame(gameToDelete);
+                    WriteInLog(this.channel, gameToDelete, "Delete Game", GameSystem.GetLoggedUser());
                 }
 
                 await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
@@ -232,6 +263,7 @@ namespace Server
                 }
 
                 GameSystem.UpdateReviews(gameToModify, publishReviewGame.Reviews);
+                WriteInLog(this.channel, publishReviewGame, "Publish Review", GameSystem.GetLoggedUser());
 
                 await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".");
             }
@@ -252,6 +284,7 @@ namespace Server
                 lock (lockAddGame)
                 {
                     GameSystem.AddGame(newGame);
+                    WriteInLog(this.channel, newGame, "Insert Game", GameSystem.GetLoggedUser());
                 }
 
                 await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");

@@ -153,6 +153,11 @@ namespace Domain
 
             return games;
         }
+        public User GetLoggedUser()
+        {
+            return Users.Find(u => u.Login == true);
+        }
+
 
         public void LoginUser(string user)
         {
