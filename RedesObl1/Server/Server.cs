@@ -18,6 +18,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using GRPCLibrary;
 using Grpc.Core;
+using Grpc.Net.Client;
 
 namespace Server
 {
@@ -31,6 +32,7 @@ namespace Server
         private static GameSystem GameSystem;
         private static bool _exit = false;
         static List<TcpClient> _clients = new List<TcpClient>();
+        private static UsersService.UsersServiceClient grpcClient;
 
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
@@ -45,9 +47,11 @@ namespace Server
 
         static void Main(string[] args)
         {
-            GrpcChannel buddyGuyChannel = GrpcChannel.ForAddress(serverUrl);
-            buddyGuyClient = new BuddyGuy.BuddyGuyClient(buddyGuyChannel);
-
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            // The port number(5001) must match the port of the gRPC server.
+            using var channel = GrpcChannel.ForAddress("http://localhost:5001");
+            grpcClient = new UsersService.UsersServiceClient(channel);
 
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -131,7 +135,7 @@ namespace Server
             List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
 
-            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient);
+            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient, grpcClient);
             while (!_exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +

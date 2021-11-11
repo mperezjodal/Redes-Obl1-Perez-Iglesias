@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Grpc.Core;
 using GRPCLibrary;
+using Microsoft.AspNetCore.Http;
 
 namespace ServerAdmin
 {
@@ -30,7 +31,7 @@ namespace ServerAdmin
         {
             services.AddControllers();
 
-            services.AddScoped<UsersService.UsersServiceBase, UserServerAdmin>();
+            services.AddGrpc();
             
             services.AddSwaggerGen(c =>
             {
@@ -56,6 +57,15 @@ namespace ServerAdmin
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<UserServerAdmin>();
+
+                endpoints.MapGet("/",
+                    async context =>
+                    {
+                        await context.Response.WriteAsync(
+                            "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+                    });
+
                 endpoints.MapControllers();
             });
         }
