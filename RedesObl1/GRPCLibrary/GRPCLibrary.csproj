@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos/users.proto"/>
+    <Protobuf Include="Protos/gameSystem.proto"/>
 </ItemGroup>
 
 </Project>

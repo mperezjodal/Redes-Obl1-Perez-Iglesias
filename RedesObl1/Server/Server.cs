@@ -32,7 +32,7 @@ namespace Server
         private static GameSystem GameSystem;
         private static bool _exit = false;
         static List<TcpClient> _clients = new List<TcpClient>();
-        private static UsersService.UsersServiceClient grpcClient;
+        private static GameSystemService.GameSystemServiceClient grpcClient;
 
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
@@ -51,7 +51,7 @@ namespace Server
                 "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
             // The port number(5001) must match the port of the gRPC server.
             using var channel = GrpcChannel.ForAddress("http://localhost:5001");
-            grpcClient = new UsersService.UsersServiceClient(channel);
+            grpcClient = new GameSystemService.GameSystemServiceClient(channel);
 
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()

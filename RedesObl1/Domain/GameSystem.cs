@@ -3,7 +3,28 @@ using System.Collections.Generic;
 
 namespace Domain
 {
-    public class GameSystem
+    public interface IGameSystem
+    {
+        public List<Game> Games { get; set; }
+        public List<Game> GamesBeingModified { get; set; }
+        public List<User> Users { get; set; }
+        public void AddGameBeingModified(Game game);
+        public void AddGame(Game game);
+        public void DeleteGameBeingModified(Game game);
+        public void DeleteGame(Game game);
+        public Game UpdateGame(Game oldGame, Game newGame);
+        public User UpdateUser(User oldUser, User newUser);
+        public void UpdateReviews(Game game, List<Review> reviews);
+        public bool GameExists(Game game);
+        public bool IsGameBeingModified(Game game);
+        public User AddUser(string userName);
+        public void LoginUser(string user);
+        public void LogoutUser(string user);
+
+
+    }
+
+    public class GameSystem : IGameSystem
     {
         public List<Game> Games { get; set; }
         public List<Game> GamesBeingModified { get; set; }

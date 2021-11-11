@@ -21,8 +21,8 @@ namespace Server
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
         public object lockAddGame = new object();
-        public UsersService.UsersServiceClient grpcClient;
-        public ServerUtils(GameSystem gameSystem, TcpClient tcpClient, UsersService.UsersServiceClient grpcClient)
+        public GameSystemService.GameSystemServiceClient grpcClient;
+        public ServerUtils(GameSystem gameSystem, TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
         {
             this.GameSystem = gameSystem;
             this.tcpClient = tcpClient;
@@ -101,39 +101,25 @@ namespace Server
             try
             {
                 var response = await grpcClient.CreateNewUserAsync(new UserModel { Name = userName });
-                Console.WriteLine(JsonSerializer.Serialize(response));
+                if (response is UserModel)
+                {
+                    await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
+                    await SendData(CommandConstants.NewUser, userName);
+                    return;
+                }
             }
-            // If something was wrong we could receive RpcException
             catch (RpcException rpcException)
             {
-                Console.WriteLine($"Code: {rpcException.StatusCode}, Status: {rpcException.Status}");
+                if (rpcException.StatusCode == StatusCode.AlreadyExists)
+                {
+                    await SendData(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
+                    return;
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+            catch (Exception) { }
 
-            // User existingUser = this.GameSystem.Users.Find(u => u.Name.Equals(userName));
-            // if (existingUser != null && existingUser.Login)
-            // {
-            //     var loginError = "Usuario tiene una sesion abierta.";
-            //     var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
-            //     await Utils.ServerSendData(tcpClient.GetStream(), loginErrorHeader, loginError);
-            //     return;
-            // }
-
-            // if (existingUser == null)
-            // {
-            //     User newUser = GameSystem.AddUser(userName);
-            // }
-
-
-            // GameSystem.LoginUser(userName);
-
-            // await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
-
-            // await SendData(CommandConstants.NewUser, userName);
-        }
+            await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
+    }
 
         public void Logout(string jsonUser)
         {

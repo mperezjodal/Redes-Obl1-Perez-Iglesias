@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Grpc.Core;
 using GRPCLibrary;
 using Microsoft.AspNetCore.Http;
+using Domain;
 
 namespace ServerAdmin
 {
@@ -30,6 +31,8 @@ namespace ServerAdmin
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddSingleton<IGameSystem, GameSystem>();
 
             services.AddGrpc();
             
@@ -57,7 +60,7 @@ namespace ServerAdmin
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGrpcService<UserServerAdmin>();
+                endpoints.MapGrpcService<GameSystemManager>();
 
                 endpoints.MapGet("/",
                     async context =>

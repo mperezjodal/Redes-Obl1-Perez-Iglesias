@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "GRPCLibrary";
 
-service UsersService {
+service GameSystemService {
   rpc CreateNewUser (UserModel) returns (UserModel);
 }
 
