@@ -100,7 +100,7 @@ namespace Server
         {
             try
             {
-                var response = await grpcClient.CreateNewUserAsync(new UserModel { Name = userName });
+                var response = await grpcClient.LoginAsync(new UserModel { Name = userName });
                 if (response is UserModel)
                 {
                     await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
@@ -121,12 +121,12 @@ namespace Server
             await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
     }
 
-        public void Logout(string jsonUser)
+        public async Task Logout(string jsonUser)
         {
             try
             {
                 User userToLogout = User.Decode(jsonUser);
-                GameSystem.LogoutUser(userToLogout.Name);
+                await grpcClient.LogoutAsync(new UserModel { Name = userToLogout.Name });
             }
             catch { }
         }

@@ -16,25 +16,27 @@ namespace ServerAdmin
             GameSystem = gameSystem;
         }
 
-        public override Task<UserModel> CreateNewUser(UserModel request, ServerCallContext context)
+        public override Task<UserModel> Login(UserModel request, ServerCallContext context)
         { 
-            Console.WriteLine(JsonSerializer.Serialize(GameSystem.Users));
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
-            Console.WriteLine(JsonSerializer.Serialize(existingUser));
             if (existingUser != null && existingUser.Login)
             {
                 return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.AlreadyExists, "User already exists")));
             }
-
             if (existingUser == null)
             {
-                Console.WriteLine("Creating new user");
                 User newUser = GameSystem.AddUser(request.Name);
-                Console.WriteLine(JsonSerializer.Serialize(GameSystem.Users));
             }
 
             GameSystem.LoginUser(request.Name);
             return Task.FromResult(request);
         }
+
+        public override Task<UserModel> Logout(UserModel request, ServerCallContext context)
+        {
+            GameSystem.LogoutUser(request.Name);
+            return Task.FromResult(request);
+        }
+        
     }
 }
