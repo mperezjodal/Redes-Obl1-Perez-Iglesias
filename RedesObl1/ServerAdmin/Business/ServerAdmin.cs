@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Domain;
@@ -11,6 +12,8 @@ namespace ServerAdmin
     public class GameSystemManager : GameSystemService.GameSystemServiceBase
     {
         private static IGameSystem GameSystem;
+        public object lockAddGame = new object();
+
         public GameSystemManager(IGameSystem gameSystem)
         {
             GameSystem = gameSystem;
@@ -23,6 +26,7 @@ namespace ServerAdmin
             {
                 return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.AlreadyExists, "User already exists")));
             }
+
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(request.Name);
@@ -38,5 +42,28 @@ namespace ServerAdmin
             return Task.FromResult(request);
         }
         
+        public override Task<GameModel> PostGame(GameModel request, ServerCallContext context)
+        {
+            lock (lockAddGame)
+            {
+                GameSystem.AddGame(ProtoBuilder.Game(request));
+            }
+            
+            return Task.FromResult(request);
+        }
+
+        public override Task<GameCoverModel> PostGameCover(GameCoverModel request, ServerCallContext context)
+        {
+            Game game = GameSystem.Games.Find(g => g.Id == request.Id);
+            GameSystem.AddGameCover(game, request.Cover);
+
+            return Task.FromResult(request);
+        }
+
+        public override Task<GamesModel> GetGames(EmptyRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(ProtoBuilder.GamesModel(GameSystem.Games));
+        }
+            
     }
 }

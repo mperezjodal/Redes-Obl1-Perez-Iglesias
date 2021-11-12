@@ -5,6 +5,9 @@ option csharp_namespace = "GRPCLibrary";
 service GameSystemService {
   rpc Login (UserModel) returns (UserModel);
   rpc Logout (UserModel) returns (UserModel);
+  rpc PostGame (GameModel) returns (GameModel);
+  rpc PostGameCover (GameCoverModel) returns (GameCoverModel);
+  rpc GetGames (EmptyRequest) returns (GamesModel);
 }
 
 message UserModel {
@@ -17,7 +20,7 @@ message UserModel {
 message GameModel {
 	int32 id = 1;
 	string title = 2;
-	bool genre = 3;
+	string genre = 3;
 	int32 rating = 4;
 	string synopsis = 5;
 	string cover = 6;
@@ -29,3 +32,14 @@ message ReviewModel {
 	int32 rating = 2;
 	string comment = 3;
 }
+
+message GameCoverModel {
+	int32 id = 1;
+	string cover = 2;
+}
+
+message GamesModel {
+	repeated GameModel games = 1;
+}
+
+message EmptyRequest {}

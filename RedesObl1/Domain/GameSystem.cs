@@ -10,6 +10,7 @@ namespace Domain
         public List<User> Users { get; set; }
         public void AddGameBeingModified(Game game);
         public void AddGame(Game game);
+        public void AddGameCover(Game game, string cover);
         public void DeleteGameBeingModified(Game game);
         public void DeleteGame(Game game);
         public Game UpdateGame(Game oldGame, Game newGame);
@@ -205,6 +206,19 @@ namespace Domain
             }
 
             return users;
+        }
+
+        public void AddGameCover(Game game, string cover)
+        {
+            game.Cover = cover;
+            foreach (User user in Users)
+            {
+                if (user.Games.FindIndex(g => g.Title == game.Title) != -1)
+                {
+                    Game g = user.Games.Find(g => g.Title == game.Title);
+                    g.Cover = cover;
+                }
+            }
         }
     }
 }

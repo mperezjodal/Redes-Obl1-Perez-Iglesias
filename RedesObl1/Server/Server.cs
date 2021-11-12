@@ -157,7 +157,7 @@ namespace Server
                             await serverUtils.LoginHandler(jsonData);
                             break;
                         case CommandConstants.Logout:
-                            serverUtils.Logout(jsonData);
+                            await serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
                             await serverUtils.PublishGameHandler(jsonData);

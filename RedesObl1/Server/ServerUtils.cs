@@ -43,7 +43,13 @@ namespace Server
 
         public async Task GetGamesHandler()
         {
-            await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames());
+            try
+            {
+                var response = await grpcClient.GetGamesAsync(new EmptyRequest());
+                List<Game> games = ProtoBuilder.Games(response);
+                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames(games));
+            }
+            catch (Exception) { }
         }
 
         public async Task GetUsersHandler()
@@ -100,8 +106,7 @@ namespace Server
         {
             try
             {
-                var response = await grpcClient.LoginAsync(new UserModel { Name = userName });
-                if (response is UserModel)
+                if (await grpcClient.LoginAsync(new UserModel { Name = userName }) is UserModel)
                 {
                     await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
                     await SendData(CommandConstants.NewUser, userName);
@@ -119,7 +124,7 @@ namespace Server
             catch (Exception) { }
 
             await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
-    }
+        }
 
         public async Task Logout(string jsonUser)
         {
@@ -237,20 +242,22 @@ namespace Server
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
+                string cover = await handleGameCover(newGame.Cover);
 
-                newGame.Cover = await handleGameCover(newGame.Cover);
-
-                lock (lockAddGame)
+                if (await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame)) is GameModel)
                 {
-                    GameSystem.AddGame(newGame);
-                }
+                    await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
 
-                await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
+                    if (cover != null)
+                    {
+                        await grpcClient.PostGameCoverAsync(new GameCoverModel { Id = newGame.Id, Cover = cover });
+                    }
+                    return;
+                }
             }
-            catch (Exception)
-            {
-                await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
-            }
+            catch (Exception) { }
+
+            await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
         }
 
         public async Task<string> handleGameCover(string cover)
