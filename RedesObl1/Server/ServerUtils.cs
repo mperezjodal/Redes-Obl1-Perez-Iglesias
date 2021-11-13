@@ -18,9 +18,7 @@ namespace Server
     {
         public GameSystem GameSystem;
         public TcpClient tcpClient;
-        public object lockModifyGame = new object();
-        public object lockDeleteGame = new object();
-        public object lockAddGame = new object();
+        public string username;
         public GameSystemService.GameSystemServiceClient grpcClient;
         public ServerUtils(GameSystem gameSystem, TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
         {
@@ -54,7 +52,13 @@ namespace Server
 
         public async Task GetUsersHandler()
         {
-            await SendData(CommandConstants.GetUsersOk, GameSystem.EncodeUsers());
+            try
+            {
+                var response = await grpcClient.GetUsersAsync(new EmptyRequest());
+                List<User> users = ProtoBuilder.Users(response);
+                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeUsers(users));
+            }
+            catch (Exception) { }
         }
 
         public async Task GetGameCover(string jsonGame)
@@ -110,6 +114,7 @@ namespace Server
                 {
                     await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
                     await SendData(CommandConstants.NewUser, userName);
+                    this.username = userName;
                     return;
                 }
             }
@@ -136,59 +141,37 @@ namespace Server
             catch { }
         }
 
-        public async Task<List<Game>> BeingModifiedHandler(string jsonData, List<Game> gamesBeingModifiedByClient)
+        public async Task BeingModifiedHandler(string jsonData)
         {
             try
             {
                 Game game = Game.Decode(jsonData);
 
-                if (GameSystem.GamesBeingModified.FindIndex(g => g.Title == game.Title) != -1)
+                if (await grpcClient.ToModifyAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
                 }
-
-                GameSystem.AddGameBeingModified(game);
-                gamesBeingModifiedByClient.Add(game);
-
-                await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
             }
-            catch (Exception)
-            {
-                await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
-            }
-            return gamesBeingModifiedByClient;
+            catch (Exception) { }
+
+            await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
         }
 
-        public async Task<List<Game>> ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
+        public async Task ModifyGameHandler(string jsonModifyGameData)
         {
             try
             {
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
-                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
-                updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
-
-                lock (lockModifyGame)
+                var response = await grpcClient.UpdateGameAsync(ProtoBuilder.GamesModel(updatingGames, this.username));
+                if (response is GameModel)
                 {
-                    if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
-                    {
-                        throw new Exception();
-                    }
-
-                    GameSystem.DeleteGameBeingModified(gameToModify);
-                    gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
-
-                    GameSystem.UpdateGame(gameToModify, updatingGames[1]);
+                    await SendData(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
                 }
-
-                await SendData(CommandConstants.ModifyGameOk, "Se ha modificado el juego: " + gameToModify.Title + ".");
             }
-            catch (Exception)
-            {
-                await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
-            }
+            catch (Exception) { }
 
-            return gamesBeingModifiedByClient;
+            await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
         }
 
         public async Task DeleteGameHandler(string jsonDeleteGameData)
@@ -197,22 +180,14 @@ namespace Server
             {
                 Game gameToDelete = Game.Decode(jsonDeleteGameData);
 
-                if (GameSystem.IsGameBeingModified(gameToDelete))
+                if (await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
                 }
-
-                lock (lockDeleteGame)
-                {
-                    this.GameSystem.DeleteGame(gameToDelete);
-                }
-
-                await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
             }
-            catch (Exception)
-            {
-                await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
-            }
+            catch (Exception) { }
+
+            await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
         }
 
         public async Task PublishReviewHandler(string jsonPublishReviewData)
@@ -220,21 +195,23 @@ namespace Server
             try
             {
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
-                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
-
-                if (GameSystem.IsGameBeingModified(gameToModify))
+                if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
+                    return;
                 }
-
-                GameSystem.UpdateReviews(gameToModify, publishReviewGame.Reviews);
-
-                await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".");
             }
-            catch (Exception)
+            catch (RpcException rpcException)
             {
-                await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
+                if (rpcException.StatusCode == StatusCode.AlreadyExists)
+                {
+                    await SendData(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
+                    return;
+                }
             }
+            catch (Exception) { }
+
+            await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
         }
 
         public async Task PublishGameHandler(string jsonPublishGame)

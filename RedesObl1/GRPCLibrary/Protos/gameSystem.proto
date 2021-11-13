@@ -8,6 +8,11 @@ service GameSystemService {
   rpc PostGame (GameModel) returns (GameModel);
   rpc PostGameCover (GameCoverModel) returns (GameCoverModel);
   rpc GetGames (EmptyRequest) returns (GamesModel);
+  rpc GetUsers (EmptyRequest) returns (UsersModel);
+  rpc PostReview (GameModel) returns (GameModel);
+  rpc ToModify (GameModel) returns (GameModel);
+  rpc UpdateGame (GamesModel) returns (GameModel);
+  rpc DeleteGame (GameModel) returns (GameModel);
 }
 
 message UserModel {
@@ -25,6 +30,7 @@ message GameModel {
 	string synopsis = 5;
 	string cover = 6;
 	repeated ReviewModel reviews = 7;
+	string user = 8;
 }
 
 message ReviewModel {
@@ -40,6 +46,10 @@ message GameCoverModel {
 
 message GamesModel {
 	repeated GameModel games = 1;
+}
+
+message UsersModel {
+	repeated UserModel users = 1;
 }
 
 message EmptyRequest {}

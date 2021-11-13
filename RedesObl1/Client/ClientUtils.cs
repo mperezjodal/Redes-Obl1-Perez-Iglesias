@@ -110,15 +110,15 @@ namespace networkStream
             await ReciveFile();
         }
 
-        public async Task<List<User>> GetUsers()
-        {
-            await SendData(CommandConstants.GetUsers, "");
+        // public async Task<List<User>> GetUsers()
+        // {
+        //     await SendData(CommandConstants.GetUsers, "");
 
-            var usersJson = await Utils.ClientReceiveMessageData(networkStream);
-            List<User> users = GameSystem.DecodeUsers(usersJson);
+        //     var usersJson = await Utils.ClientReceiveMessageData(networkStream);
+        //     List<User> users = GameSystem.DecodeUsers(usersJson);
 
-            return users;
-        }
+        //     return users;
+        // }
 
         public async Task<List<Game>> GetAcquiredGames()
         {

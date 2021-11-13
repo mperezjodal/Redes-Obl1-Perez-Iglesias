@@ -90,4 +90,9 @@ namespace Domain
             };
         }
     }
+
+    public class GameModify{
+        public string Username { get; set; }
+        public string GameTitle { get; set; }
+    }
 }

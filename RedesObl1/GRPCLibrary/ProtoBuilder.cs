@@ -49,6 +49,13 @@ namespace GRPCLibrary
             return gm;
         }
 
+        public static GameModel GameModel(Game game, string username)
+        {
+            GameModel gm = GameModel(game);
+            gm.User = username;
+            return gm;
+        }
+
         public static List<Game> Games(GamesModel gms) {
             List<Game> games = new List<Game>();
             foreach (GameModel gm in gms.Games)
@@ -65,6 +72,83 @@ namespace GRPCLibrary
                 gms.Games.Add(GameModel(game));
             }
             return gms;
+        }
+
+        public static GamesModel GamesModel(List<Game> games, string username) {
+            GamesModel gms = GamesModel(games);
+            gms.Games[0].User = username;
+            return gms;
+        }
+
+        public static User User(UserModel um) {
+            User user = new User() { 
+                Id = um.Id, 
+                Name = um.Name, 
+                Login = um.Login,
+                Games = new List<Game>()
+            };
+            foreach (GameModel gm in um.Games)
+            {
+                user.Games.Add(Game(gm));
+            }
+
+            return user;
+        }
+
+        public static UserModel UserModel(User user) {
+            UserModel um = new UserModel() { 
+                Id = user.Id,
+                Name = user.Name,
+                Login = user.Login
+            };
+            foreach (Game game in user.Games)
+            {
+                um.Games.Add(GameModel(game));
+            }
+            return um;
+        }
+
+        public static List<User> Users(UsersModel ums) {
+            List<User> users = new List<User>();
+            foreach (UserModel um in ums.Users)
+            {
+                users.Add(User(um));
+            }
+            return users;
+        }
+
+        public static UsersModel UsersModel(List<User> users) {
+            UsersModel ums = new UsersModel();
+            foreach (User user in users)
+            {
+                ums.Users.Add(UserModel(user));
+            }
+            return ums;
+        }
+
+        public static Review Review(ReviewModel rm) {
+            return new Review() { 
+                Id = rm.Id,
+                Comment = rm.Comment,
+                Rating = rm.Rating
+            };
+        }
+
+        public static ReviewModel ReviewModel(Review review) {
+            return new ReviewModel() {
+                Id = review.Id,
+                Comment = review.Comment,
+                Rating = review.Rating
+            };
+        }
+
+        public static List<Review> GetReviews(GameModel gm) {
+            List<Review> reviews = new List<Review>();
+            foreach (ReviewModel rm in gm.Reviews)
+            {
+                reviews.Add(Review(rm));
+            }
+            return reviews;
         }
     }
 }

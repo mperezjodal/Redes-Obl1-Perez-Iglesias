@@ -132,7 +132,6 @@ namespace Server
 
         public static async Task HandleClient(TcpClient tcpClient)
         {
-            List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
 
             ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient, grpcClient);
@@ -172,10 +171,10 @@ namespace Server
                             await serverUtils.PublishReviewHandler(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            gamesBeingModifiedByClient = await serverUtils.BeingModifiedHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.BeingModifiedHandler(jsonData);
                             break;
                         case CommandConstants.ModifyGame:
-                            gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.ModifyGameHandler(jsonData);
                             break;
                         case CommandConstants.DeleteGame:
                             await serverUtils.DeleteGameHandler(jsonData);
