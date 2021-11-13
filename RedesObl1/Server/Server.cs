@@ -46,11 +46,6 @@ namespace Server
 
         static async Task Main(string[] args)
         {
-            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
-            using IConnection connection = connectionFactory.CreateConnection();
-            using IModel channel = connection.CreateModel();
-            DeclareQueue(channel);
-
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)
@@ -113,32 +108,6 @@ namespace Server
                 }
                 DialogUtils.ReturnToMenu();
             }
-        }
-
-        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
-        {
-            LogEntry logEntry = new LogEntry() {User = user, Game = game, Date = DateTime.Now, Action = action};
-            PublishMessage(channel, logEntry.Encode());
-        }
-
-        private static void DeclareQueue(IModel channel)
-        {
-            channel.QueueDeclare(
-                queue: SimpleQueue,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-        }
-
-        public static void PublishMessage(IModel channel, string message)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
-                exchange: string.Empty,
-                routingKey: SimpleQueue,
-                body: data
-            );
         }
 
         public static void ListenForConnections(TcpListener tcpListener)

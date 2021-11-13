@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Domain;
 using Grpc.Core;
 using GRPCLibrary;
 using Microsoft.Extensions.Logging;
+using RabbitMQ.Client;
 
 namespace ServerAdmin
 {
@@ -15,10 +17,21 @@ namespace ServerAdmin
         public object lockAddGame = new object();
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
+        private const string SimpleQueue = "m6bBasicQueue";
+        private static ConnectionFactory _factory;
+        private static IConnection _connection;
+        private static IModel _channel;
 
         public GameSystemManager(IGameSystem gameSystem)
         {
             GameSystem = gameSystem;
+                       _factory = new ConnectionFactory 
+            { 
+                HostName = "localhost", 
+            };
+            _connection = _factory.CreateConnection();
+            _channel = _connection.CreateModel();
+            DeclareQueue(_channel);
         }
 
         public override Task<UserModel> Login(UserModel request, ServerCallContext context)
@@ -32,6 +45,7 @@ namespace ServerAdmin
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(request.Name);
+                //WriteInLog(null, "Insert User");
             }
 
             GameSystem.LoginUser(request.Name);
@@ -178,6 +192,35 @@ namespace ServerAdmin
         {
             var user = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
             return Task.FromResult(ProtoBuilder.GamesModel(user.Games));
+        }
+
+        private static void WriteInLog(Game game = null, string action = null, User user = null)
+        {
+            LogEntry logEntry = new LogEntry() {User = user, Game = game, Date = DateTime.Now, Action = action};
+            PublishMessage(logEntry.Encode());
+        }
+
+        private static void DeclareQueue(IModel channel)
+        {
+            channel.QueueDeclare(
+                queue: SimpleQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+
+        public static void PublishMessage(string message)
+        {
+            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
+            using IConnection connection = connectionFactory.CreateConnection();
+            IModel channel = connection.CreateModel();
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
     }
 }

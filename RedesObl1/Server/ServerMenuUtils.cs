@@ -57,23 +57,12 @@ namespace Server
 
                 await grpcClient.PostGameAsync(ProtoBuilder.GameModel(gameToPublish));
                 Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
-                return gameToPublish;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
             }
 
-        }
-        public void PublishMessage(IModel channel, string message)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
-                exchange: string.Empty,
-                routingKey: SimpleQueue,
-                body: data
-            );
         }
 
         public async Task InsertReview()
@@ -82,26 +71,24 @@ namespace Server
 
             if (selectedGame == null)
             {
-                return null;
+                return;
             }
 
             Review selectedGameReview = DialogUtils.InputReview();
 
             if (selectedGameReview == null)
             {
-                return null;
+                return;
             }
             try
             {
                 selectedGame.AddReview(selectedGameReview);
                 await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(selectedGame));
                 Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
-                return selectedGame;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
             }
         }
 
@@ -114,19 +101,17 @@ namespace Server
                 if (userToInsert == null)
                 {
                     Console.WriteLine("No se puede insertar este usuario.");
-                    return null;
+                    return;
                 }
                 else
                 {
                     await grpcClient.PostUserAsync(ProtoBuilder.UserModel(userToInsert));
                     Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
-                    return userToInsert;
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
             }
         }
 
@@ -140,12 +125,12 @@ namespace Server
                 if (userToModify == null)
                 {
                     Console.WriteLine("Retorno al menú.");
-                    return null;
+                    return;
                 }
                 else if (userToModify.Login == true)
                 {
                     Console.WriteLine("No se puede modificar un usuario con sesión abierta.");
-                    return null;
+                    return;
                 }
 
                 Console.WriteLine("Ingrese el nuevo nombre de usuario:");
@@ -154,17 +139,15 @@ namespace Server
                 if (modifiedUser == null)
                 {
                     Console.WriteLine("Retorno al menú.");
-                    return null;
+                    return;
                 }
 
                 await grpcClient.UpdateUserAsync(ProtoBuilder.UsersModel(new List<User> { userToModify, modifiedUser }));
                 Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
-                return modifiedUser;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
             }
         }
 
@@ -176,22 +159,20 @@ namespace Server
                 if (userToDelete == null)
                 {
                     Console.WriteLine("Retorno al menú.");
-                    return null;
+                    return;
                 }
                 else if (userToDelete.Login == true)
                 {
                     Console.WriteLine("No se puede modificar un usuario con sesión abierta.");
-                    return null;
+                    return;
                 }
 
                 await grpcClient.DeleteUserAsync(ProtoBuilder.UserModel(userToDelete));
                 Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
-                return userToDelete;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return null;
             }
         }
     }

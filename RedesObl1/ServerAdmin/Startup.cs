@@ -15,6 +15,8 @@ using Grpc.Core;
 using GRPCLibrary;
 using Microsoft.AspNetCore.Http;
 using Domain;
+using RabbitMQ.Client;
+
 
 namespace ServerAdmin
 {

@@ -48,9 +48,7 @@ namespace ServerLogs
             {
                 Console.WriteLine(entry.Action);
             }
-            Console.WriteLine("3");
             return LogEntries;
-            Console.WriteLine("4");
         }
 
         public void DeclareQueue(IModel channel)
