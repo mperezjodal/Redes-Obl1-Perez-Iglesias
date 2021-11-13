@@ -7,10 +7,12 @@ using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Grpc.Core;
 using GRPCLibrary;
 using System.Text.Json;
+using RabbitMQ.Client;
 
 namespace Server
 {
@@ -19,10 +21,48 @@ namespace Server
         public TcpClient tcpClient;
         public string username;
         public GameSystemService.GameSystemServiceClient grpcClient;
-        public ServerUtils(TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
+        public IConnection connection;
+        public IModel channel;
+
+        private const string SimpleQueue = "m6bBasicQueue";
+
+        public ServerUtils(GameSystemService.GameSystemServiceClient grpcClient, TcpClient tcpClient)
         {
             this.tcpClient = tcpClient;
             this.grpcClient = grpcClient;
+            ConnectionFactory connectionFactory = new ConnectionFactory { HostName = "localhost" };
+            using IConnection connection = connectionFactory.CreateConnection();
+            using IModel channel = connection.CreateModel();
+            DeclareQueue(channel);
+
+            this.connection = connection;
+            this.channel = channel;
+        }
+
+        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
+        {
+            LogEntry logEntry = new LogEntry() { User = user, Game = game, Date = DateTime.Now, Action = action };
+            PublishMessage(channel, logEntry.Encode());
+        }
+
+        private static void DeclareQueue(IModel channel)
+        {
+            channel.QueueDeclare(
+                queue: SimpleQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+
+        public static void PublishMessage(IModel channel, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
 
         public async Task SendFile(string path)
@@ -95,6 +135,7 @@ namespace Server
                 if (await grpcClient.AcquireGameAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
                     await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                    WriteInLog(this.channel, game, "Adquire Game", this.username);
                 }
             }
             catch (Exception)
@@ -112,6 +153,7 @@ namespace Server
                     await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
                     await SendData(CommandConstants.NewUser, userName);
                     this.username = userName;
+                    WriteInLog(this.channel, null, "Insert User", userName);
                     return;
                 }
             }
@@ -148,6 +190,7 @@ namespace Server
                 if (await grpcClient.ToModifyAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
                     await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
+                    WriteInLog(this.channel, game, "Added Game to Games to Modify", this.username);
                 }
             }
             catch (Exception)
@@ -166,6 +209,7 @@ namespace Server
                 if (response is GameModel)
                 {
                     await SendData(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
+                    WriteInLog(this.channel, updatingGames[1], "Modify Game", this.username);
                 }
             }
             catch (Exception)
@@ -183,6 +227,7 @@ namespace Server
                 if (await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete)) is GameModel)
                 {
                     await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
+                    WriteInLog(this.channel, gameToDelete, "Delete Game", this.username);
                 }
             }
             catch (Exception)
@@ -199,6 +244,7 @@ namespace Server
                 if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame)) is GameModel)
                 {
                     await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
+                    WriteInLog(this.channel, publishReviewGame, "Publish Review", this.username);
                     return;
                 }
             }
@@ -225,6 +271,7 @@ namespace Server
                 if (await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame)) is GameModel)
                 {
                     await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
+                    WriteInLog(this.channel, newGame, "Insert Game", this.username);
 
                     if (cover != null)
                     {

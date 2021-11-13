@@ -19,6 +19,7 @@ using Microsoft.Extensions.Configuration;
 using GRPCLibrary;
 using Grpc.Core;
 using Grpc.Net.Client;
+using RabbitMQ.Client;
 
 namespace Server
 {
@@ -43,9 +44,15 @@ namespace Server
             {"7", "Eliminar usuario"},
             {" ", "exit"}
         };
+        private const string SimpleQueue = "m6bBasicQueue";
 
         static async Task Main(string[] args)
         {
+            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
+            using IConnection connection = connectionFactory.CreateConnection();
+            using IModel channel = connection.CreateModel();
+            DeclareQueue(channel);
+
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)
@@ -70,7 +77,7 @@ namespace Server
             tcpListener.Start(100);
 
             Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
-            ServerMenuUtils menu = new ServerMenuUtils(grpcClient);
+            ServerMenuUtils menu = new ServerMenuUtils(channel, grpcClient);
 
             while (!_exit)
             {
@@ -85,22 +92,43 @@ namespace Server
                         DialogUtils.ShowGameDetail(await menu.GetGames());
                         break;
                     case "2":
-                        await menu.InsertGame();
+                        Game gameToPublish = await menu.InsertGame();
+                        if (gameToPublish != null)
+                        {
+                            WriteInLog(channel, gameToPublish, "Insert Game");
+                        }
                         break;
                     case "3":
-                        await menu.InsertReview();
+                        Game game = await menu.InsertReview();
+                        if (game != null)
+                        {
+                            WriteInLog(channel, game, "Insert Review");
+                        }
                         break;
                     case "4":
                         DialogUtils.SearchFilteredGames(await menu.GetGames());
                         break;
                     case "5":
-                        await menu.InsertUser();
+                        User user = await menu.InsertUser();
+                        if (user != null)
+                        {
+                            WriteInLog(channel, null, "Insert User", user);
+                        }
+
                         break;
                     case "6":
-                        await menu.ModifyUser();
+                        User userModified = await menu.ModifyUser();
+                        if (userModified != null)
+                        {
+                            WriteInLog(channel, null, "Modify User", userModified);
+                        }
                         break;
                     case "7":
-                        await menu.DeleteUser();
+                        User deletedUser = await menu.DeleteUser();
+                        if (deletedUser != null)
+                        {
+                            WriteInLog(channel, null, "Delete User", deletedUser);
+                        }
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -108,6 +136,32 @@ namespace Server
                 }
                 DialogUtils.ReturnToMenu();
             }
+        }
+
+        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
+        {
+            LogEntry logEntry = new LogEntry() {User = user, Game = game, Date = DateTime.Now, Action = action};
+            PublishMessage(channel, logEntry.Encode());
+        }
+
+        private static void DeclareQueue(IModel channel)
+        {
+            channel.QueueDeclare(
+                queue: SimpleQueue,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null);
+        }
+
+        public static void PublishMessage(IModel channel, string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(
+                exchange: string.Empty,
+                routingKey: SimpleQueue,
+                body: data
+            );
         }
 
         public static void ListenForConnections(TcpListener tcpListener)
