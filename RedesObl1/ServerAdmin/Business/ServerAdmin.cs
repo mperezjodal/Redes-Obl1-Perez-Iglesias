@@ -45,7 +45,7 @@ namespace ServerAdmin
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(request.Name);
-                //WriteInLog(null, "Insert User");
+                WriteInLog(null, "Insert User");
             }
 
             GameSystem.LoginUser(request.Name);
@@ -212,11 +212,8 @@ namespace ServerAdmin
 
         public static void PublishMessage(string message)
         {
-            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
-            using IConnection connection = connectionFactory.CreateConnection();
-            IModel channel = connection.CreateModel();
             byte[] data = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
+            _channel.BasicPublish(
                 exchange: string.Empty,
                 routingKey: SimpleQueue,
                 body: data
