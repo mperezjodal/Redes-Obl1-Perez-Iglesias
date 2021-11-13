@@ -77,7 +77,7 @@ namespace networkStream
                 return;
             }
 
-            await SendData(CommandConstants.AcquireGame, new UserGamePair(myUser, game).Encode());
+            await SendData(CommandConstants.AcquireGame, game.Encode());
 
             Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
@@ -122,7 +122,7 @@ namespace networkStream
 
         public async Task<List<Game>> GetAcquiredGames()
         {
-            await SendData(CommandConstants.GetAcquiredGames, myUser.Encode());
+            await SendData(CommandConstants.GetAcquiredGames, "");
 
             var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
 

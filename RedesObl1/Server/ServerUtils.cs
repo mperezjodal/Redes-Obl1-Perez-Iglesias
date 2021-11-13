@@ -16,13 +16,11 @@ namespace Server
 {
     public class ServerUtils
     {
-        public GameSystem GameSystem;
         public TcpClient tcpClient;
         public string username;
         public GameSystemService.GameSystemServiceClient grpcClient;
-        public ServerUtils(GameSystem gameSystem, TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
+        public ServerUtils(TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
         {
-            this.GameSystem = gameSystem;
             this.tcpClient = tcpClient;
             this.grpcClient = grpcClient;
         }
@@ -74,14 +72,13 @@ namespace Server
             }
         }
 
-        public async Task GetAcquiredGamesHandler(string jsonUser)
+        public async Task GetAcquiredGamesHandler()
         {
             try
             {
-                User user = User.Decode(jsonUser);
-                var systemUser = GameSystem.Users.Find(u => u.Name.Equals(user.Name));
-
-                await SendData(CommandConstants.GetAcquiredGamesOk, systemUser.EncodeGames());
+                var response = await grpcClient.GetAcquiredGamesAsync(new UserModel() { Name = this.username });
+                List<Game> games = ProtoBuilder.Games(response);
+                await SendData(CommandConstants.GetAcquiredGamesOk, GameSystem.EncodeGames(games));
             }
             catch (Exception)
             {
@@ -89,16 +86,16 @@ namespace Server
             }
         }
 
-        public async Task AcquireGameHandler(string jsonAcquireGameData)
+        public async Task AcquireGameHandler(string jsonGame)
         {
             try
             {
-                UserGamePair userGame = UserGamePair.Decode(jsonAcquireGameData);
-                var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
-                var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
-                user.AcquireGame(game);
+                Game game = Game.Decode(jsonGame);
 
-                await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                if (await grpcClient.AcquireGameAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
+                {
+                    await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                }
             }
             catch (Exception)
             {
@@ -126,9 +123,10 @@ namespace Server
                     return;
                 }
             }
-            catch (Exception) { }
-
-            await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
+            catch (Exception) 
+            { 
+                await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
+            }
         }
 
         public async Task Logout(string jsonUser)
@@ -152,9 +150,10 @@ namespace Server
                     await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
                 }
             }
-            catch (Exception) { }
-
-            await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
+            catch (Exception)
+            {
+                await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
+            }
         }
 
         public async Task ModifyGameHandler(string jsonModifyGameData)
@@ -169,9 +168,10 @@ namespace Server
                     await SendData(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
                 }
             }
-            catch (Exception) { }
-
-            await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
+            catch (Exception)
+            {
+                await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
+            }
         }
 
         public async Task DeleteGameHandler(string jsonDeleteGameData)
@@ -185,9 +185,10 @@ namespace Server
                     await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
                 }
             }
-            catch (Exception) { }
-
-            await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
+            catch (Exception)
+            {
+                await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
+            }
         }
 
         public async Task PublishReviewHandler(string jsonPublishReviewData)

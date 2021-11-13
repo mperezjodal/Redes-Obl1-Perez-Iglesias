@@ -13,6 +13,11 @@ service GameSystemService {
   rpc ToModify (GameModel) returns (GameModel);
   rpc UpdateGame (GamesModel) returns (GameModel);
   rpc DeleteGame (GameModel) returns (GameModel);
+  rpc AcquireGame (GameModel) returns (GameModel);
+  rpc GetAcquiredGames (UserModel) returns (GamesModel);
+  rpc PostUser (UserModel) returns (UserModel);
+  rpc UpdateUser (UsersModel) returns (UserModel);
+  rpc DeleteUser (UserModel) returns (UserModel);
 }
 
 message UserModel {

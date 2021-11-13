@@ -38,6 +38,42 @@ namespace ServerAdmin
             return Task.FromResult(request);
         }
 
+        public override Task<UserModel> PostUser(UserModel request, ServerCallContext context)
+        {
+            User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
+            if (existingUser != null)
+            {
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.AlreadyExists, "User already exists")));
+            }
+
+            GameSystem.AddUser(request.Name);
+            return Task.FromResult(request);
+        }
+
+        public override Task<UserModel> UpdateUser(UsersModel request, ServerCallContext context)
+        {
+            User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Users[0].Name));
+            if (existingUser == null)
+            {
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
+            }
+
+            GameSystem.UpdateUser(ProtoBuilder.User(request.Users[0]), ProtoBuilder.User(request.Users[1]));
+            return Task.FromResult(request.Users[1]);
+        }
+
+        public override Task<UserModel> DeleteUser(UserModel request, ServerCallContext context)
+        {
+            User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
+            if (existingUser == null)
+            {
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
+            }
+
+            GameSystem.Users.RemoveAll(u => u.Name.Equals(existingUser.Name));
+            return Task.FromResult(request);
+        }
+
         public override Task<UserModel> Logout(UserModel request, ServerCallContext context)
         {
             GameSystem.LogoutUser(request.Name);
@@ -127,6 +163,21 @@ namespace ServerAdmin
             }
 
             return Task.FromResult(request);
+        }
+
+        public override Task<GameModel> AcquireGame(GameModel request, ServerCallContext context)
+        {
+            var user = GameSystem.Users.Find(u => u.Name.Equals(request.User));
+            var game = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
+            user.AcquireGame(game);
+
+            return Task.FromResult(request);
+        }
+
+        public override Task<GamesModel> GetAcquiredGames(UserModel request, ServerCallContext context)
+        {
+            var user = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
+            return Task.FromResult(ProtoBuilder.GamesModel(user.Games));
         }
     }
 }

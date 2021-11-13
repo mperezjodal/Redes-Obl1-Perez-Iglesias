@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using Domain;
 
 namespace GRPCLibrary
@@ -34,9 +35,12 @@ namespace GRPCLibrary
                 Title = game.Title, 
                 Genre = game.Genre,
                 Rating = game.Rating,
-                Synopsis = game.Synopsis,
-                Cover = game.Cover
+                Synopsis = game.Synopsis
             };
+            if (game.Cover != null)
+            {
+                gm.Cover = game.Cover;
+            }
             foreach (Review review in game.Reviews)
             {
                 gm.Reviews.Add(new ReviewModel() { 
