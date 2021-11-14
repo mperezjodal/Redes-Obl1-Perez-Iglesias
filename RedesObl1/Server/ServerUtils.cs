@@ -7,61 +7,22 @@ using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using RabbitMQ.Client;
+using Grpc.Core;
+using GRPCLibrary;
+using System.Text.Json;
 
 namespace Server
 {
     public class ServerUtils
     {
-        public GameSystem GameSystem;
         public TcpClient tcpClient;
-        public object lockModifyGame = new object();
-        public object lockDeleteGame = new object();
-        public object lockAddGame = new object();
-        public IConnection connection;
-        public IModel channel;
-
-        private const string SimpleQueue = "m6bBasicQueue";
-
-        public ServerUtils(GameSystem gameSystem, TcpClient tcpClient)
+        public string username;
+        public GameSystemService.GameSystemServiceClient grpcClient;
+        public ServerUtils(TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
         {
-            this.GameSystem = gameSystem;
             this.tcpClient = tcpClient;
-            ConnectionFactory connectionFactory = new ConnectionFactory { HostName = "localhost" };
-            using IConnection connection = connectionFactory.CreateConnection();
-            using IModel channel = connection.CreateModel();
-            DeclareQueue(channel);
-
-            this.connection = connection;
-            this.channel = channel;
-        }
-
-        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
-        {
-            LogEntry logEntry = new LogEntry() { User = user, Game = game, Date = DateTime.Now, Action = action };
-            PublishMessage(channel, logEntry.Encode());
-        }
-
-        private static void DeclareQueue(IModel channel)
-        {
-            channel.QueueDeclare(
-                queue: SimpleQueue,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-        }
-
-        public static void PublishMessage(IModel channel, string message)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
-                exchange: string.Empty,
-                routingKey: SimpleQueue,
-                body: data
-            );
+            this.grpcClient = grpcClient;
         }
 
         public async Task SendFile(string path)
@@ -78,12 +39,24 @@ namespace Server
 
         public async Task GetGamesHandler()
         {
-            await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames());
+            try
+            {
+                var response = await grpcClient.GetGamesAsync(new EmptyRequest());
+                List<Game> games = ProtoBuilder.Games(response);
+                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames(games));
+            }
+            catch (Exception) { }
         }
 
         public async Task GetUsersHandler()
         {
-            await SendData(CommandConstants.GetUsersOk, GameSystem.EncodeUsers());
+            try
+            {
+                var response = await grpcClient.GetUsersAsync(new EmptyRequest());
+                List<User> users = ProtoBuilder.Users(response);
+                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeUsers(users));
+            }
+            catch (Exception) { }
         }
 
         public async Task GetGameCover(string jsonGame)
@@ -99,14 +72,13 @@ namespace Server
             }
         }
 
-        public async Task GetAcquiredGamesHandler(string jsonUser)
+        public async Task GetAcquiredGamesHandler()
         {
             try
             {
-                User user = User.Decode(jsonUser);
-                var systemUser = GameSystem.Users.Find(u => u.Name.Equals(user.Name));
-
-                await SendData(CommandConstants.GetAcquiredGamesOk, systemUser.EncodeGames());
+                var response = await grpcClient.GetAcquiredGamesAsync(new UserModel() { Name = this.username });
+                List<Game> games = ProtoBuilder.Games(response);
+                await SendData(CommandConstants.GetAcquiredGamesOk, GameSystem.EncodeGames(games));
             }
             catch (Exception)
             {
@@ -114,17 +86,16 @@ namespace Server
             }
         }
 
-        public async Task AcquireGameHandler(string jsonAcquireGameData)
+        public async Task AcquireGameHandler(string jsonGame)
         {
             try
             {
-                UserGamePair userGame = UserGamePair.Decode(jsonAcquireGameData);
-                var user = GameSystem.Users.Find(u => u.Name.Equals(userGame.User.Name));
-                var game = GameSystem.Games.Find(g => g.Title.Equals(userGame.Game.Title));
-                user.AcquireGame(game);
-                WriteInLog(this.channel, game, "Adquire Game", user);
+                Game game = Game.Decode(jsonGame);
 
-                await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                if (await grpcClient.AcquireGameAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
+                {
+                    await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                }
             }
             catch (Exception)
             {
@@ -134,95 +105,73 @@ namespace Server
 
         public async Task LoginHandler(string userName)
         {
-            User existingUser = this.GameSystem.Users.Find(u => u.Name.Equals(userName));
-            if (existingUser != null && existingUser.Login)
+            try
             {
-                var loginError = "Usuario tiene una sesion abierta.";
-                var loginErrorHeader = new Header(HeaderConstants.Response, CommandConstants.LoginError, loginError.Length);
-                await Utils.ServerSendData(tcpClient.GetStream(), loginErrorHeader, loginError);
-                return;
+                if (await grpcClient.LoginAsync(new UserModel { Name = userName }) is UserModel)
+                {
+                    await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
+                    await SendData(CommandConstants.NewUser, userName);
+                    this.username = userName;
+                    return;
+                }
             }
-
-            if (existingUser == null)
+            catch (RpcException rpcException)
             {
-                User newUser = GameSystem.AddUser(userName);
-                WriteInLog(this.channel, null, "Insert User", newUser);
+                if (rpcException.StatusCode == StatusCode.AlreadyExists)
+                {
+                    await SendData(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
+                    return;
+                }
             }
-
-
-            GameSystem.LoginUser(userName);
-
-            await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
-
-            await SendData(CommandConstants.NewUser, userName);
+            catch (Exception) 
+            { 
+                await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
+            }
         }
 
-        public void Logout(string jsonUser)
+        public async Task Logout(string jsonUser)
         {
             try
             {
                 User userToLogout = User.Decode(jsonUser);
-                GameSystem.LogoutUser(userToLogout.Name);
+                await grpcClient.LogoutAsync(new UserModel { Name = userToLogout.Name });
             }
             catch { }
         }
 
-        public async Task<List<Game>> BeingModifiedHandler(string jsonData, List<Game> gamesBeingModifiedByClient)
+        public async Task BeingModifiedHandler(string jsonData)
         {
             try
             {
                 Game game = Game.Decode(jsonData);
 
-                if (GameSystem.GamesBeingModified.FindIndex(g => g.Title == game.Title) != -1)
+                if (await grpcClient.ToModifyAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
                 }
-
-                GameSystem.AddGameBeingModified(game);
-                gamesBeingModifiedByClient.Add(game);
-                WriteInLog(this.channel, game, "Added Game to Games to Modify", GameSystem.GetLoggedUser());
-
-                await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
             }
             catch (Exception)
             {
                 await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
             }
-            return gamesBeingModifiedByClient;
         }
 
-        public async Task<List<Game>> 
-            ModifyGameHandler(string jsonModifyGameData, List<Game> gamesBeingModifiedByClient)
+        public async Task ModifyGameHandler(string jsonModifyGameData)
         {
             try
             {
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
-                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(updatingGames[0].Title));
 
-                updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
-
-                lock (lockModifyGame)
+                var response = await grpcClient.UpdateGameAsync(ProtoBuilder.GamesModel(updatingGames, this.username));
+                if (response is GameModel)
                 {
-                    if (GameSystem.IsGameBeingModified(gameToModify) && gamesBeingModifiedByClient.FindIndex(g => g.Title == gameToModify.Title) == -1)
-                    {
-                        throw new Exception();
-                    }
-
-                    GameSystem.DeleteGameBeingModified(gameToModify);
-                    gamesBeingModifiedByClient.RemoveAll(g => g.Title.Equals(gameToModify.Title));
-
-                    GameSystem.UpdateGame(gameToModify, updatingGames[1]);
-                    WriteInLog(this.channel, gameToModify, "Modify Game", GameSystem.GetLoggedUser());
+                    await SendData(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
                 }
-
-                await SendData(CommandConstants.ModifyGameOk, "Se ha modificado el juego: " + gameToModify.Title + ".");
             }
             catch (Exception)
             {
                 await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
             }
-
-            return gamesBeingModifiedByClient;
         }
 
         public async Task DeleteGameHandler(string jsonDeleteGameData)
@@ -231,18 +180,10 @@ namespace Server
             {
                 Game gameToDelete = Game.Decode(jsonDeleteGameData);
 
-                if (GameSystem.IsGameBeingModified(gameToDelete))
+                if (await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
                 }
-
-                lock (lockDeleteGame)
-                {
-                    this.GameSystem.DeleteGame(gameToDelete);
-                    WriteInLog(this.channel, gameToDelete, "Delete Game", GameSystem.GetLoggedUser());
-                }
-
-                await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
             }
             catch (Exception)
             {
@@ -255,22 +196,23 @@ namespace Server
             try
             {
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
-                var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(publishReviewGame.Title));
-
-                if (GameSystem.IsGameBeingModified(gameToModify))
+                if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame, this.username)) is GameModel)
                 {
-                    throw new Exception();
+                    await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
+                    return;
                 }
-
-                GameSystem.UpdateReviews(gameToModify, publishReviewGame.Reviews);
-                WriteInLog(this.channel, publishReviewGame, "Publish Review", GameSystem.GetLoggedUser());
-
-                await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + gameToModify.Title + ".");
             }
-            catch (Exception)
+            catch (RpcException rpcException)
             {
-                await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
+                if (rpcException.StatusCode == StatusCode.AlreadyExists)
+                {
+                    await SendData(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
+                    return;
+                }
             }
+            catch (Exception) { }
+
+            await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
         }
 
         public async Task PublishGameHandler(string jsonPublishGame)
@@ -278,21 +220,22 @@ namespace Server
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
+                string cover = await handleGameCover(newGame.Cover);
 
-                newGame.Cover = await handleGameCover(newGame.Cover);
-
-                lock (lockAddGame)
+                if (await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame)) is GameModel)
                 {
-                    GameSystem.AddGame(newGame);
-                    WriteInLog(this.channel, newGame, "Insert Game", GameSystem.GetLoggedUser());
-                }
+                    await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
 
-                await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
+                    if (cover != null)
+                    {
+                        await grpcClient.PostGameCoverAsync(new GameCoverModel { Id = newGame.Id, Cover = cover });
+                    }
+                    return;
+                }
             }
-            catch (Exception)
-            {
-                await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
-            }
+            catch (Exception) { }
+
+            await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
         }
 
         public async Task<string> handleGameCover(string cover)

@@ -31,7 +31,6 @@ namespace ServerLogs
             {
                 byte[] data = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(data);
-                Console.WriteLine((message));
                 LogEntry logEntry = LogEntry.Decode(message);
                 LogEntries.Add(logEntry);
             });
@@ -44,13 +43,7 @@ namespace ServerLogs
 
         public List<LogEntry> Log()
         {
-            foreach (var entry in LogEntries)
-            {
-                Console.WriteLine(entry.Action);
-            }
-            Console.WriteLine("3");
             return LogEntries;
-            Console.WriteLine("4");
         }
 
         public void DeclareQueue(IModel channel)

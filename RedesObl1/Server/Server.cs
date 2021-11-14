@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Globalization;
@@ -15,7 +16,9 @@ using ProtocolLibrary;
 using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
-using RabbitMQ.Client;
+using GRPCLibrary;
+using Grpc.Core;
+using Grpc.Net.Client;
 
 namespace Server
 {
@@ -26,10 +29,10 @@ namespace Server
         public int ServerPort { get; set; }
         public int FakeServerPort { get; set; }
         public int Backlog { get; set; }
-        private static GameSystem GameSystem;
+        public string GrpcChannelAddress { get; set; }
         private static bool _exit = false;
         static List<TcpClient> _clients = new List<TcpClient>();
-
+        private static GameSystemService.GameSystemServiceClient grpcClient;
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
@@ -41,15 +44,8 @@ namespace Server
             {" ", "exit"}
         };
 
-        private const string SimpleQueue = "m6bBasicQueue";
-
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            ConnectionFactory connectionFactory = new ConnectionFactory{HostName = "localhost"};
-            using IConnection connection = connectionFactory.CreateConnection();
-            using IModel channel = connection.CreateModel();
-            DeclareQueue(channel);
-
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
                     .SetBasePath(directory)
@@ -59,8 +55,14 @@ namespace Server
             var section = configuration.GetSection(nameof(Server));
             var ServerConfig = section.Get<Server>();
 
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            // The port number(5001) must match the port of the gRPC server.
+            using var channel = GrpcChannel.ForAddress(ServerConfig.GrpcChannelAddress);
+
+            grpcClient = new GameSystemService.GameSystemServiceClient(channel);
+
             object lockObject = new object();
-            GameSystem = new GameSystem();
 
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
 
@@ -68,7 +70,7 @@ namespace Server
             tcpListener.Start(100);
 
             Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
-            ServerMenuUtils menu = new ServerMenuUtils(GameSystem, channel);
+            ServerMenuUtils menu = new ServerMenuUtils(grpcClient);
 
             while (!_exit)
             {
@@ -80,46 +82,25 @@ namespace Server
                         _exit = true;
                         break;
                     case "1":
-                        DialogUtils.ShowGameDetail(GameSystem.Games);
+                        DialogUtils.ShowGameDetail(await menu.GetGames());
                         break;
                     case "2":
-                        Game gameToPublish = menu.InsertGame();
-                        if (gameToPublish != null)
-                        {
-                            WriteInLog(channel, gameToPublish, "Insert Game");
-                        }
+                        await menu.InsertGame();
                         break;
                     case "3":
-                        Game game = menu.InsertReview();
-                        if (game != null)
-                        {
-                            WriteInLog(channel, game, "Insert Review");
-                        }
+                        await menu.InsertReview();
                         break;
                     case "4":
-                        DialogUtils.SearchFilteredGames(GameSystem.Games);
+                        DialogUtils.SearchFilteredGames(await menu.GetGames());
                         break;
                     case "5":
-                        User user = menu.InsertUser();
-                        if (user != null)
-                        {
-                            WriteInLog(channel, null, "Insert User", user);
-                        }
-
+                        await menu.InsertUser();
                         break;
                     case "6":
-                        User userModified = menu.ModifyUser();
-                        if (userModified != null)
-                        {
-                            WriteInLog(channel, null, "Modify User", userModified);
-                        }
+                        await menu.ModifyUser();
                         break;
                     case "7":
-                        User deletedUser = menu.DeleteUser();
-                        if (deletedUser != null)
-                        {
-                            WriteInLog(channel, null, "Delete User", deletedUser);
-                        }
+                        await menu.DeleteUser();
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -127,32 +108,6 @@ namespace Server
                 }
                 DialogUtils.ReturnToMenu();
             }
-        }
-
-        private static void WriteInLog(IModel channel, Game game = null, string action = null, User user = null)
-        {
-            LogEntry logEntry = new LogEntry() {User = user, Game = game, Date = DateTime.Now, Action = action};
-            PublishMessage(channel, logEntry.Encode());
-        }
-
-        private static void DeclareQueue(IModel channel)
-        {
-            channel.QueueDeclare(
-                queue: SimpleQueue,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null);
-        }
-
-        public static void PublishMessage(IModel channel, string message)
-        {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(
-                exchange: string.Empty,
-                routingKey: SimpleQueue,
-                body: data
-            );
         }
 
         public static void ListenForConnections(TcpListener tcpListener)
@@ -176,10 +131,9 @@ namespace Server
 
         public static async Task HandleClient(TcpClient tcpClient)
         {
-            List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
 
-            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient);
+            ServerUtils serverUtils = new ServerUtils(tcpClient, grpcClient);
             while (!_exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -192,7 +146,7 @@ namespace Server
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
                     bufferData = await Utils.ServerReceiveData(networkStream, header.IDataLength, bufferData);
-                    
+
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
@@ -201,7 +155,7 @@ namespace Server
                             await serverUtils.LoginHandler(jsonData);
                             break;
                         case CommandConstants.Logout:
-                            serverUtils.Logout(jsonData);
+                            await serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
                             await serverUtils.PublishGameHandler(jsonData);
@@ -216,10 +170,10 @@ namespace Server
                             await serverUtils.PublishReviewHandler(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            gamesBeingModifiedByClient = await serverUtils.BeingModifiedHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.BeingModifiedHandler(jsonData);
                             break;
                         case CommandConstants.ModifyGame:
-                            gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.ModifyGameHandler(jsonData);
                             break;
                         case CommandConstants.DeleteGame:
                             await serverUtils.DeleteGameHandler(jsonData);
@@ -228,7 +182,7 @@ namespace Server
                             await serverUtils.AcquireGameHandler(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            await serverUtils.GetAcquiredGamesHandler(jsonData);
+                            await serverUtils.GetAcquiredGamesHandler();
                             break;
                         case CommandConstants.GetGameCover:
                             await serverUtils.GetGameCover(jsonData);

@@ -77,7 +77,7 @@ namespace networkStream
                 return;
             }
 
-            await SendData(CommandConstants.AcquireGame, new UserGamePair(myUser, game).Encode());
+            await SendData(CommandConstants.AcquireGame, game.Encode());
 
             Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
         }
@@ -110,19 +110,19 @@ namespace networkStream
             await ReciveFile();
         }
 
-        public async Task<List<User>> GetUsers()
-        {
-            await SendData(CommandConstants.GetUsers, "");
+        // public async Task<List<User>> GetUsers()
+        // {
+        //     await SendData(CommandConstants.GetUsers, "");
 
-            var usersJson = await Utils.ClientReceiveMessageData(networkStream);
-            List<User> users = GameSystem.DecodeUsers(usersJson);
+        //     var usersJson = await Utils.ClientReceiveMessageData(networkStream);
+        //     List<User> users = GameSystem.DecodeUsers(usersJson);
 
-            return users;
-        }
+        //     return users;
+        // }
 
         public async Task<List<Game>> GetAcquiredGames()
         {
-            await SendData(CommandConstants.GetAcquiredGames, myUser.Encode());
+            await SendData(CommandConstants.GetAcquiredGames, "");
 
             var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
 
