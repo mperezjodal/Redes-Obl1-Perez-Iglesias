@@ -41,9 +41,30 @@ namespace ServerLogs
                 consumer: consumer);
         }
 
-        public List<LogEntry> Log()
+        public List<LogEntry> Log(FilterParams filterParams)
         {
-            return LogEntries;
+            List<LogEntry> filteredLogEntries = new List<LogEntry>();
+            foreach (LogEntry logEntry in LogEntries)
+            {
+                if (filterParams.DateFrom != null && logEntry.Date < filterParams.DateFrom)
+                {
+                    continue;
+                }
+                if (filterParams.DateTo != null && logEntry.Date > filterParams.DateTo)
+                {
+                    continue;
+                }
+                if (filterParams.Username != null && logEntry.User.Name != filterParams.Username)
+                {
+                    continue;
+                }
+                if (filterParams.GameTitle != null && logEntry.Game.Title != filterParams.GameTitle)
+                {
+                    continue;
+                }
+                filteredLogEntries.Add(logEntry);
+            }
+            return filteredLogEntries;
         }
 
         public void DeclareQueue(IModel channel)

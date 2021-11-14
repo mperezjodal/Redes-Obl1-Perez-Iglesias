@@ -19,9 +19,17 @@ namespace ServerLogs.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get(string juego = "", string usuario = "", string fechaDesde = "", string fechaHasta = "")
         {
-            return Ok(serverLogs.Log());
+            FilterParams queryParams = new FilterParams()
+            {
+                GameTitle = juego,
+                Username = usuario,
+                DateFrom = DateTime.Parse(fechaDesde),
+                DateTo = DateTime.Parse(fechaHasta)
+            };
+
+            return Ok(serverLogs.Log(queryParams));
         }
     }
 }
