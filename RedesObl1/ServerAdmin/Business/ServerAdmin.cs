@@ -45,7 +45,7 @@ namespace ServerAdmin
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(request.Name);
-                WriteInLog(null, "Insert User");
+                WriteInLog(null, "Insert User", newUser);
             }
 
             GameSystem.LoginUser(request.Name);
@@ -60,7 +60,8 @@ namespace ServerAdmin
                 return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.AlreadyExists, "User already exists")));
             }
 
-            GameSystem.AddUser(request.Name);
+            User user = GameSystem.AddUser(request.Name);
+            WriteInLog(null, "Insert User", user);
             return Task.FromResult(request);
         }
 
@@ -72,7 +73,8 @@ namespace ServerAdmin
                 return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
             }
 
-            GameSystem.UpdateUser(ProtoBuilder.User(request.Users[0]), ProtoBuilder.User(request.Users[1]));
+            User updatedUser = GameSystem.UpdateUser(ProtoBuilder.User(request.Users[0]), ProtoBuilder.User(request.Users[1]));
+            WriteInLog(null, "Modify User", updatedUser);
             return Task.FromResult(request.Users[1]);
         }
 
@@ -85,12 +87,14 @@ namespace ServerAdmin
             }
 
             GameSystem.Users.RemoveAll(u => u.Name.Equals(existingUser.Name));
+            WriteInLog(null, "Deleted User", existingUser);
             return Task.FromResult(request);
         }
 
         public override Task<UserModel> Logout(UserModel request, ServerCallContext context)
         {
-            GameSystem.LogoutUser(request.Name);
+            User user = GameSystem.LogoutUser(request.Name);
+            WriteInLog(null, "Logout", user);
             return Task.FromResult(request);
         }
 
@@ -99,6 +103,7 @@ namespace ServerAdmin
             lock (lockAddGame)
             {
                 GameSystem.AddGame(ProtoBuilder.Game(request));
+                WriteInLog(ProtoBuilder.Game(request), "Post Game" + request.User, null);
             }
 
             return Task.FromResult(request);
@@ -108,6 +113,7 @@ namespace ServerAdmin
         {
             Game game = GameSystem.Games.Find(g => g.Id == request.Id);
             GameSystem.AddGameCover(game, request.Cover);
+            WriteInLog(game, "Cover Posted");
 
             return Task.FromResult(request);
         }
@@ -131,6 +137,7 @@ namespace ServerAdmin
             }
 
             GameSystem.UpdateReviews(gameToModify, ProtoBuilder.GetReviews(request));
+            WriteInLog(gameToModify, "Post Review by: " + request.User);
             return Task.FromResult(request);
         }
 
@@ -143,6 +150,7 @@ namespace ServerAdmin
             }
 
             GameSystem.AddGameBeingModified(gameToModify, request.User);
+            WriteInLog(gameToModify, "Added Game to be modified by: " + request.User);
             return Task.FromResult(request);
         }
 
@@ -158,6 +166,7 @@ namespace ServerAdmin
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request.Games[1]));
+                WriteInLog(gameToModify, "Update Game by: " + request.Games[1].User);
             }
 
             return Task.FromResult(ProtoBuilder.GameModel(gameToModify));
@@ -174,6 +183,7 @@ namespace ServerAdmin
             lock (lockDeleteGame)
             {
                 GameSystem.DeleteGame(gameToDelete);
+                WriteInLog(gameToDelete, "Delete Game by: " + request.User);
             }
 
             return Task.FromResult(request);
@@ -184,6 +194,7 @@ namespace ServerAdmin
             var user = GameSystem.Users.Find(u => u.Name.Equals(request.User));
             var game = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
             user.AcquireGame(game);
+            WriteInLog(game, "Adquire Game", user);
 
             return Task.FromResult(request);
         }

@@ -31,7 +31,6 @@ namespace ServerLogs
             {
                 byte[] data = args.Body.ToArray();
                 string message = Encoding.UTF8.GetString(data);
-                Console.WriteLine((message));
                 LogEntry logEntry = LogEntry.Decode(message);
                 LogEntries.Add(logEntry);
             });
@@ -44,10 +43,6 @@ namespace ServerLogs
 
         public List<LogEntry> Log()
         {
-            foreach (var entry in LogEntries)
-            {
-                Console.WriteLine(entry.Action);
-            }
             return LogEntries;
         }
 

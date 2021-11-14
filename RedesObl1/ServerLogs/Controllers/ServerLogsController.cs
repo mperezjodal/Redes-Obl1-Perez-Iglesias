@@ -21,7 +21,6 @@ namespace ServerLogs.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            Console.WriteLine("1");
             return Ok(serverLogs.Log());
         }
     }

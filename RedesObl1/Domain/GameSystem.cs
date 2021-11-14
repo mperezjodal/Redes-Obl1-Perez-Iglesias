@@ -21,7 +21,7 @@ namespace Domain
         public bool IsGameBeingModifiedByAnother(Game game, string username);
         public User AddUser(string userName);
         public void LoginUser(string user);
-        public void LogoutUser(string user);
+        public User LogoutUser(string user);
     }
 
     public class GameSystem : IGameSystem
@@ -190,9 +190,10 @@ namespace Domain
             Users.Find(u => u.Name.Equals(user)).Login = true;
         }
 
-        public void LogoutUser(string user)
+        public User LogoutUser(string user)
         {
             Users.Find(u => u.Name.Equals(user)).Login = false;
+            return Users.Find(u => u.Name.Equals(user));
         }
 
         public string EncodeUsers()

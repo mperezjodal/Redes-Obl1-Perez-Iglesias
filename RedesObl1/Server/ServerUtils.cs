@@ -196,7 +196,7 @@ namespace Server
             try
             {
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
-                if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame)) is GameModel)
+                if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame, this.username)) is GameModel)
                 {
                     await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
                     return;
