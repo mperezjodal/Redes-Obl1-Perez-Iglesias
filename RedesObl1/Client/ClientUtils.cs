@@ -97,17 +97,17 @@ namespace networkStream
 
             if (gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
             {
-                await ReciveGameCover(gameToShow);
+                await ReceiveGameCover(gameToShow);
             }
 
             DialogUtils.ShowGameDetail(gameToShow);
         }
 
-        public async Task ReciveGameCover(Game g)
+        public async Task ReceiveGameCover(Game g)
         {
             await SendData(CommandConstants.GetGameCover, g.Encode());
             
-            await ReciveFile();
+            await ReceiveFile();
         }
 
         // public async Task<List<User>> GetUsers()
@@ -135,7 +135,7 @@ namespace networkStream
             await fileCommunication.SendFileAsync(path);
         }
 
-        public async Task ReciveFile()
+        public async Task ReceiveFile()
         {
             var fileCommunicationGameList = new FileCommunicationHandler(this.networkStream);
             await fileCommunicationGameList.ReceiveFileAsync();

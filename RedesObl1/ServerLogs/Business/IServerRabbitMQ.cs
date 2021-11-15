@@ -15,7 +15,7 @@ namespace ServerLogs
 
     public interface IServerRabbitMq
     {
-        public void ReciveMessages(IModel channel);
+        public void ReceiveMessages(IModel channel);
         public void DeclareQueue(IModel channel);
         public List<LogEntry> Log(FilterParams filterParams);
     }

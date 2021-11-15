@@ -6,8 +6,10 @@ service GameSystemService {
   rpc Login (UserModel) returns (UserModel);
   rpc Logout (UserModel) returns (UserModel);
   rpc PostGame (GameModel) returns (GameModel);
-  rpc PostGameCover (GameCoverModel) returns (GameCoverModel);
+  rpc PostCover (CoverModel) returns (CoverModel);
   rpc GetGames (EmptyRequest) returns (GamesModel);
+  rpc GetCoverSize (CoverRequest) returns (CoverSize);
+  rpc GetCover (CoverRequest) returns (CoverModel);
   rpc GetUsers (EmptyRequest) returns (UsersModel);
   rpc PostReview (GameModel) returns (GameModel);
   rpc ToModify (GameModel) returns (GameModel);
@@ -44,9 +46,19 @@ message ReviewModel {
 	string comment = 3;
 }
 
-message GameCoverModel {
-	int32 id = 1;
-	string cover = 2;
+message CoverModel {
+	string fileName = 1;
+	bytes data = 2;
+}
+
+message CoverRequest {
+	string cover = 1;
+	sint64 part = 2;
+	sint64 offset = 3;
+}
+
+message CoverSize {
+	sint64 size = 1;
 }
 
 message GamesModel {

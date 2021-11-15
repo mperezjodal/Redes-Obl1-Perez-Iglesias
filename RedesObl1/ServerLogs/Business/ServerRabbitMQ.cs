@@ -21,10 +21,10 @@ namespace ServerLogs
             using IModel channel = connection.CreateModel();
 
             DeclareQueue(channel);
-            ReciveMessages(channel);
+            ReceiveMessages(channel);
         }
 
-        public void ReciveMessages(IModel channel)
+        public void ReceiveMessages(IModel channel)
         {
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += ((sender, args) =>

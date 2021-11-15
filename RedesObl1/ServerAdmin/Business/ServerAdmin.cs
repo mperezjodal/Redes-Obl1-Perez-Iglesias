@@ -8,6 +8,9 @@ using Grpc.Core;
 using GRPCLibrary;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
+using FileStreamLibrary;
+using System.IO;
+using Google.Protobuf;
 
 namespace ServerAdmin
 {
@@ -109,13 +112,30 @@ namespace ServerAdmin
             return Task.FromResult(request);
         }
 
-        public override Task<GameCoverModel> PostGameCover(GameCoverModel request, ServerCallContext context)
+        public async override Task<CoverModel> PostCover(CoverModel request, ServerCallContext context)
         {
-            Game game = GameSystem.Games.Find(g => g.Id == request.Id);
-            GameSystem.AddGameCover(game, request.Cover);
-            WriteInLog(game, "Cover Posted");
+            FileStreamHandler _fileStreamHandler = new FileStreamHandler();
+            await _fileStreamHandler.WriteDataAsync(request.FileName, request.Data.ToByteArray());
 
-            return Task.FromResult(request);
+            return request;
+        }
+
+        public override Task<CoverSize> GetCoverSize(CoverRequest request, ServerCallContext context)
+        {
+            var fileInfo = new FileInfo(request.Cover);
+            long fileLength = fileInfo.Length;
+            byte[] fileSizeDataLength = BitConverter.GetBytes(fileLength);
+            long fileSize = BitConverter.ToInt64(fileSizeDataLength);
+
+            return Task.FromResult(new CoverSize { Size = fileSize });
+        }
+
+        public async override Task<CoverModel> GetCover(CoverRequest request, ServerCallContext context)
+        {
+            return new CoverModel { 
+                FileName = request.Cover, 
+                Data = ByteString.CopyFrom(await FileCommunicationHandler.GetFilePartBytes(request.Cover, request.Part, request.Offset)) 
+            };
         }
 
         public override Task<GamesModel> GetGames(EmptyRequest request, ServerCallContext context)
@@ -157,7 +177,7 @@ namespace ServerAdmin
         public override Task<GameModel> UpdateGame(GamesModel request, ServerCallContext context)
         {
             var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.Games[0].Title));
-
+            
             lock (lockModifyGame)
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.Games[0].User))

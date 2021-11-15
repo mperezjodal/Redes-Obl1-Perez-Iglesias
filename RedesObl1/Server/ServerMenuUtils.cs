@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using DisplayUtils;
 using Domain;
+using FileStreamLibrary;
 using GRPCLibrary;
+using FileStreamLibrary.Protocol;
 
 namespace Server
 {
@@ -15,6 +17,44 @@ namespace Server
         public ServerMenuUtils(GameSystemService.GameSystemServiceClient grpcClient)
         {
             this.grpcClient = grpcClient;
+        }
+
+        public async Task ShowGames()
+        {
+            Game gameToShow = DialogUtils.SelectGame(await GetGames());
+
+            if (gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
+            {
+                await ReceiveGameCover(gameToShow);
+            }
+
+            DialogUtils.ShowGameDetail(gameToShow);
+        }
+
+        public async Task ReceiveGameCover(Game game)
+        {
+            try
+            {
+                if (game.Cover != null)
+                {
+                    CoverSize coverSize = await grpcClient.GetCoverSizeAsync(new CoverRequest { Cover = game.Cover });
+                    var parts = Specification.GetParts(coverSize.Size);
+                    
+                    long offset = 0;
+
+                    for (int i = 1; i <= parts; i++)
+                    {
+                        CoverModel response = await grpcClient.GetCoverAsync(new CoverRequest { Cover = game.Cover, Part = i, Offset = offset });
+                        
+                        offset += response.Data.Length;
+
+                        FileStreamHandler _fileStreamHandler = new FileStreamHandler();
+                        await _fileStreamHandler.WriteDataAsync(response.FileName, response.Data.ToByteArray());
+                    }
+                }
+
+            }
+            catch (Exception){ }
         }
 
         public async Task<List<Game>> GetGames()
@@ -48,11 +88,11 @@ namespace Server
             Game gameToPublish = DialogUtils.InputGame();
             try
             {
-                if (gameToPublish.Cover != null)
-                {
-                    var fileName = gameToPublish.Cover.Split("/").Last();
-                    System.IO.File.Copy(gameToPublish.Cover, Directory.GetCurrentDirectory().ToString() + "/" + fileName);
-                    gameToPublish.Cover = fileName;
+                if (gameToPublish.Cover != null && File.Exists(gameToPublish.Cover))
+                {                    
+                    await FileCommunicationHandler.GrpcSendFileAsync(grpcClient, gameToPublish.Cover);
+
+                    gameToPublish.Cover = gameToPublish.Cover.Split("/").Last();
                 }
 
                 await grpcClient.PostGameAsync(ProtoBuilder.GameModel(gameToPublish));

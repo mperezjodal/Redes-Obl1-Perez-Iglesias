@@ -6,6 +6,7 @@ using Domain;
 using ProtocolLibrary;
 using System.IO;
 using FileStreamLibrary;
+using FileStreamLibrary.Protocol;
 using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -31,10 +32,16 @@ namespace Server
             await fileCommunication.SendFileAsync(path);
         }
 
-        public async Task ReciveFile()
+        public async Task ReceiveFile()
         {
             var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
             await fileCommunicationGameList.ReceiveFileAsync();
+        }
+
+        public async Task TransferFile()
+        {
+            var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
+            await fileCommunicationGameList.TransferFileAsync(grpcClient);
         }
 
         public async Task GetGamesHandler()
@@ -61,15 +68,37 @@ namespace Server
 
         public async Task GetGameCover(string jsonGame)
         {
-            Game g = Game.Decode(jsonGame);
-            if (g.Cover != null)
+            try
             {
-                var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
-                if (File.Exists(path))
+                Game g = Game.Decode(jsonGame);
+
+                if (g.Cover != null)
                 {
-                    await SendFile(path);
+                    CoverSize coverSize = await grpcClient.GetCoverSizeAsync(new CoverRequest { Cover = g.Cover });
+                    var parts = Specification.GetParts(coverSize.Size);
+                    
+                    long offset = 0;
+
+                    for (int i = 1; i <= parts; i++)
+                    {
+                        CoverModel response = await grpcClient.GetCoverAsync(new CoverRequest { Cover = g.Cover, Part = i, Offset = offset });
+                        
+                        offset += response.Data.Length;
+
+                        FileStreamHandler _fileStreamHandler = new FileStreamHandler();
+                        await _fileStreamHandler.WriteDataAsync(response.FileName, response.Data.ToByteArray());
+                    }
+
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
+                    if (File.Exists(path))
+                    {
+                        await SendFile(path);
+                    }
                 }
+
+                
             }
+            catch (Exception){ }
         }
 
         public async Task GetAcquiredGamesHandler()
@@ -162,6 +191,11 @@ namespace Server
             {
                 List<Game> updatingGames = GameSystem.DecodeGames(jsonModifyGameData);
 
+                if (updatingGames[1].Cover != null)
+                {
+                    updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
+                }
+
                 var response = await grpcClient.UpdateGameAsync(ProtoBuilder.GamesModel(updatingGames, this.username));
                 if (response is GameModel)
                 {
@@ -220,16 +254,15 @@ namespace Server
             try
             {
                 Game newGame = Game.Decode(jsonPublishGame);
-                string cover = await handleGameCover(newGame.Cover);
+
+                if (newGame.Cover != null)
+                {
+                    newGame.Cover = await handleGameCover(newGame.Cover);
+                }
 
                 if (await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame)) is GameModel)
                 {
                     await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
-
-                    if (cover != null)
-                    {
-                        await grpcClient.PostGameCoverAsync(new GameCoverModel { Id = newGame.Id, Cover = cover });
-                    }
                     return;
                 }
             }
@@ -242,7 +275,7 @@ namespace Server
         {
             if (File.Exists(cover))
             {
-                await ReciveFile();
+                await TransferFile();
                 var fileInfo = new FileInfo(cover);
                 return fileInfo.Name;
             }

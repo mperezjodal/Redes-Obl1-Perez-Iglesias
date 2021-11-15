@@ -82,7 +82,7 @@ namespace Server
                         _exit = true;
                         break;
                     case "1":
-                        DialogUtils.ShowGameDetail(await menu.GetGames());
+                        await menu.ShowGames();
                         break;
                     case "2":
                         await menu.InsertGame();
