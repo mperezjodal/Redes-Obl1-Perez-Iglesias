@@ -40,7 +40,7 @@ namespace FileStreamLibrary
             await SendFileAsync(fileSize, path);
         }
 
-        public async Task TransferFileAsync(GameSystemService.GameSystemServiceClient grpcClient)
+        public async Task TransferFileAsync(GameSystemModel.GameSystemModelClient grpcClient)
         {
             byte[] fileNameLengthData = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileNameLength);
             int fileNameLength = BitConverter.ToInt32(fileNameLengthData);
@@ -69,7 +69,7 @@ namespace FileStreamLibrary
             await ReceiveFileAsync(fileSize, fileName);
         }
 
-        public static async Task GrpcSendFileAsync(GameSystemService.GameSystemServiceClient grpcClient, string path)
+        public static async Task GrpcSendFileAsync(GameSystemModel.GameSystemModelClient grpcClient, string path)
         {
             var _fileStreamHandler = new FileStreamHandler();
 
@@ -158,7 +158,7 @@ namespace FileStreamLibrary
             }
         }
 
-        private async Task TransferFileAsync(GameSystemService.GameSystemServiceClient grpcClient, long fileSize, string fileName)
+        private async Task TransferFileAsync(GameSystemModel.GameSystemModelClient grpcClient, long fileSize, string fileName)
         {
             long fileParts = Specification.GetParts(fileSize);
             long offset = 0;

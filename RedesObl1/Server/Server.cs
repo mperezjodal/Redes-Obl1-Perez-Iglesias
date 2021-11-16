@@ -32,7 +32,7 @@ namespace Server
         public string GrpcChannelAddress { get; set; }
         private static bool _exit = false;
         static List<TcpClient> _clients = new List<TcpClient>();
-        private static GameSystemService.GameSystemServiceClient grpcClient;
+        private static GameSystemModel.GameSystemModelClient grpcClient;
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
@@ -60,7 +60,7 @@ namespace Server
             // The port number(5001) must match the port of the gRPC server.
             using var channel = GrpcChannel.ForAddress(ServerConfig.GrpcChannelAddress);
 
-            grpcClient = new GameSystemService.GameSystemServiceClient(channel);
+            grpcClient = new GameSystemModel.GameSystemModelClient(channel);
 
             object lockObject = new object();
 
