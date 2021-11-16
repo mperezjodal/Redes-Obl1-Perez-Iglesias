@@ -19,8 +19,8 @@ namespace Server
     {
         public TcpClient tcpClient;
         public string username;
-        public GameSystemService.GameSystemServiceClient grpcClient;
-        public ServerUtils(TcpClient tcpClient, GameSystemService.GameSystemServiceClient grpcClient)
+        public GameSystemModel.GameSystemModelClient grpcClient;
+        public ServerUtils(TcpClient tcpClient, GameSystemModel.GameSystemModelClient grpcClient)
         {
             this.tcpClient = tcpClient;
             this.grpcClient = grpcClient;

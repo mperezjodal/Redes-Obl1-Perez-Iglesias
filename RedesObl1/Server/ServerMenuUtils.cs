@@ -13,8 +13,8 @@ namespace Server
 {
     public class ServerMenuUtils
     {
-        private GameSystemService.GameSystemServiceClient grpcClient;
-        public ServerMenuUtils(GameSystemService.GameSystemServiceClient grpcClient)
+        private GameSystemModel.GameSystemModelClient grpcClient;
+        public ServerMenuUtils(GameSystemModel.GameSystemModelClient grpcClient)
         {
             this.grpcClient = grpcClient;
         }

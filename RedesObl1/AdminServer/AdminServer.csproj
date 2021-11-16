@@ -18,4 +18,8 @@
     <ProjectReference Include="..\FileStreamLibrary\FileStreamLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- <Protobuf Include="Protos\gameSystem.proto" GrpcServices="Server" /> -->
+  </ItemGroup>
+
 </Project>
