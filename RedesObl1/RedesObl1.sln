@@ -21,8 +21,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerLogs", "ServerLogs\Se
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GRPCLibrary", "GRPCLibrary\GRPCLibrary.csproj", "{C9FAC003-4ADB-45D1-BEDE-966667642F8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerAdmin", "ServerAdmin\ServerAdmin.csproj", "{CCBCD31F-BCD4-4799-B8D4-CF931104B565}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
