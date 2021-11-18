@@ -40,8 +40,10 @@ namespace AdminServer
         public override Task<UserModel> Login(UserModel request, ServerCallContext context)
         {
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
+            
             if (existingUser != null && existingUser.Login)
             {
+                Console.WriteLine("User " + existingUser.Login + " is trying to login" );
                 return Task.FromException<UserModel>(new AlreadyExistsException("User already logged in"));
             }
 
@@ -64,6 +66,7 @@ namespace AdminServer
             }
 
             User user = GameSystem.AddUser(request.Name);
+            Console.WriteLine("User " + user.Login + " added");
             WriteInLog(null, "Insert User", user);
             return Task.FromResult(request);
         }
@@ -79,6 +82,19 @@ namespace AdminServer
             User updatedUser = GameSystem.UpdateUser(ProtoBuilder.User(request.Users[0]), ProtoBuilder.User(request.Users[1]));
             WriteInLog(null, "Modify User", updatedUser);
             return Task.FromResult(request.Users[1]);
+        }
+
+        public override Task<UserModel> UpdateUserWithName(UserModifyModel request, ServerCallContext context)
+        {
+            User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.NameUserToModify));
+            if (existingUser == null)
+            {
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
+            }
+
+            User updatedUser = GameSystem.UpdateUser(existingUser, ProtoBuilder.User(request));
+            WriteInLog(null, "Modify User", updatedUser);
+            return Task.FromResult(ProtoBuilder.UserModel(updatedUser));
         }
 
         public override Task<UserModel> DeleteUser(UserModel request, ServerCallContext context)
@@ -192,6 +208,24 @@ namespace AdminServer
             return Task.FromResult(ProtoBuilder.GameModel(gameToModify));
         }
 
+        public override Task<GameModel> UpdateGameWithTitle(GameModifyModel request, ServerCallContext context)
+        {
+            var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.TitleGameToModify));
+            this.ToModify(ProtoBuilder.GameModel(gameToModify), context);
+            lock (lockModifyGame)
+            {
+                if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.User))
+                {
+                    return Task.FromException<GameModel>(new RpcException(new Status(StatusCode.AlreadyExists, "Game is being modified")));
+                }
+                GameSystem.DeleteGameBeingModified(gameToModify);
+                GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request));
+                WriteInLog(gameToModify, "Update Game by: " + request.User);
+            }
+
+            return Task.FromResult(ProtoBuilder.GameModel(request));
+        }
+
         public override Task<GameModel> DeleteGame(GameModel request, ServerCallContext context)
         {
             var gameToDelete = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
@@ -216,6 +250,16 @@ namespace AdminServer
             user.AcquireGame(game);
             WriteInLog(game, "Adquire Game", user);
 
+            return Task.FromResult(request);
+        }
+
+        public override Task<GameModel> RemoveAcquireGame(GameModel request, ServerCallContext context)
+        {
+            var user = GameSystem.Users.Find(u => u.Name.Equals(request.User));
+            var game = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
+            user.Games.Remove(game);
+            WriteInLog(game, "Remove Acquire Game", user);
+            
             return Task.FromResult(request);
         }
 

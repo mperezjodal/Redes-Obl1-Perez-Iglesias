@@ -62,8 +62,6 @@ namespace Server
 
             grpcClient = new GameSystemModel.GameSystemModelClient(channel);
 
-            object lockObject = new object();
-
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
 
             var tcpListener = new TcpListener(serverIpEndPoint);

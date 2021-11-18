@@ -16,11 +16,13 @@ namespace Domain
         public User()
         {
             Games = new List<Game>();
+            Login = false;
         }
 
         public User(string userName)
         {
             Name = userName;
+            Login = false;
             Games = new List<Game>();
         }
 

@@ -28,6 +28,26 @@ namespace GRPCLibrary
 
             return game;
         }
+        public static Game Game(GameModifyModel gm) {
+            Game game = new Game() { 
+                Id = gm.Id, 
+                Title = gm.Title, 
+                Genre = gm.Genre, 
+                Reviews = new List<Review>(),
+                Rating = gm.Rating,
+                Synopsis = gm.Synopsis,
+                Cover = gm.Cover
+            };
+            foreach (ReviewModel review in gm.Reviews)
+            {
+                game.Reviews.Add(new Review() { 
+                    Id = review.Id, 
+                    Comment = review.Comment, 
+                    Rating = review.Rating
+                });
+            }
+            return game;
+        }
 
         public static GameModel GameModel(Game game) {
             GameModel gm = new GameModel() { 
@@ -36,6 +56,55 @@ namespace GRPCLibrary
                 Genre = game.Genre,
                 Rating = game.Rating,
                 Synopsis = game.Synopsis
+            };
+            if (game.Cover != null)
+            {
+                gm.Cover = game.Cover;
+            }
+            foreach (Review review in game.Reviews)
+            {
+                gm.Reviews.Add(new ReviewModel() { 
+                    Id = review.Id, 
+                    Comment = review.Comment, 
+                    Rating = review.Rating
+                });
+            }
+
+            return gm;
+        }
+
+        public static GameModel GameModel(GameModifyModel game) {
+            GameModel gm = new GameModel() { 
+                Id = game.Id, 
+                Title = game.Title, 
+                Genre = game.Genre,
+                Rating = game.Rating,
+                Synopsis = game.Synopsis
+            };
+            if (game.Cover != null)
+            {
+                gm.Cover = game.Cover;
+            }
+            foreach (ReviewModel review in game.Reviews)
+            {
+                gm.Reviews.Add(new ReviewModel() { 
+                    Id = review.Id, 
+                    Comment = review.Comment, 
+                    Rating = review.Rating
+                });
+            }
+
+            return gm;
+        }
+
+        public static GameModifyModel GameModifyModel(Game game, string titleGameToModify) {
+            GameModifyModel gm = new GameModifyModel() { 
+                Id = game.Id, 
+                Title = game.Title, 
+                Genre = game.Genre,
+                Rating = game.Rating,
+                Synopsis = game.Synopsis,
+                TitleGameToModify = titleGameToModify
             };
             if (game.Cover != null)
             {
@@ -99,6 +168,7 @@ namespace GRPCLibrary
             return user;
         }
 
+        
         public static UserModel UserModel(User user) {
             UserModel um = new UserModel() { 
                 Id = user.Id,
@@ -108,6 +178,34 @@ namespace GRPCLibrary
             foreach (Game game in user.Games)
             {
                 um.Games.Add(GameModel(game));
+            }
+            return um;
+        }
+
+        public static UserModifyModel UserModifyModel(User user, string NameUserToModify) {
+            UserModifyModel um = new UserModifyModel() { 
+                Id = user.Id,
+                Name = user.Name,
+                Login = user.Login,
+                NameUserToModify = NameUserToModify
+                
+            };
+            foreach (Game game in user.Games)
+            {
+                um.Games.Add(GameModel(game));
+            }
+            return um;
+        }
+
+        public static User User(UserModifyModel user) {
+            User um = new User() { 
+                Id = user.Id,
+                Name = user.Name,
+                Login = user.Login
+            };
+            foreach (GameModel game in user.Games)
+            {
+                um.Games.Add(ProtoBuilder.Game(game));
             }
             return um;
         }
