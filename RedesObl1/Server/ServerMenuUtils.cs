@@ -95,12 +95,14 @@ namespace Server
                     gameToPublish.Cover = gameToPublish.Cover.Split("/").Last();
                 }
 
-                await grpcClient.PostGameAsync(ProtoBuilder.GameModel(gameToPublish));
-                Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+                if(await grpcClient.PostGameAsync(ProtoBuilder.GameModel(gameToPublish)) is GameModel response)
+                {
+                    Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine("No se ha podido publicar el juego.");
             }
 
         }
