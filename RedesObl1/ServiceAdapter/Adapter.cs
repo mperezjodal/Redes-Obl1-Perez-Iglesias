@@ -16,103 +16,89 @@ namespace ServiceAdapter
     {
         public GameSystemModel.GameSystemModelClient grpcClient;
 
-        public Adapter(){
+        public Adapter()
+        {
             var httpHandler = new HttpClientHandler();
 
-            httpHandler.ServerCertificateCustomValidationCallback = 
+            httpHandler.ServerCertificateCustomValidationCallback =
                 HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
 
             var channel = GrpcChannel.ForAddress("http://localhost:5001",
                 new GrpcChannelOptions { HttpHandler = httpHandler });
+
             grpcClient = new GameSystemModel.GameSystemModelClient(channel);
         }
+
         public async Task<UserModel> PostUserAsync(string user)
         {
             try
             {
                 return await grpcClient.PostUserAsync(new UserModel { Name = user });
             }
-            catch (Exception e)
-            {
-                return null;
-            }
+            catch (Exception e) { return null; }
         }
-        public  async Task<UserModel> ModifyUserAsync(User modifiedUser, string userToModify)
+
+        public async Task<UserModel> UpdateUserAsync(User modifiedUser, string userToModify)
         {
             try
             {
                 return await grpcClient.UpdateUserWithNameAsync(ProtoBuilder.UserModifyModel(modifiedUser, userToModify));
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
-        public async Task<UserModel> DeleteUserAsync(User userToDelete)
+
+        public async Task<UserModel> DeleteUserAsync(string username)
         {
             try
             {
-                return await grpcClient.DeleteUserAsync(ProtoBuilder.UserModel(userToDelete));
+                return await grpcClient.DeleteUserAsync(new UserModel { Name = username });
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
-        public async Task<GameModel> DeleteGameAsync(Game deletedGame)
+
+        public async Task<GameModel> DeleteGameAsync(string title)
         {
             try
             {
-                return await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(deletedGame));
+                return await grpcClient.DeleteGameAsync(new GameModel { Title = title });
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
+
         public async Task<GameModel> PostGameAsync(Game newGame)
         {
             try
             {
                 return await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame));
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
+
         public async Task<GameModel> UpdateGameAsync(Game modifiedGame, string gameToModify)
         {
             try
             {
                 return await grpcClient.UpdateGameWithTitleAsync(ProtoBuilder.GameModifyModel(modifiedGame, gameToModify));
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
-        public async Task<GameModel> AdquireGameAsync(Game deletedGame, string user)
+
+        public async Task<GameModel> AdquireGameAsync(string gameTitle, string username)
         {
             try
             {
-                return await grpcClient.AcquireGameAsync(ProtoBuilder.GameModel(deletedGame, user));
+                return await grpcClient.AcquireGameAsync(new GameModel() { Title = gameTitle, User = username });
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
-        public async Task<GameModel> RemoveAcquireGameAsync(Game deletedGame, string user)
+
+        public async Task<GameModel> RemoveAcquireGameAsync(string gameTitle, string username)
         {
             try
             {
-                return await grpcClient.RemoveAcquireGameAsync(ProtoBuilder.GameModel(deletedGame, user));
+                return await grpcClient.RemoveAcquireGameAsync(new GameModel() { Title = gameTitle, User = username });
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
         }
     }
 }
