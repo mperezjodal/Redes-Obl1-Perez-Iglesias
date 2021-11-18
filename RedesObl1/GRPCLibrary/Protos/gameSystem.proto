@@ -20,13 +20,23 @@ service GameSystemModel {
   rpc PostUser (UserModel) returns (UserModel);
   rpc UpdateUser (UsersModel) returns (UserModel);
   rpc DeleteUser (UserModel) returns (UserModel);
+  rpc UpdateGameWithTitle (GameModifyModel) returns (GameModel);
+  rpc UpdateUserWithName (UserModifyModel) returns (UserModel);
 }
 
 message UserModel {
 	int32 id = 1;
 	string name = 2;
 	bool login = 3;
-	repeated GameModel games = 8;
+	repeated GameModel games = 4;
+}
+
+message UserModifyModel {
+	int32 id = 1;
+	string name = 2;
+	bool login = 3;
+	repeated GameModel games = 4;
+	string nameUserToModify = 5;
 }
 
 message GameModel {
@@ -38,6 +48,18 @@ message GameModel {
 	string cover = 6;
 	repeated ReviewModel reviews = 7;
 	string user = 8;
+}
+
+message GameModifyModel {
+	int32 id = 1;
+	string title = 2;
+	string genre = 3;
+	int32 rating = 4;
+	string synopsis = 5;
+	string cover = 6;
+	string user = 8;
+	string titleGameToModify = 9;
+	repeated ReviewModel reviews = 10;
 }
 
 message ReviewModel {

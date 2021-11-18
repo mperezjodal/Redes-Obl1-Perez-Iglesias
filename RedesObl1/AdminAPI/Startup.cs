@@ -23,8 +23,9 @@ namespace AdminAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IAdapter, Adapter>();
+
             services.AddControllers();
+            services.AddScoped<IAdapter, Adapter>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AdminAPI", Version = "v1" });

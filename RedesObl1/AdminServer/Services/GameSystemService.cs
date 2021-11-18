@@ -81,6 +81,19 @@ namespace AdminServer
             return Task.FromResult(request.Users[1]);
         }
 
+        public override Task<UserModel> UpdateUserWithName(UserModifyModel request, ServerCallContext context)
+        {
+            User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.NameUserToModify));
+            if (existingUser == null)
+            {
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
+            }
+
+            User updatedUser = GameSystem.UpdateUser(existingUser, ProtoBuilder.User(request));
+            WriteInLog(null, "Modify User", updatedUser);
+            return Task.FromResult(ProtoBuilder.UserModel(updatedUser));
+        }
+
         public override Task<UserModel> DeleteUser(UserModel request, ServerCallContext context)
         {
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
@@ -190,6 +203,24 @@ namespace AdminServer
             }
 
             return Task.FromResult(ProtoBuilder.GameModel(gameToModify));
+        }
+
+        public override Task<GameModel> UpdateGameWithTitle(GameModifyModel request, ServerCallContext context)
+        {
+            var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.TitleGameToModify));
+            this.ToModify(ProtoBuilder.GameModel(gameToModify), context);
+            lock (lockModifyGame)
+            {
+                if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.User))
+                {
+                    return Task.FromException<GameModel>(new RpcException(new Status(StatusCode.AlreadyExists, "Game is being modified")));
+                }
+                GameSystem.DeleteGameBeingModified(gameToModify);
+                GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request));
+                WriteInLog(gameToModify, "Update Game by: " + request.User);
+            }
+
+            return Task.FromResult(ProtoBuilder.GameModel(request));
         }
 
         public override Task<GameModel> DeleteGame(GameModel request, ServerCallContext context)
