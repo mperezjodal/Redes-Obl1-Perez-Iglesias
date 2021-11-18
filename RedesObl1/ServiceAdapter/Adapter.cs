@@ -30,7 +30,7 @@ namespace ServiceAdapter
         {
             try
             {
-                return await grpcClient.LoginAsync(new UserModel { Name = user });
+                return await grpcClient.PostUserAsync(new UserModel { Name = user });
             }
             catch (Exception e)
             {
