@@ -144,13 +144,10 @@ namespace Server
                     return;
                 }
             }
-            catch (RpcException rpcException)
+            catch (AlreadyExistsException)
             {
-                if (rpcException.StatusCode == StatusCode.AlreadyExists)
-                {
-                    await SendData(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
-                    return;
-                }
+                await SendData(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
+                return;
             }
             catch (Exception) 
             { 
@@ -236,13 +233,10 @@ namespace Server
                     return;
                 }
             }
-            catch (RpcException rpcException)
+            catch (AlreadyModifyingException)
             {
-                if (rpcException.StatusCode == StatusCode.AlreadyExists)
-                {
-                    await SendData(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
-                    return;
-                }
+                await SendData(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
+                return;
             }
             catch (Exception) { }
 
