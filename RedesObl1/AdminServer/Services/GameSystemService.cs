@@ -40,8 +40,10 @@ namespace AdminServer
         public override Task<UserModel> Login(UserModel request, ServerCallContext context)
         {
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
+            
             if (existingUser != null && existingUser.Login)
             {
+                Console.WriteLine("User " + existingUser.Login + " is trying to login" );
                 return Task.FromException<UserModel>(new AlreadyExistsException("User already logged in"));
             }
 
@@ -64,6 +66,7 @@ namespace AdminServer
             }
 
             User user = GameSystem.AddUser(request.Name);
+            Console.WriteLine("User " + user.Login + " added");
             WriteInLog(null, "Insert User", user);
             return Task.FromResult(request);
         }
@@ -247,6 +250,16 @@ namespace AdminServer
             user.AcquireGame(game);
             WriteInLog(game, "Adquire Game", user);
 
+            return Task.FromResult(request);
+        }
+
+        public override Task<GameModel> RemoveAcquireGame(GameModel request, ServerCallContext context)
+        {
+            var user = GameSystem.Users.Find(u => u.Name.Equals(request.User));
+            var game = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
+            user.Games.Remove(game);
+            WriteInLog(game, "Remove Acquire Game", user);
+            
             return Task.FromResult(request);
         }
 

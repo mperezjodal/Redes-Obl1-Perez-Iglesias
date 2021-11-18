@@ -66,6 +66,11 @@ namespace AdminAPI.Controllers
             return Ok(await adapter.AdquireGameAsync(game, user));
         }
 
-
+        [HttpDelete]
+        [Route("user/{user}")]
+        public async Task<ActionResult<GamesModel>> DeleteAdquireGame([FromBody] Game game, [FromRoute] string user)
+        {
+            return Ok(await adapter.RemoveAcquireGameAsync(game, user));
+        }
     }
 }

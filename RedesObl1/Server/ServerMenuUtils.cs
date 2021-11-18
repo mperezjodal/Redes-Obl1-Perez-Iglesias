@@ -56,7 +56,6 @@ namespace Server
             }
             catch (Exception){ }
         }
-
         public async Task<List<Game>> GetGames()
         {
             try 

@@ -21,6 +21,7 @@ namespace Domain
         public User(string userName)
         {
             Name = userName;
+            Login = false;
             Games = new List<Game>();
         }
 

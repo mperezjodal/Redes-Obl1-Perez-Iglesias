@@ -103,13 +103,16 @@ namespace ServiceAdapter
                 return null;
             }
         }
-        public Task<UserModel> DeleteGameOfUserAsync(Game deletedGame, User user){
-            throw NotImplementedException();
-        }
-
-        private Exception NotImplementedException()
+        public async Task<GameModel> RemoveAcquireGameAsync(Game deletedGame, string user)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return await grpcClient.RemoveAcquireGameAsync(ProtoBuilder.GameModel(deletedGame, user));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

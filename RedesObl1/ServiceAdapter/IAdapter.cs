@@ -14,6 +14,6 @@ namespace ServiceAdapter
         public Task<GameModel> PostGameAsync(Game newGame);
         public Task<GameModel> UpdateGameAsync(Game modifiedGame, string gameToModify);
         public Task<GameModel> AdquireGameAsync(Game deletedGame, string user);
-        public Task<UserModel> DeleteGameOfUserAsync(Game deletedGame, User user);
+        public Task<GameModel> RemoveAcquireGameAsync(Game deletedGame, string user);
     }
 }

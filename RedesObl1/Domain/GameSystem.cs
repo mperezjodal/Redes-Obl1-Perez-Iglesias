@@ -147,7 +147,7 @@ namespace Domain
         {
             if (userName != "")
             {
-                User newUser = new User() { Name = userName };
+                User newUser = new User() { Name = userName, Login = false };
                 Users.Add(newUser);
                 return newUser;
             }
