@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
-    <ProjectReference Include="..\AdminServer\AdminServer.csproj" />
     <ProjectReference Include="..\ServiceAdapter\ServiceAdapter.csproj" />
     <ProjectReference Include="..\GRPCLibrary\GRPCLibrary.csproj" />
   </ItemGroup>
