@@ -70,16 +70,17 @@ namespace ServiceAdapter
         {
             try
             {
+                if(newGame.Rating < 0 || newGame.Rating > 10)
+                {
+                    return null;
+                }
                 if (newGame.Cover != null && File.Exists(newGame.Cover))
                 {                    
                     await FileCommunicationHandler.GrpcSendFileAsync(grpcClient, newGame.Cover);
 
                     newGame.Cover = newGame.Cover.Split("/").Last();
                 }
-                if(newGame.Rating < 0 || newGame.Rating > 10)
-                {
-                    return null;
-                }
+                
                 return await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame));
             }
             catch (Exception) { return null; }
@@ -89,16 +90,17 @@ namespace ServiceAdapter
         {
             try
             {
+                if(modifiedGame.Rating < 0 || modifiedGame.Rating > 10)
+                {
+                    return null;
+                }
                 if (modifiedGame.Cover != null && File.Exists(modifiedGame.Cover))
                 {                    
                     await FileCommunicationHandler.GrpcSendFileAsync(grpcClient, modifiedGame.Cover);
 
                     modifiedGame.Cover = modifiedGame.Cover.Split("/").Last();
                 }
-                if(modifiedGame.Rating < 0 || modifiedGame.Rating > 10)
-                {
-                    return null;
-                }
+ 
                 return await grpcClient.UpdateGameWithTitleAsync(ProtoBuilder.GameModifyModel(modifiedGame, gameToModify));
             }
             catch (Exception) { return null; }
