@@ -22,13 +22,24 @@ namespace AdminAPI.Controllers
         [HttpPut("{gameToModify}")]
         public async Task<ActionResult<GamesModel>> PutGame([FromBody] Game game, [FromRoute] string gameToModify)
         {
-            return Ok(await adapter.UpdateGameAsync(game, gameToModify));
+            GameModel response = await adapter.UpdateGameAsync(game, gameToModify);
+            if(response == null)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
+
         }
 
         [HttpPost]
         public async Task<ActionResult<GamesModel>> PostGame([FromBody] Game game)
         {
-            return Ok(await adapter.PostGameAsync(game));
+            GameModel response = await adapter.PostGameAsync(game);
+            if(response == null)
+            {
+                return BadRequest();
+            }
+            return Ok(response);
         }
 
         [HttpDelete("{title}")]
