@@ -27,8 +27,8 @@ namespace AdminAPI.Controllers
             {
                 return BadRequest();
             }
-            return Ok(response);
 
+            return Ok(response);
         }
 
         [HttpPost]
@@ -39,7 +39,8 @@ namespace AdminAPI.Controllers
             {
                 return BadRequest();
             }
-            return Ok(response);
+            
+            return new CreatedResult(string.Empty, response);
         }
 
         [HttpDelete("{title}")]

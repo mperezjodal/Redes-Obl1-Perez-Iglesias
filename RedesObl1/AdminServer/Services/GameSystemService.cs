@@ -40,13 +40,10 @@ namespace AdminServer
         public override Task<UserModel> Login(UserModel request, ServerCallContext context)
         {
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
-            
             if (existingUser != null && existingUser.Login)
             {
-                Console.WriteLine("User " + existingUser.Login + " is trying to login" );
-                return Task.FromException<UserModel>(new AlreadyExistsException("User already logged in"));
+                return Task.FromException<UserModel>(new AlreadyExistsException("Usuario ya tiene una sesión abierta"));
             }
-
             if (existingUser == null)
             {
                 User newUser = GameSystem.AddUser(request.Name);
@@ -62,7 +59,7 @@ namespace AdminServer
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
             if (existingUser != null)
             {
-                return Task.FromException<UserModel>(new AlreadyExistsException("User already exists"));
+                return Task.FromException<UserModel>(new AlreadyExistsException("Usuario ya existe"));
             }
 
             User user = GameSystem.AddUser(request.Name);
@@ -76,7 +73,11 @@ namespace AdminServer
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Users[0].Name));
             if (existingUser == null)
             {
-                return Task.FromException<UserModel>(new NotFoundException("User not found"));
+                return Task.FromException<UserModel>(new NotFoundException("Usuario no encontrado"));
+            }
+            if (existingUser.Login)
+            {
+                return Task.FromException<UserModel>(new NotFoundException("Usuario ya tiene una sesión abierta"));
             }
 
             User updatedUser = GameSystem.UpdateUser(ProtoBuilder.User(request.Users[0]), ProtoBuilder.User(request.Users[1]));
@@ -89,7 +90,11 @@ namespace AdminServer
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.NameUserToModify));
             if (existingUser == null)
             {
-                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "User not found")));
+                return Task.FromException<UserModel>(new RpcException(new Status(StatusCode.NotFound, "Usuario no encontrado")));
+            }
+            if (existingUser.Login)
+            {
+                return Task.FromException<UserModel>(new NotFoundException("Usuario ya tiene una sesión abierta"));
             }
 
             User updatedUser = GameSystem.UpdateUser(existingUser, ProtoBuilder.User(request));
@@ -102,7 +107,11 @@ namespace AdminServer
             User existingUser = GameSystem.Users.Find(u => u.Name.Equals(request.Name));
             if (existingUser == null)
             {
-                return Task.FromException<UserModel>(new NotFoundException("User not found"));
+                return Task.FromException<UserModel>(new NotFoundException("Usuario no encontrado"));
+            }
+            if (existingUser.Login)
+            {
+                return Task.FromException<UserModel>(new NotFoundException("Usuario ya tiene una sesión abierta"));
             }
 
             GameSystem.Users.RemoveAll(u => u.Name.Equals(existingUser.Name));
@@ -169,7 +178,7 @@ namespace AdminServer
             var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
             if (GameSystem.IsGameBeingModified(gameToModify))
             {
-                return Task.FromException<GameModel>(new AlreadyModifyingException("Game is being modified"));
+                return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
             }
 
             GameSystem.UpdateReviews(gameToModify, ProtoBuilder.GetReviews(request));
@@ -182,7 +191,7 @@ namespace AdminServer
             var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
             if (GameSystem.IsGameBeingModified(gameToModify))
             {
-                return Task.FromException<GameModel>(new AlreadyModifyingException("Game is being modified"));
+                return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
             }
 
             GameSystem.AddGameBeingModified(gameToModify, request.User);
@@ -198,7 +207,7 @@ namespace AdminServer
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.Games[0].User))
                 {
-                    return Task.FromException<GameModel>(new AlreadyModifyingException("Game is being modified"));
+                    return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request.Games[1]));
@@ -216,7 +225,7 @@ namespace AdminServer
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.User))
                 {
-                    return Task.FromException<GameModel>(new RpcException(new Status(StatusCode.AlreadyExists, "Game is being modified")));
+                    return Task.FromException<GameModel>(new RpcException(new Status(StatusCode.AlreadyExists, "El juego esta siendo modificado")));
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request));
@@ -232,7 +241,7 @@ namespace AdminServer
 
             if (GameSystem.IsGameBeingModified(gameToDelete))
             {
-                return Task.FromException<GameModel>(new AlreadyModifyingException("Game is being modified"));
+                return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
             }
             lock (lockDeleteGame)
             {

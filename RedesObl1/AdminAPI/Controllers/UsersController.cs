@@ -26,7 +26,7 @@ namespace AdminAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<GamesModel>> PostUser([FromBody] string user)
         {
-            return Ok(await adapter.PostUserAsync(user));
+            return new CreatedResult("", await adapter.PostUserAsync(user));
         }
 
         [HttpDelete("{username}")]
