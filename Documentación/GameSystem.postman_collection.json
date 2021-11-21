@@ -1,0 +1,315 @@
+{
+	"info": {
+		"_postman_id": "a5a0187c-3f95-4f49-88ff-5a4377e0670e",
+		"name": "GameSystem",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Post Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"aaaE\",\n    \"Genre\" : \"socscwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Game 2",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"COdDE\",\n    \"Genre\" : \"soccwrwwefewerr\",\n    \"Rating\" : 10,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFAA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games/FIFA",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games",
+						"FIFA"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put Game",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFAA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 100,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\",\n    \"Cover\" : \"/Users/figlesias/Downloads/Vector 28.png\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games/FIFAA",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games",
+						"FIFAA"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"Fede\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put User",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFAA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulboooooooo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFAA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Acquire Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"Fede\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Acquire Game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/acquisitions",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"acquisitions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5003/api/logs",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5003",
+					"path": [
+						"api",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "juego",
+							"value": "aaaE",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
