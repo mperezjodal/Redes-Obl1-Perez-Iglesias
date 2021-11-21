@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using Domain;
 using RabbitMQ.Client.Events;
+using System.Threading.Tasks;
 
 namespace ServerLogs
 {
@@ -40,28 +41,34 @@ namespace ServerLogs
                 autoAck: true,
                 consumer: consumer);
         }
-
         public List<LogEntry> Log(FilterParams filterParams)
         {
+            ConnectionFactory connectionFactory = new ConnectionFactory { HostName = "localhost" };
+            using IConnection connection = connectionFactory.CreateConnection();
+            using IModel channel = connection.CreateModel();
+            ReceiveMessages(channel);
+
             List<LogEntry> filteredLogEntries = new List<LogEntry>();
             foreach (LogEntry logEntry in LogEntries)
             {
-                if (filterParams.DateFrom != null && logEntry.Date < filterParams.DateFrom)
+                Console.WriteLine(logEntry.Game.Title);
+                if (filterParams.DateFrom.ToString() != "01/01/0001 00:00:00" && logEntry.Date < filterParams.DateFrom)
                 {
                     continue;
                 }
-                if (filterParams.DateTo != null && logEntry.Date > filterParams.DateTo)
+                if (filterParams.DateTo.ToString() != "01/01/0001 00:00:00" && logEntry.Date > filterParams.DateTo)
                 {
                     continue;
                 }
-                if (filterParams.Username != null && logEntry.User.Name != filterParams.Username)
+                if (logEntry.User != null && filterParams.Username != "" && logEntry.User.Name != filterParams.Username)
                 {
                     continue;
                 }
-                if (filterParams.GameTitle != null && logEntry.Game.Title != filterParams.GameTitle)
+                if (logEntry.Game != null && filterParams.GameTitle != "" && logEntry.Game.Title != filterParams.GameTitle)
                 {
                     continue;
                 }
+                
                 filteredLogEntries.Add(logEntry);
             }
             return filteredLogEntries;
