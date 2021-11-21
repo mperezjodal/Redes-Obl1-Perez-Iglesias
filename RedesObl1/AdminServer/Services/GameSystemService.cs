@@ -21,16 +21,18 @@ namespace AdminServer
         public object lockModifyGame = new object();
         public object lockDeleteGame = new object();
         private const string SimpleQueue = "m6bBasicQueue";
+        private const string HostName = "localhost";
         private static ConnectionFactory _factory;
         private static IConnection _connection;
         private static IModel _channel;
 
         public GameSystemService(IGameSystem gameSystem)
         {
+
             GameSystem = gameSystem;
-                       _factory = new ConnectionFactory 
+            _factory = new ConnectionFactory 
             { 
-                HostName = "localhost", 
+                HostName = HostName, 
             };
             _connection = _factory.CreateConnection();
             _channel = _connection.CreateModel();

@@ -149,7 +149,6 @@ namespace Domain
             {
                 User newUser = new User(userName);
                 Users.Add(newUser);
-                Console.WriteLine(newUser.Login);
                 return newUser;
             }
             else
