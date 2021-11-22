@@ -1,0 +1,358 @@
+{
+	"info": {
+		"_postman_id": "a5a0187c-3f95-4f49-88ff-5a4377e0670e",
+		"name": "GameSystem",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Post Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post Game 2",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 2,\n    \"Title\" : \"COD\",\n    \"Genre\" : \"war\",\n    \"Rating\" : 10,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"mucha sangre\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFAA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulbo\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games/COD",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games",
+						"COD"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put Game",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Id\" : 1,\n    \"Title\" : \"FIFA\",\n    \"Genre\" : \"soccwefewerr\",\n    \"Rating\" : 1,\n    \"Reviews\" : [],\n    \"Synopsis\" : \"fulboooooooo\",\n    \"Cover\" : \"/Users/marceloperez/Desktop/IMG_0732.jpeg\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/games/FIFA",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"games",
+						"FIFA"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"Fede\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post User 2",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"Rob\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Put User",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 0,\n    \"name\": \"Federico\",\n    \"login\": false,\n    \"games\": []\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/Fede",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						"Fede"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/users/Federico",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"users",
+						"Federico"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Acquire Game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"FIFA\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/acquisitions/Rob",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"acquisitions",
+						"Rob"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Acquire Game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"FIFA\"",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5005/api/acquisitions/Rob",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5005",
+					"path": [
+						"api",
+						"acquisitions",
+						"Rob"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"Fede\"\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:5003/api/logs?usuario=Rob&juego=FIFA",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "5003",
+					"path": [
+						"api",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "usuario",
+							"value": "Rob"
+						},
+						{
+							"key": "fechaDesde",
+							"value": "2021-11-21T20:50:41.635616-03:00\"",
+							"disabled": true
+						},
+						{
+							"key": "fechaHasta",
+							"value": "2021-11-21T20:50:41.635616-03:00\"",
+							"disabled": true
+						},
+						{
+							"key": "juego",
+							"value": "FIFA"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,9 +1,12 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using FileStreamLibrary.Protocol;
+using Google.Protobuf;
+using GRPCLibrary;
 
 namespace FileStreamLibrary
 {
@@ -37,6 +40,20 @@ namespace FileStreamLibrary
             await SendFileAsync(fileSize, path);
         }
 
+        public async Task TransferFileAsync(GameSystemModel.GameSystemModelClient grpcClient)
+        {
+            byte[] fileNameLengthData = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileNameLength);
+            int fileNameLength = BitConverter.ToInt32(fileNameLengthData);
+
+            byte[] fileNameData = await _networkStreamHandler.ReadDataAsync(fileNameLength);
+            string fileName = Encoding.UTF8.GetString(fileNameData);
+
+            byte[] fileSizeDataLength = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileSizeLength);
+            long fileSize = BitConverter.ToInt64(fileSizeDataLength);
+
+            await TransferFileAsync(grpcClient, fileSize, fileName);
+        }
+
         public async Task ReceiveFileAsync()
         {
             byte[] fileNameLengthData = await _networkStreamHandler.ReadDataAsync(Specification.FixedFileNameLength);
@@ -52,8 +69,17 @@ namespace FileStreamLibrary
             await ReceiveFileAsync(fileSize, fileName);
         }
 
-        private async Task SendFileAsync(long fileSize, string path)
+        public static async Task GrpcSendFileAsync(GameSystemModel.GameSystemModelClient grpcClient, string path)
         {
+            var _fileStreamHandler = new FileStreamHandler();
+
+            var fileInfo = new FileInfo(path);
+            long fileLength = fileInfo.Length;
+            byte[] fileSizeDataLength = BitConverter.GetBytes(fileLength);
+            long fileSize = BitConverter.ToInt64(fileSizeDataLength);
+
+            string fileName = path.Split("/").Last();
+
             long fileParts = Specification.GetParts(fileSize);
             long offset = 0;
             long currentPart = 1;
@@ -73,7 +99,85 @@ namespace FileStreamLibrary
                     offset += lastPartSize;
                 }
 
+                await grpcClient.PostCoverAsync(new CoverModel() { FileName = fileName, Data = ByteString.CopyFrom(data) });
+                currentPart++;
+            }
+        }
+
+        public async static Task<byte[]> GetFilePartBytes(string path, long part, long offset)
+        {
+            var _fileStreamHandler = new FileStreamHandler();
+            var fileInfo = new FileInfo(path);
+            long fileLength = fileInfo.Length;
+            byte[] fileSizeDataLength = BitConverter.GetBytes(fileLength);
+            long fileSize = BitConverter.ToInt64(fileSizeDataLength);
+
+            string fileName = path.Split("/").Last();
+
+            long fileParts = Specification.GetParts(fileSize);
+
+
+            byte[] data;
+            if (part != fileParts)
+            {
+                data = await _fileStreamHandler.ReadDataAsync(path, Specification.MaxPacketSize, offset);
+            }
+            else
+            {
+                int lastPartSize = (int)(fileSize - offset);
+                data = await _fileStreamHandler.ReadDataAsync(path, lastPartSize, offset);
+            }
+
+            return data;
+        }
+
+        private async Task SendFileAsync(long fileSize, string path)
+        {
+            long fileParts = Specification.GetParts(fileSize);
+            long offset = 0;
+            long currentPart = 1;
+
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart != fileParts)
+                {
+                    data = await _fileStreamHandler.ReadDataAsync(path, Specification.MaxPacketSize, offset);
+                    offset += Specification.MaxPacketSize;
+                }
+                else
+                {
+                    int lastPartSize = (int)(fileSize - offset);
+                    
+                    data = await _fileStreamHandler.ReadDataAsync(path, lastPartSize, offset);
+                    offset += lastPartSize;
+                }
+
                 await _networkStreamHandler.SendDataAsync(data);
+                currentPart++;
+            }
+        }
+
+        private async Task TransferFileAsync(GameSystemModel.GameSystemModelClient grpcClient, long fileSize, string fileName)
+        {
+            long fileParts = Specification.GetParts(fileSize);
+            long offset = 0;
+            long currentPart = 1;
+            while (fileSize > offset)
+            {
+                byte[] data;
+                if (currentPart != fileParts)
+                {
+                    data = await _networkStreamHandler.ReadDataAsync(Specification.MaxPacketSize);
+                    offset += Specification.MaxPacketSize;
+                }
+                else
+                {
+                    int lastPartSize = (int)(fileSize - offset);
+                    data = await _networkStreamHandler.ReadDataAsync(lastPartSize);
+                    offset += lastPartSize;
+                }
+                await grpcClient.PostCoverAsync(new CoverModel() { FileName = fileName, Data = ByteString.CopyFrom(data) });
                 currentPart++;
             }
         }

@@ -1,19 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectionUtils", "ConnectionUtils\ConnectionUtils.csproj", "{B5D34300-57FA-4ED7-A377-7848077DCD33}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31129.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectionUtils", "ConnectionUtils\ConnectionUtils.csproj", "{B5D34300-57FA-4ED7-A377-7848077DCD33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{63FB265D-6009-40B9-823A-D4F8327B2D67}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{63FB265D-6009-40B9-823A-D4F8327B2D67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{EFB0F40E-AF4B-448D-A74C-6B787F897150}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{EFB0F40E-AF4B-448D-A74C-6B787F897150}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{FB9A27A4-1719-4845-B997-7B03CB12A37D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{FB9A27A4-1719-4845-B997-7B03CB12A37D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolLibrary", "ProtocolLibrary\ProtocolLibrary.csproj", "{9E5B787E-9F98-4BBB-9902-2ED06274ABDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtocolLibrary", "ProtocolLibrary\ProtocolLibrary.csproj", "{9E5B787E-9F98-4BBB-9902-2ED06274ABDC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisplayUtils", "DisplayUtils\DisplayUtils.csproj", "{E36EB9E3-741C-4CF8-8FF7-8031D4E07526}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DisplayUtils", "DisplayUtils\DisplayUtils.csproj", "{E36EB9E3-741C-4CF8-8FF7-8031D4E07526}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileStreamLibrary", "FileStreamLibrary\FileStreamLibrary.csproj", "{91F225C3-B029-437D-A363-AB2AC057ECDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStreamLibrary", "FileStreamLibrary\FileStreamLibrary.csproj", "{91F225C3-B029-437D-A363-AB2AC057ECDA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerLogs", "ServerLogs\ServerLogs.csproj", "{635521AE-9C60-4F71-87AD-A5DB5F252EA1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GRPCLibrary", "GRPCLibrary\GRPCLibrary.csproj", "{C9FAC003-4ADB-45D1-BEDE-966667642F8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,5 +55,23 @@ Global
 		{91F225C3-B029-437D-A363-AB2AC057ECDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91F225C3-B029-437D-A363-AB2AC057ECDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91F225C3-B029-437D-A363-AB2AC057ECDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{635521AE-9C60-4F71-87AD-A5DB5F252EA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{635521AE-9C60-4F71-87AD-A5DB5F252EA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{635521AE-9C60-4F71-87AD-A5DB5F252EA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{635521AE-9C60-4F71-87AD-A5DB5F252EA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9FAC003-4ADB-45D1-BEDE-966667642F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9FAC003-4ADB-45D1-BEDE-966667642F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9FAC003-4ADB-45D1-BEDE-966667642F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9FAC003-4ADB-45D1-BEDE-966667642F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCBCD31F-BCD4-4799-B8D4-CF931104B565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCBCD31F-BCD4-4799-B8D4-CF931104B565}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCBCD31F-BCD4-4799-B8D4-CF931104B565}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCBCD31F-BCD4-4799-B8D4-CF931104B565}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3EDB359A-69A4-4DE0-9FBD-762F01A8C934}
 	EndGlobalSection
 EndGlobal

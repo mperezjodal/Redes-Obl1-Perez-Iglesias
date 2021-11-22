@@ -3,24 +3,45 @@ using System.Collections.Generic;
 
 namespace Domain
 {
-    public class GameSystem
+    public interface IGameSystem
     {
         public List<Game> Games { get; set; }
-        public List<Game> GamesBeingModified { get; set; }
+        public List<GameModify> GamesBeingModified { get; set; }
+        public List<User> Users { get; set; }
+        public void AddGameBeingModified(Game game, string username);
+        public void AddGame(Game game);
+        public void AddGameCover(Game game, string cover);
+        public void DeleteGameBeingModified(Game game);
+        public void DeleteGame(Game game);
+        public Game UpdateGame(Game oldGame, Game newGame);
+        public User UpdateUser(User oldUser, User newUser);
+        public void UpdateReviews(Game game, List<Review> reviews);
+        public bool GameExists(Game game);
+        public bool IsGameBeingModified(Game game);
+        public bool IsGameBeingModifiedByAnother(Game game, string username);
+        public User AddUser(string userName);
+        public void LoginUser(string user);
+        public User LogoutUser(string user);
+    }
+
+    public class GameSystem : IGameSystem
+    {
+        public List<Game> Games { get; set; }
+        public List<GameModify> GamesBeingModified { get; set; }
         public List<User> Users { get; set; }
 
         public GameSystem()
         {
             Games = new List<Game>();
-            GamesBeingModified = new List<Game>();
+            GamesBeingModified = new List<GameModify>();
             Users = new List<User>();
         }
 
-        public void AddGameBeingModified(Game game)
+        public void AddGameBeingModified(Game game, string username)
         {
-            if (GamesBeingModified.Find(g => g.Title.Equals(game.Title)) == null)
+            if (GamesBeingModified.Find(g => g.GameTitle.Equals(game.Title)) == null)
             {
-                GamesBeingModified.Add(game);
+                GamesBeingModified.Add(new GameModify { GameTitle = game.Title, Username = username });
             }
             else
             {
@@ -49,9 +70,9 @@ namespace Domain
 
         public void DeleteGameBeingModified(Game game)
         {
-            if (GamesBeingModified.Find(g => g.Title.Equals(game.Title)) != null)
+            if (GamesBeingModified.Find(g => g.GameTitle.Equals(game.Title)) != null)
             {
-                GamesBeingModified.RemoveAll(g => g.Title.Equals(game.Title));
+                GamesBeingModified.RemoveAll(g => g.GameTitle.Equals(game.Title));
             }
             else
             {
@@ -114,14 +135,19 @@ namespace Domain
 
         public bool IsGameBeingModified(Game game)
         {
-            return GamesBeingModified.FindIndex(g => g.Title == game.Title) != -1;
+            return GamesBeingModified.FindIndex(g => g.GameTitle == game.Title) != -1;
+        }
+
+        public bool IsGameBeingModifiedByAnother(Game game, string username)
+        {
+            return GamesBeingModified.FindIndex(g => g.GameTitle == game.Title && g.Username != username) != -1;
         }
 
         public User AddUser(string userName)
         {
             if (userName != "")
             {
-                User newUser = new User() { Name = userName };
+                User newUser = new User(userName);
                 Users.Add(newUser);
                 return newUser;
             }
@@ -153,15 +179,21 @@ namespace Domain
 
             return games;
         }
+        public User GetLoggedUser()
+        {
+            return Users.Find(u => u.Login == true);
+        }
+
 
         public void LoginUser(string user)
         {
             Users.Find(u => u.Name.Equals(user)).Login = true;
         }
 
-        public void LogoutUser(string user)
+        public User LogoutUser(string user)
         {
             Users.Find(u => u.Name.Equals(user)).Login = false;
+            return Users.Find(u => u.Name.Equals(user));
         }
 
         public string EncodeUsers()
@@ -184,6 +216,19 @@ namespace Domain
             }
 
             return users;
+        }
+
+        public void AddGameCover(Game game, string cover)
+        {
+            game.Cover = cover;
+            foreach (User user in Users)
+            {
+                if (user.Games.FindIndex(g => g.Title == game.Title) != -1)
+                {
+                    Game g = user.Games.Find(g => g.Title == game.Title);
+                    g.Cover = cover;
+                }
+            }
         }
     }
 }

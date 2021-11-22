@@ -1,20 +1,18 @@
-﻿using System.Threading.Tasks;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Globalization;
+﻿using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System;
-using System.ComponentModel.Design;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 using ConnectionUtils;
-using Domain;
 using ProtocolLibrary;
 using DisplayUtils;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using GRPCLibrary;
+using Grpc.Net.Client;
+
 namespace Server
 {
     public class Server
@@ -24,10 +22,10 @@ namespace Server
         public int ServerPort { get; set; }
         public int FakeServerPort { get; set; }
         public int Backlog { get; set; }
-        private static GameSystem GameSystem;
+        public string GrpcChannelAddress { get; set; }
         private static bool _exit = false;
         static List<TcpClient> _clients = new List<TcpClient>();
-
+        private static GameSystemModel.GameSystemModelClient grpcClient;
         public static Dictionary<string, string> ServerMenuOptions = new Dictionary<string, string> {
             {"1", "Ver juegos y detalles"},
             {"2", "Publicar juego"},
@@ -39,7 +37,7 @@ namespace Server
             {" ", "exit"}
         };
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             string directory = Directory.GetCurrentDirectory();
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -50,8 +48,12 @@ namespace Server
             var section = configuration.GetSection(nameof(Server));
             var ServerConfig = section.Get<Server>();
 
-            object lockObject = new object();
-            GameSystem = new GameSystem();
+            AppContext.SetSwitch(
+                "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            // The port number(5001) must match the port of the gRPC server.
+            using var channel = GrpcChannel.ForAddress(ServerConfig.GrpcChannelAddress);
+
+            grpcClient = new GameSystemModel.GameSystemModelClient(channel);
 
             IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ServerConfig.ServerIpAddress), ServerConfig.ServerPort);
 
@@ -59,7 +61,7 @@ namespace Server
             tcpListener.Start(100);
 
             Task listenForConnectionsTask = Task.Run(() => ListenForConnections(tcpListener));
-            ServerMenuUtils menu = new ServerMenuUtils(GameSystem);
+            ServerMenuUtils menu = new ServerMenuUtils(grpcClient);
 
             while (!_exit)
             {
@@ -71,25 +73,25 @@ namespace Server
                         _exit = true;
                         break;
                     case "1":
-                        DialogUtils.ShowGameDetail(GameSystem.Games);
+                        await menu.ShowGames();
                         break;
                     case "2":
-                        menu.InsertGame();
+                        await menu.InsertGame();
                         break;
                     case "3":
-                        menu.InsertReview();
+                        await menu.InsertReview();
                         break;
                     case "4":
-                        DialogUtils.SearchFilteredGames(GameSystem.Games);
+                        DialogUtils.SearchFilteredGames(await menu.GetGames());
                         break;
                     case "5":
-                        menu.InsertUser();
+                        await menu.InsertUser();
                         break;
                     case "6":
-                        menu.ModifyUser();
+                        await menu.ModifyUser();
                         break;
                     case "7":
-                        menu.DeleteUser();
+                        await menu.DeleteUser();
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -120,10 +122,9 @@ namespace Server
 
         public static async Task HandleClient(TcpClient tcpClient)
         {
-            List<Game> gamesBeingModifiedByClient = new List<Game>();
             var networkStream = tcpClient.GetStream();
 
-            ServerUtils serverUtils = new ServerUtils(GameSystem, tcpClient);
+            ServerUtils serverUtils = new ServerUtils(tcpClient, grpcClient);
             while (!_exit)
             {
                 var headerLength = HeaderConstants.Request.Length + HeaderConstants.CommandLength +
@@ -136,7 +137,7 @@ namespace Server
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
                     bufferData = await Utils.ServerReceiveData(networkStream, header.IDataLength, bufferData);
-                    
+
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
@@ -145,7 +146,7 @@ namespace Server
                             await serverUtils.LoginHandler(jsonData);
                             break;
                         case CommandConstants.Logout:
-                            serverUtils.Logout(jsonData);
+                            await serverUtils.Logout(jsonData);
                             break;
                         case CommandConstants.PublishGame:
                             await serverUtils.PublishGameHandler(jsonData);
@@ -160,10 +161,10 @@ namespace Server
                             await serverUtils.PublishReviewHandler(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            gamesBeingModifiedByClient = await serverUtils.BeingModifiedHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.BeingModifiedHandler(jsonData);
                             break;
                         case CommandConstants.ModifyGame:
-                            gamesBeingModifiedByClient = await serverUtils.ModifyGameHandler(jsonData, gamesBeingModifiedByClient);
+                            await serverUtils.ModifyGameHandler(jsonData);
                             break;
                         case CommandConstants.DeleteGame:
                             await serverUtils.DeleteGameHandler(jsonData);
@@ -172,7 +173,7 @@ namespace Server
                             await serverUtils.AcquireGameHandler(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            await serverUtils.GetAcquiredGamesHandler(jsonData);
+                            await serverUtils.GetAcquiredGamesHandler();
                             break;
                         case CommandConstants.GetGameCover:
                             await serverUtils.GetGameCover(jsonData);
