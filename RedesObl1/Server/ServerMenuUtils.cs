@@ -8,6 +8,8 @@ using Domain;
 using FileStreamLibrary;
 using GRPCLibrary;
 using FileStreamLibrary.Protocol;
+using System.Net.Sockets;
+using Grpc.Core;
 
 namespace Server
 {
@@ -62,6 +64,11 @@ namespace Server
             {
                 return ProtoBuilder.Games(await grpcClient.GetGamesAsync(new EmptyRequest()));
             }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
+                return new List<Game>();
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
@@ -74,6 +81,11 @@ namespace Server
             try 
             {
                 return ProtoBuilder.Users(await grpcClient.GetUsersAsync(new EmptyRequest()));
+            }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
+                return new List<User>();
             }
             catch (Exception e)
             {
@@ -99,7 +111,11 @@ namespace Server
                     Console.WriteLine("Se ha publicado el juego: " + gameToPublish.Title + ".");
                 }
             }
-            catch (Exception e)
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
+            }
+            catch (Exception)
             {
                 Console.WriteLine("No se ha podido publicar el juego.");
             }
@@ -127,6 +143,10 @@ namespace Server
                 await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(selectedGame));
                 Console.WriteLine("Se ha publicado la calificación del juego " + selectedGame.Title + ".");
             }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
@@ -149,6 +169,10 @@ namespace Server
                     await grpcClient.PostUserAsync(ProtoBuilder.UserModel(userToInsert));
                     Console.WriteLine("Se ha insertado el usuario: " + userToInsert.Name + ".");
                 }
+            }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
             }
             catch (Exception e)
             {
@@ -186,6 +210,10 @@ namespace Server
                 await grpcClient.UpdateUserAsync(ProtoBuilder.UsersModel(new List<User> { userToModify, modifiedUser }));
                 Console.WriteLine("Se ha modificado el usuario: " + modifiedUser.Name + ".");
             }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
@@ -210,6 +238,10 @@ namespace Server
 
                 await grpcClient.DeleteUserAsync(ProtoBuilder.UserModel(userToDelete));
                 Console.WriteLine("Se ha eliminado el usuario: " + userToDelete.Name + ".");
+            }
+            catch (RpcException)
+            {
+                Console.WriteLine("No se ha podido conectar al servidor.");
             }
             catch (Exception e)
             {
