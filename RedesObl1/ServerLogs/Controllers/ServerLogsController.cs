@@ -24,12 +24,21 @@ namespace ServerLogs.Controllers
             FilterParams queryParams = new FilterParams()
             {
                 GameTitle = juego,
-                Username = usuario
+                Username = usuario,
+                DateFrom = DateTime.MinValue,
+                DateTo = DateTime.MaxValue
             };
+            
             try 
             {
-                queryParams.DateFrom = DateTime.Parse(fechaDesde);
-                queryParams.DateTo = DateTime.Parse(fechaHasta);
+                if(fechaDesde != "")
+                {
+                    queryParams.DateFrom = DateTime.Parse(fechaDesde);
+                }
+                if(fechaHasta != "")
+                {
+                    queryParams.DateTo = DateTime.Parse(fechaHasta);
+                }
             }
             catch (Exception) {}
 

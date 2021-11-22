@@ -12,6 +12,7 @@ namespace ServerLogs
 {
     class ServerRabbitMq : IServerRabbitMq
     {
+        public static string NullDate = "01/01/0001 00:00:00";
         private const string SimpleQueue = "m6bBasicQueue";
         public static List<LogEntry> LogEntries;
         public ServerRabbitMq()
@@ -51,20 +52,19 @@ namespace ServerLogs
             List<LogEntry> filteredLogEntries = new List<LogEntry>();
             foreach (LogEntry logEntry in LogEntries)
             {
-                Console.WriteLine(logEntry.Game.Title);
-                if (filterParams.DateFrom.ToString() != "01/01/0001 00:00:00" && logEntry.Date < filterParams.DateFrom)
+                if (filterParams.DateFrom.ToString() != NullDate && logEntry.Date < filterParams.DateFrom)
                 {
                     continue;
                 }
-                if (filterParams.DateTo.ToString() != "01/01/0001 00:00:00" && logEntry.Date > filterParams.DateTo)
+                if (filterParams.DateTo.ToString() != NullDate && logEntry.Date > filterParams.DateTo)
                 {
                     continue;
                 }
-                if (logEntry.User != null && filterParams.Username != "" && logEntry.User.Name != filterParams.Username)
+                if ((logEntry.User == null && filterParams.Username != "") || logEntry.User != null && filterParams.Username != "" && logEntry.User.Name != filterParams.Username)
                 {
                     continue;
                 }
-                if (logEntry.Game != null && filterParams.GameTitle != "" && logEntry.Game.Title != filterParams.GameTitle)
+                if ((logEntry.Game == null && filterParams.GameTitle != "") || logEntry.Game != null && filterParams.GameTitle != "" && logEntry.Game.Title != filterParams.GameTitle)
                 {
                     continue;
                 }
