@@ -9,11 +9,11 @@ namespace ConnectionUtils
 {
     public static class Utils
     {
-        public static async Task<string> ClientReceiveMessageData(NetworkStream networkStream)
+        public static async Task<string> ClientReceiveMessageDataAsync(NetworkStream networkStream)
         {
             try
             {
-                return await ReceiveMessageData(networkStream);
+                return await ReceiveMessageDataAsync(networkStream);
             }
             catch (Exception)
             {
@@ -22,7 +22,7 @@ namespace ConnectionUtils
             }
         }
 
-        private static async Task<string> ReceiveMessageData(NetworkStream networkStream)
+        private static async Task<string> ReceiveMessageDataAsync(NetworkStream networkStream)
         {
             while (true)
             {
@@ -30,21 +30,21 @@ namespace ConnectionUtils
                                    HeaderConstants.DataLength;
                 var buffer = new byte[headerLength];
 
-                buffer = await ReceiveData(networkStream, headerLength, buffer);
+                buffer = await ReceiveDataAsync(networkStream, headerLength, buffer);
                 var header = new Header();
                 header.DecodeData(buffer);
 
                 var bufferData = new byte[header.IDataLength];
-                bufferData = await ReceiveData(networkStream, header.IDataLength, bufferData);
+                bufferData = await ReceiveDataAsync(networkStream, header.IDataLength, bufferData);
                 return Encoding.UTF8.GetString(bufferData);
             }
         }
 
-        public static async Task<List<string>> ClientReceiveCommandAndMessage(NetworkStream networkStream)
+        public static async Task<List<string>> ClientReceiveCommandAndMessageAsync(NetworkStream networkStream)
         {
             try
             {
-                return await ReceiveCommandAndMessage(networkStream);
+                return await ReceiveCommandAndMessageAsync(networkStream);
             }
             catch (Exception)
             {
@@ -53,7 +53,7 @@ namespace ConnectionUtils
             }
         }
 
-        public static async Task<List<string>> ReceiveCommandAndMessage(NetworkStream networkStream)
+        public static async Task<List<string>> ReceiveCommandAndMessageAsync(NetworkStream networkStream)
         {
             List<string> commandAndMessage = new List<string>();
 
@@ -61,12 +61,12 @@ namespace ConnectionUtils
                                 HeaderConstants.DataLength;
             var buffer = new byte[headerLength];
 
-            buffer = await ReceiveData(networkStream, headerLength, buffer);
+            buffer = await ReceiveDataAsync(networkStream, headerLength, buffer);
             var header = new Header();
             header.DecodeData(buffer);
             var bufferData = new byte[header.IDataLength];
 
-            bufferData = await ReceiveData(networkStream, header.IDataLength, bufferData);
+            bufferData = await ReceiveDataAsync(networkStream, header.IDataLength, bufferData);
             string message = Encoding.UTF8.GetString(bufferData);
 
             commandAndMessage.Add(header.ICommand.ToString());
@@ -75,11 +75,11 @@ namespace ConnectionUtils
             return commandAndMessage;
         }
 
-        public static async Task<byte[]> ClientReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
+        public static async Task<byte[]> ClientReceiveDataAsync(NetworkStream networkStream, int Length, byte[] buffer)
         {
             try
             {
-                return await ReceiveData(networkStream, Length, buffer);
+                return await ReceiveDataAsync(networkStream, Length, buffer);
             }
             catch (Exception)
             {
@@ -88,11 +88,11 @@ namespace ConnectionUtils
             return buffer;
         }
 
-        public static async Task<byte[]> ServerReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
+        public static async Task<byte[]> ServerReceiveDataAsync(NetworkStream networkStream, int Length, byte[] buffer)
         {
             try
             {
-                return await ReceiveData(networkStream, Length, buffer);
+                return await ReceiveDataAsync(networkStream, Length, buffer);
             }
             catch (Exception e)
             {
@@ -101,7 +101,7 @@ namespace ConnectionUtils
             return buffer;
         }
 
-        private static async Task<byte[]> ReceiveData(NetworkStream networkStream, int Length, byte[] buffer)
+        private static async Task<byte[]> ReceiveDataAsync(NetworkStream networkStream, int Length, byte[] buffer)
         {
             var iRecv = 0;
             while (iRecv < Length)
@@ -112,11 +112,11 @@ namespace ConnectionUtils
             return buffer;
         }
 
-        public static async Task ClientSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ClientSendDataAsync(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                await SendData(networkStream, header, message);
+                await SendDataAsync(networkStream, header, message);
             }
             catch (Exception)
             {
@@ -124,11 +124,11 @@ namespace ConnectionUtils
             }
         }
 
-        public static async Task ServerSendData(NetworkStream networkStream, Header header, string message)
+        public static async Task ServerSendDataAsync(NetworkStream networkStream, Header header, string message)
         {
             try
             {
-                await SendData(networkStream, header, message);
+                await SendDataAsync(networkStream, header, message);
             }
             catch (Exception e)
             {
@@ -136,7 +136,7 @@ namespace ConnectionUtils
             }
         }
 
-        private static async Task SendData(NetworkStream networkStream, Header header, string message)
+        private static async Task SendDataAsync(NetworkStream networkStream, Header header, string message)
         {
             byte[] headerData = header.GetRequest();
             byte[] data = Encoding.UTF8.GetBytes(message);

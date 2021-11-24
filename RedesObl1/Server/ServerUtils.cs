@@ -26,47 +26,47 @@ namespace Server
             this.grpcClient = grpcClient;
         }
 
-        public async Task SendFile(string path)
+        public async Task SendFileAsync(string path)
         {
             var fileCommunication = new FileCommunicationHandler(tcpClient.GetStream());
             await fileCommunication.SendFileAsync(path);
         }
 
-        public async Task ReceiveFile()
+        public async Task ReceiveFileAsync()
         {
             var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public async Task TransferFile()
+        public async Task TransferFileAsync()
         {
             var fileCommunicationGameList = new FileCommunicationHandler(tcpClient.GetStream());
             await fileCommunicationGameList.TransferFileAsync(grpcClient);
         }
 
-        public async Task GetGamesHandler()
+        public async Task GetGamesHandlerAsync()
         {
             try
             {
                 var response = await grpcClient.GetGamesAsync(new EmptyRequest());
                 List<Game> games = ProtoBuilder.Games(response);
-                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeGames(games));
+                await SendDataAsync(CommandConstants.GetGamesOk, GameSystem.EncodeGames(games));
             }
             catch (Exception) { }
         }
 
-        public async Task GetUsersHandler()
+        public async Task GetUsersHandlerAsync()
         {
             try
             {
                 var response = await grpcClient.GetUsersAsync(new EmptyRequest());
                 List<User> users = ProtoBuilder.Users(response);
-                await SendData(CommandConstants.GetGamesOk, GameSystem.EncodeUsers(users));
+                await SendDataAsync(CommandConstants.GetGamesOk, GameSystem.EncodeUsers(users));
             }
             catch (Exception) { }
         }
 
-        public async Task GetGameCover(string jsonGame)
+        public async Task GetGameCoverAsync(string jsonGame)
         {
             try
             {
@@ -92,7 +92,7 @@ namespace Server
                     var path = Path.Combine(Directory.GetCurrentDirectory(), g.Cover);
                     if (File.Exists(path))
                     {
-                        await SendFile(path);
+                        await SendFileAsync(path);
                     }
                 }
 
@@ -101,21 +101,21 @@ namespace Server
             catch (Exception){ }
         }
 
-        public async Task GetAcquiredGamesHandler()
+        public async Task GetAcquiredGamesHandlerAsync()
         {
             try
             {
                 var response = await grpcClient.GetAcquiredGamesAsync(new UserModel() { Name = this.username });
                 List<Game> games = ProtoBuilder.Games(response);
-                await SendData(CommandConstants.GetAcquiredGamesOk, GameSystem.EncodeGames(games));
+                await SendDataAsync(CommandConstants.GetAcquiredGamesOk, GameSystem.EncodeGames(games));
             }
             catch (Exception)
             {
-                await SendData(CommandConstants.GetAcquiredGamesError, "[]");
+                await SendDataAsync(CommandConstants.GetAcquiredGamesError, "[]");
             }
         }
 
-        public async Task AcquireGameHandler(string jsonGame)
+        public async Task AcquireGameHandlerAsync(string jsonGame)
         {
             try
             {
@@ -123,39 +123,39 @@ namespace Server
 
                 if (await grpcClient.AcquireGameAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
-                    await SendData(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
+                    await SendDataAsync(CommandConstants.AcquireGameOk, "Se ha adquirido el juego: " + game.Title + ".");
                 }
             }
             catch (Exception)
             {
-                await SendData(CommandConstants.AcquireGameError, "No se ha podido adquirir el juego.");
+                await SendDataAsync(CommandConstants.AcquireGameError, "No se ha podido adquirir el juego.");
             }
         }
 
-        public async Task LoginHandler(string userName)
+        public async Task LoginHandlerAsync(string userName)
         {
             try
             {
                 if (await grpcClient.LoginAsync(new UserModel { Name = userName }) is UserModel)
                 {
-                    await SendData(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
-                    await SendData(CommandConstants.NewUser, userName);
+                    await SendDataAsync(CommandConstants.LoginOk, "Se ha ingresado con el usuario: " + userName + ".");
+                    await SendDataAsync(CommandConstants.NewUser, userName);
                     this.username = userName;
                     return;
                 }
             }
             catch (AlreadyExistsException)
             {
-                await SendData(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
+                await SendDataAsync(CommandConstants.LoginError, "El usuario ya existe y tiene una sesión abierta.");
                 return;
             }
             catch (Exception) 
             { 
-                await SendData(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
+                await SendDataAsync(CommandConstants.LoginError, "No se ha podido crear el usuario: " + userName + ".");
             }
         }
 
-        public async Task Logout(string jsonUser)
+        public async Task LogoutAsync(string jsonUser)
         {
             try
             {
@@ -165,7 +165,7 @@ namespace Server
             catch { }
         }
 
-        public async Task BeingModifiedHandler(string jsonData)
+        public async Task BeingModifiedHandlerAsync(string jsonData)
         {
             try
             {
@@ -173,16 +173,16 @@ namespace Server
 
                 if (await grpcClient.ToModifyAsync(ProtoBuilder.GameModel(game, this.username)) is GameModel)
                 {
-                    await SendData(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
+                    await SendDataAsync(CommandConstants.ModifyingGameOk, "Se puede modificar el juego: " + game.Title + ".");
                 }
             }
             catch (Exception)
             {
-                await SendData(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
+                await SendDataAsync(CommandConstants.ModifyingGameError, "No se puede modificar el juego.");
             }
         }
 
-        public async Task ModifyGameHandler(string jsonModifyGameData)
+        public async Task ModifyGameHandlerAsync(string jsonModifyGameData)
         {
             try
             {
@@ -190,22 +190,22 @@ namespace Server
 
                 if (updatingGames[1].Cover != null)
                 {
-                    updatingGames[1].Cover = await handleGameCover(updatingGames[1].Cover);
+                    updatingGames[1].Cover = await handleGameCoverAsync(updatingGames[1].Cover);
                 }
 
                 var response = await grpcClient.UpdateGameAsync(ProtoBuilder.GamesModel(updatingGames, this.username));
                 if (response is GameModel)
                 {
-                    await SendData(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
+                    await SendDataAsync(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
                 }
             }
             catch (Exception)
             {
-                await SendData(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
+                await SendDataAsync(CommandConstants.ModifyGameError, "No se ha podido modificar el juego.");
             }
         }
 
-        public async Task DeleteGameHandler(string jsonDeleteGameData)
+        public async Task DeleteGameHandlerAsync(string jsonDeleteGameData)
         {
             try
             {
@@ -213,37 +213,37 @@ namespace Server
 
                 if (await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete)) is GameModel)
                 {
-                    await SendData(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
+                    await SendDataAsync(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
                 }
             }
             catch (Exception)
             {
-                await SendData(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
+                await SendDataAsync(CommandConstants.DeleteGameError, "No se ha podido eliminado el juego.");
             }
         }
 
-        public async Task PublishReviewHandler(string jsonPublishReviewData)
+        public async Task PublishReviewHandlerAsync(string jsonPublishReviewData)
         {
             try
             {
                 Game publishReviewGame = Game.Decode(jsonPublishReviewData);
                 if (await grpcClient.PostReviewAsync(ProtoBuilder.GameModel(publishReviewGame, this.username)) is GameModel)
                 {
-                    await SendData(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
+                    await SendDataAsync(CommandConstants.PublishReviewOk, "Se ha publicado la calificacion para el juego: " + publishReviewGame.Title + ".");
                     return;
                 }
             }
             catch (AlreadyModifyingException)
             {
-                await SendData(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
+                await SendDataAsync(CommandConstants.LoginError, "No se ha podido publicar la calificacion del juego porque está siendo modificado.");
                 return;
             }
             catch (Exception) { }
 
-            await SendData(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
+            await SendDataAsync(CommandConstants.PublishReviewError, "No se ha podido publicar la calificacion del juego.");
         }
 
-        public async Task PublishGameHandler(string jsonPublishGame)
+        public async Task PublishGameHandlerAsync(string jsonPublishGame)
         {
             try
             {
@@ -251,25 +251,25 @@ namespace Server
 
                 if (newGame.Cover != null)
                 {
-                    newGame.Cover = await handleGameCover(newGame.Cover);
+                    newGame.Cover = await handleGameCoverAsync(newGame.Cover);
                 }
 
                 if (await grpcClient.PostGameAsync(ProtoBuilder.GameModel(newGame)) is GameModel)
                 {
-                    await SendData(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
+                    await SendDataAsync(CommandConstants.PublishGameOk, "Se ha publicado el juego: " + newGame.Title + ".");
                     return;
                 }
             }
             catch (Exception) { }
 
-            await SendData(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
+            await SendDataAsync(CommandConstants.PublishGameError, "No se ha podido publicar juego.");
         }
 
-        public async Task<string> handleGameCover(string cover)
+        public async Task<string> handleGameCoverAsync(string cover)
         {
             if (File.Exists(cover))
             {
-                await TransferFile();
+                await TransferFileAsync();
                 var fileInfo = new FileInfo(cover);
                 return fileInfo.Name;
             }
@@ -279,10 +279,10 @@ namespace Server
             }
         }
 
-        public async Task SendData(int command, string message)
+        public async Task SendDataAsync(int command, string message)
         {
             var header = new Header(HeaderConstants.Response, command, message.Length);
-            await Utils.ServerSendData(tcpClient.GetStream(), header, message);
+            await Utils.ServerSendDataAsync(tcpClient.GetStream(), header, message);
         }
     }
 }

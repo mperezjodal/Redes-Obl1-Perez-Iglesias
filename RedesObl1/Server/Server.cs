@@ -73,25 +73,25 @@ namespace Server
                         _exit = true;
                         break;
                     case "1":
-                        await menu.ShowGames();
+                        await menu.ShowGamesAsync();
                         break;
                     case "2":
-                        await menu.InsertGame();
+                        await menu.InsertGameAsync();
                         break;
                     case "3":
-                        await menu.InsertReview();
+                        await menu.InsertReviewAsync();
                         break;
                     case "4":
-                        DialogUtils.SearchFilteredGames(await menu.GetGames());
+                        DialogUtils.SearchFilteredGames(await menu.GetGamesAsync());
                         break;
                     case "5":
-                        await menu.InsertUser();
+                        await menu.InsertUserAsync();
                         break;
                     case "6":
-                        await menu.ModifyUser();
+                        await menu.ModifyUserAsync();
                         break;
                     case "7":
-                        await menu.DeleteUser();
+                        await menu.DeleteUserAsync();
                         break;
                     default:
                         Console.WriteLine("Opción inválida.");
@@ -108,7 +108,7 @@ namespace Server
                 try
                 {
                     var acceptedTcpClient = tcpListener.AcceptTcpClient();
-                    Task listenForConnectionsTask = Task.Run(async () => await HandleClient(acceptedTcpClient));
+                    Task listenForConnectionsTask = Task.Run(async () => await HandleClientAsync(acceptedTcpClient));
 
                     _clients.Add(acceptedTcpClient);
                 }
@@ -120,7 +120,7 @@ namespace Server
             Console.WriteLine("Saliendo...");
         }
 
-        public static async Task HandleClient(TcpClient tcpClient)
+        public static async Task HandleClientAsync(TcpClient tcpClient)
         {
             var networkStream = tcpClient.GetStream();
 
@@ -132,51 +132,51 @@ namespace Server
                 var buffer = new byte[headerLength];
                 try
                 {
-                    buffer = await Utils.ServerReceiveData(networkStream, headerLength, buffer);
+                    buffer = await Utils.ServerReceiveDataAsync(networkStream, headerLength, buffer);
                     var header = new Header();
                     header.DecodeData(buffer);
                     var bufferData = new byte[header.IDataLength];
-                    bufferData = await Utils.ServerReceiveData(networkStream, header.IDataLength, bufferData);
+                    bufferData = await Utils.ServerReceiveDataAsync(networkStream, header.IDataLength, bufferData);
 
                     string jsonData = Encoding.UTF8.GetString(bufferData);
 
                     switch (header.ICommand)
                     {
                         case CommandConstants.Login:
-                            await serverUtils.LoginHandler(jsonData);
+                            await serverUtils.LoginHandlerAsync(jsonData);
                             break;
                         case CommandConstants.Logout:
-                            await serverUtils.Logout(jsonData);
+                            await serverUtils.LogoutAsync(jsonData);
                             break;
                         case CommandConstants.PublishGame:
-                            await serverUtils.PublishGameHandler(jsonData);
+                            await serverUtils.PublishGameHandlerAsync(jsonData);
                             break;
                         case CommandConstants.GetGames:
-                            await serverUtils.GetGamesHandler();
+                            await serverUtils.GetGamesHandlerAsync();
                             break;
                         case CommandConstants.GetUsers:
-                            await serverUtils.GetUsersHandler();
+                            await serverUtils.GetUsersHandlerAsync();
                             break;
                         case CommandConstants.PublishReview:
-                            await serverUtils.PublishReviewHandler(jsonData);
+                            await serverUtils.PublishReviewHandlerAsync(jsonData);
                             break;
                         case CommandConstants.ModifyingGame:
-                            await serverUtils.BeingModifiedHandler(jsonData);
+                            await serverUtils.BeingModifiedHandlerAsync(jsonData);
                             break;
                         case CommandConstants.ModifyGame:
-                            await serverUtils.ModifyGameHandler(jsonData);
+                            await serverUtils.ModifyGameHandlerAsync(jsonData);
                             break;
                         case CommandConstants.DeleteGame:
-                            await serverUtils.DeleteGameHandler(jsonData);
+                            await serverUtils.DeleteGameHandlerAsync(jsonData);
                             break;
                         case CommandConstants.AcquireGame:
-                            await serverUtils.AcquireGameHandler(jsonData);
+                            await serverUtils.AcquireGameHandlerAsync(jsonData);
                             break;
                         case CommandConstants.GetAcquiredGames:
-                            await serverUtils.GetAcquiredGamesHandler();
+                            await serverUtils.GetAcquiredGamesHandlerAsync();
                             break;
                         case CommandConstants.GetGameCover:
-                            await serverUtils.GetGameCover(jsonData);
+                            await serverUtils.GetGameCoverAsync(jsonData);
                             break;
                     }
                 }

@@ -21,19 +21,19 @@ namespace Server
             this.grpcClient = grpcClient;
         }
 
-        public async Task ShowGames()
+        public async Task ShowGamesAsync()
         {
-            Game gameToShow = DialogUtils.SelectGame(await GetGames());
+            Game gameToShow = DialogUtils.SelectGame(await GetGamesAsync());
 
             if (gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
             {
-                await ReceiveGameCover(gameToShow);
+                await ReceiveGameCoverAsync(gameToShow);
             }
 
             DialogUtils.ShowGameDetail(gameToShow);
         }
 
-        public async Task ReceiveGameCover(Game game)
+        public async Task ReceiveGameCoverAsync(Game game)
         {
             try
             {
@@ -58,7 +58,7 @@ namespace Server
             }
             catch (Exception){ }
         }
-        public async Task<List<Game>> GetGames()
+        public async Task<List<Game>> GetGamesAsync()
         {
             try 
             {
@@ -76,7 +76,7 @@ namespace Server
             }
         }
 
-        public async Task<List<User>> GetUsers()
+        public async Task<List<User>> GetUsersAsync()
         {
             try 
             {
@@ -94,7 +94,7 @@ namespace Server
             }
         }
 
-        public async Task InsertGame()
+        public async Task InsertGameAsync()
         {
             Game gameToPublish = DialogUtils.InputGame();
             try
@@ -122,9 +122,9 @@ namespace Server
 
         }
 
-        public async Task InsertReview()
+        public async Task InsertReviewAsync()
         {
-            Game selectedGame = DialogUtils.SelectGame(await GetGames());
+            Game selectedGame = DialogUtils.SelectGame(await GetGamesAsync());
 
             if (selectedGame == null)
             {
@@ -153,11 +153,11 @@ namespace Server
             }
         }
 
-        public async Task InsertUser()
+        public async Task InsertUserAsync()
         {
             try
             {
-                User userToInsert = DialogUtils.InputUser(await GetUsers());
+                User userToInsert = DialogUtils.InputUser(await GetUsersAsync());
                 userToInsert.Login = false;
                 if (userToInsert == null)
                 {
@@ -180,11 +180,11 @@ namespace Server
             }
         }
 
-        public async Task ModifyUser()
+        public async Task ModifyUserAsync()
         {
             try
             {
-                var users = await GetUsers();
+                var users = await GetUsersAsync();
                 User userToModify = DialogUtils.SelectUser(users);
 
                 if (userToModify == null)
@@ -220,11 +220,11 @@ namespace Server
             }
         }
 
-        public async Task DeleteUser()
+        public async Task DeleteUserAsync()
         {
             try
             {
-                User userToDelete = DialogUtils.SelectUser(await GetUsers());
+                User userToDelete = DialogUtils.SelectUser(await GetUsersAsync());
                 if (userToDelete == null)
                 {
                     Console.WriteLine("Retorno al menú.");
