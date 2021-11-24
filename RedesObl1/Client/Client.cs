@@ -50,11 +50,11 @@ namespace Client
             tcpClient.Connect(serverEndPoint);
             Console.WriteLine("Conectado al servidor.");
 
-            await RunApp(tcpClient);
+            await RunAppAsync(tcpClient);
             tcpClient.Close();
         }
 
-        public static async Task RunApp(TcpClient tcpClient)
+        public static async Task RunAppAsync(TcpClient tcpClient)
         {
             var connected = true;
 
@@ -63,7 +63,7 @@ namespace Client
                 var headerRequestGameList = new Header(HeaderConstants.Request, CommandConstants.GetGames, 0);
             
                 ClientUtils clientUtils = new ClientUtils(networkStream);
-                await clientUtils.Login();
+                await clientUtils.LoginAsync();
                 while (connected)
                 {
                     var option = DialogUtils.Menu(ClientMenuOptions);
@@ -71,32 +71,32 @@ namespace Client
                     switch (option)
                     {
                         case "logout":
-                            await clientUtils.Logout();
+                            await clientUtils.LogoutAsync();
                             connected = false;
                             break;
                         case "1":
-                            await clientUtils.PublishGame();
+                            await clientUtils.PublishGameAsync();
                             break;
                         case "2": 
-                            await clientUtils.ModifyGame();
+                            await clientUtils.ModifyGameAsync();
                             break;
                         case "3": 
-                            await clientUtils.DeleteGame();
+                            await clientUtils.DeleteGameAsync();
                             break;
                         case "4": 
-                            DialogUtils.SearchFilteredGames(await clientUtils.GetGames());
+                            DialogUtils.SearchFilteredGames(await clientUtils.GetGamesAsync());
                             break;
                         case "5":
-                            await clientUtils.PublishReview();
+                            await clientUtils.PublishReviewAsync();
                             break;
                         case "6": 
-                            await clientUtils.AcquireGame();
+                            await clientUtils.AcquireGameAsync();
                             break;
                         case "7": 
-                            await clientUtils.ShowGamesAndDetail(await clientUtils.GetAcquiredGames());
+                            await clientUtils.ShowGamesAndDetailAsync(await clientUtils.GetAcquiredGamesAsync());
                             break;
                         case "8": 
-                            await clientUtils.ShowGamesAndDetail(await clientUtils.GetGames());
+                            await clientUtils.ShowGamesAndDetailAsync(await clientUtils.GetGamesAsync());
                             break;
                         default:
                             Console.WriteLine("Opción inválida.");

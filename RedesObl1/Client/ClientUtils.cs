@@ -22,7 +22,7 @@ namespace networkStream
             this.networkStream = networkStream;
         }
 
-        public async Task Login()
+        public async Task LoginAsync()
         {
             var notLogin = true;
 
@@ -33,8 +33,8 @@ namespace networkStream
                     string userName = DialogUtils.Login();
                     if (userName != "")
                     {
-                        await SendData(CommandConstants.Login, userName);
-                        List<string> commandAndMessage = await Utils.ReceiveCommandAndMessage(networkStream);
+                        await SendDataAsync(CommandConstants.Login, userName);
+                        List<string> commandAndMessage = await Utils.ReceiveCommandAndMessageAsync(networkStream);
 
                         Console.WriteLine(commandAndMessage[1]);
 
@@ -58,96 +58,96 @@ namespace networkStream
                     notLogin = false;
                 }
             }
-            var userJson = await Utils.ClientReceiveMessageData(networkStream);
+            var userJson = await Utils.ClientReceiveMessageDataAsync(networkStream);
 
             myUser = new User(userJson);
         }
 
-        public async Task Logout()
+        public async Task LogoutAsync()
         {
-            await SendData(CommandConstants.Logout, myUser.Encode());
+            await SendDataAsync(CommandConstants.Logout, myUser.Encode());
         }
 
-        public async Task AcquireGame()
+        public async Task AcquireGameAsync()
         {
-            Game game = DialogUtils.SelectGame(await GetGames());
+            Game game = DialogUtils.SelectGame(await GetGamesAsync());
             if (game == null)
             {
                 Console.WriteLine("Retorno al menú.");
                 return;
             }
 
-            await SendData(CommandConstants.AcquireGame, game.Encode());
+            await SendDataAsync(CommandConstants.AcquireGame, game.Encode());
 
-            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageDataAsync(networkStream));
         }
 
-        public async Task<List<Game>> GetGames()
+        public async Task<List<Game>> GetGamesAsync()
         {
-            await SendData(CommandConstants.GetGames, "");
+            await SendDataAsync(CommandConstants.GetGames, "");
 
-            var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
+            var gamesJson = await Utils.ClientReceiveMessageDataAsync(networkStream);
             List<Game> gameList = GameSystem.DecodeGames(gamesJson);
             return gameList;
         }
 
-        public async Task ShowGamesAndDetail(List<Game> games)
+        public async Task ShowGamesAndDetailAsync(List<Game> games)
         {
             Game gameToShow = DialogUtils.SelectGame(games);
 
             if (gameToShow != null && !String.IsNullOrEmpty(gameToShow.Cover))
             {
-                await ReceiveGameCover(gameToShow);
+                await ReceiveGameCoverAsync(gameToShow);
             }
 
             DialogUtils.ShowGameDetail(gameToShow);
         }
 
-        public async Task ReceiveGameCover(Game g)
+        public async Task ReceiveGameCoverAsync(Game g)
         {
-            await SendData(CommandConstants.GetGameCover, g.Encode());
+            await SendDataAsync(CommandConstants.GetGameCover, g.Encode());
             
-            await ReceiveFile();
+            await ReceiveFileAsync();
         }
 
-        public async Task<List<Game>> GetAcquiredGames()
+        public async Task<List<Game>> GetAcquiredGamesAsync()
         {
-            await SendData(CommandConstants.GetAcquiredGames, "");
+            await SendDataAsync(CommandConstants.GetAcquiredGames, "");
 
-            var gamesJson = await Utils.ClientReceiveMessageData(networkStream);
+            var gamesJson = await Utils.ClientReceiveMessageDataAsync(networkStream);
 
             return GameSystem.DecodeGames(gamesJson);
         }
 
-        public async Task SendFile(string path)
+        public async Task SendFileAsync(string path)
         {
             var fileCommunication = new FileCommunicationHandler(this.networkStream);
             await fileCommunication.SendFileAsync(path);
         }
 
-        public async Task ReceiveFile()
+        public async Task ReceiveFileAsync()
         {
             var fileCommunicationGameList = new FileCommunicationHandler(this.networkStream);
             await fileCommunicationGameList.ReceiveFileAsync();
         }
 
-        public async Task PublishGame()
+        public async Task PublishGameAsync()
         {
             Game gameToPublish = DialogUtils.InputGame();
 
-            await SendData(CommandConstants.PublishGame, gameToPublish.Encode());
+            await SendDataAsync(CommandConstants.PublishGame, gameToPublish.Encode());
 
             if (File.Exists(gameToPublish.Cover))
             {
-                await SendFile(gameToPublish.Cover);
+                await SendFileAsync(gameToPublish.Cover);
             }
 
-            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageDataAsync(networkStream));
         }
 
-        public async Task PublishReview()
+        public async Task PublishReviewAsync()
         {
-            Game game = DialogUtils.SelectGame(await GetGames());
+            Game game = DialogUtils.SelectGame(await GetGamesAsync());
             if (game == null)
             {
                 Console.WriteLine("Retorno al menú.");
@@ -164,14 +164,14 @@ namespace networkStream
 
             game.AddReview(review);
 
-            await SendData(CommandConstants.PublishReview, game.Encode());
+            await SendDataAsync(CommandConstants.PublishReview, game.Encode());
 
-            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageDataAsync(networkStream));
         }
 
-        public async Task ModifyGame()
+        public async Task ModifyGameAsync()
         {
-            List<Game> games = await GetGames();
+            List<Game> games = await GetGamesAsync();
             Game gameToModify = DialogUtils.SelectGame(games);
 
             if (gameToModify == null)
@@ -180,9 +180,9 @@ namespace networkStream
                 return;
             }
 
-            await SendData(CommandConstants.ModifyingGame, gameToModify.Encode());
+            await SendDataAsync(CommandConstants.ModifyingGame, gameToModify.Encode());
 
-            List<string> headerAndMessage = await Utils.ReceiveCommandAndMessage(networkStream);
+            List<string> headerAndMessage = await Utils.ReceiveCommandAndMessageAsync(networkStream);
 
             Console.WriteLine(headerAndMessage[1]);
 
@@ -195,19 +195,19 @@ namespace networkStream
             Console.WriteLine("Ingrese los nuevos datos del juego. Si no quiere modificar el campo, presione ENTER.");
             Game modifiedGame = DialogUtils.InputGame();
 
-            await SendData(CommandConstants.ModifyGame, GameSystem.EncodeGames(new List<Game>() { gameToModify, modifiedGame }));
+            await SendDataAsync(CommandConstants.ModifyGame, GameSystem.EncodeGames(new List<Game>() { gameToModify, modifiedGame }));
 
             if (File.Exists(modifiedGame.Cover))
             {
-                await SendFile(modifiedGame.Cover);
+                await SendFileAsync(modifiedGame.Cover);
             }
 
-            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageDataAsync(networkStream));
         }
 
-        public async Task DeleteGame()
+        public async Task DeleteGameAsync()
         {
-            List<Game> games = await GetGames();
+            List<Game> games = await GetGamesAsync();
 
             Game gameToDelete = DialogUtils.SelectGame(games);
             if (gameToDelete == null)
@@ -216,15 +216,15 @@ namespace networkStream
                 return;
             }
 
-            await SendData(CommandConstants.DeleteGame, gameToDelete.Encode());
+            await SendDataAsync(CommandConstants.DeleteGame, gameToDelete.Encode());
 
-            Console.WriteLine(await Utils.ClientReceiveMessageData(networkStream));
+            Console.WriteLine(await Utils.ClientReceiveMessageDataAsync(networkStream));
         }
 
-        public async Task SendData(int command, string message)
+        public async Task SendDataAsync(int command, string message)
         {
             var header = new Header(HeaderConstants.Request, command, message.Length);
-            await Utils.ClientSendData(networkStream, header, message);
+            await Utils.ClientSendDataAsync(networkStream, header, message);
         }
     }
 }
