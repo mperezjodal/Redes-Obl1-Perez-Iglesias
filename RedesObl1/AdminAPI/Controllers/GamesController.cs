@@ -46,7 +46,13 @@ namespace AdminAPI.Controllers
         [HttpDelete("{title}")]
         public async Task<ActionResult<GameModel>> DeleteGame([FromRoute] string title)
         {
-            return Ok(await adapter.DeleteGameAsync(title));
+            GameModel response = await adapter.DeleteGameAsync(title);
+            if(response == null)
+            {
+                return BadRequest();
+            }
+
+            return Ok(response);
         }
     }
 }

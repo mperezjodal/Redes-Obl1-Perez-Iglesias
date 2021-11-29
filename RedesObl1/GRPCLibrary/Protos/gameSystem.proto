@@ -49,6 +49,7 @@ message GameModel {
 	string cover = 6;
 	repeated ReviewModel reviews = 7;
 	string user = 8;
+	int32 code = 9;
 }
 
 message GameModifyModel {

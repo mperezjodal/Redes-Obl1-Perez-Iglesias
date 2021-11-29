@@ -11,15 +11,16 @@ using RabbitMQ.Client;
 using FileStreamLibrary;
 using System.IO;
 using Google.Protobuf;
+using System.Threading;
 
 namespace AdminServer
 {
     public class GameSystemService : GameSystemModel.GameSystemModelBase
     {
         private static IGameSystem GameSystem;
-        public object lockAddGame = new object();
-        public object lockModifyGame = new object();
-        public object lockDeleteGame = new object();
+        public SemaphoreSlim semaphoreAddGame = new SemaphoreSlim(1, 1);
+        public SemaphoreSlim semaphoreModifyGame = new SemaphoreSlim(1, 1);
+        public SemaphoreSlim semaphoreDeleteGame = new SemaphoreSlim(1, 1);
         private const string SimpleQueue = "m6bBasicQueue";
         private const string HostName = "localhost";
         private static ConnectionFactory _factory;
@@ -28,7 +29,6 @@ namespace AdminServer
 
         public GameSystemService(IGameSystem gameSystem)
         {
-
             GameSystem = gameSystem;
             _factory = new ConnectionFactory 
             { 
@@ -65,7 +65,7 @@ namespace AdminServer
             }
 
             User user = GameSystem.AddUser(request.Name);
-            Console.WriteLine("User " + user.Login + " added");
+            
             WriteInLog(null, "Insert User", user);
             return Task.FromResult(request);
         }
@@ -128,15 +128,20 @@ namespace AdminServer
             return Task.FromResult(request);
         }
 
-        public override Task<GameModel> PostGame(GameModel request, ServerCallContext context)
+        public async override Task<GameModel> PostGame(GameModel request, ServerCallContext context)
         {
-            lock (lockAddGame)
+            await semaphoreAddGame.WaitAsync();
+            try
             {
                 GameSystem.AddGame(ProtoBuilder.Game(request));
                 WriteInLog(ProtoBuilder.Game(request), "Post Game" + request.User, null);
             }
+            finally
+            {
+                semaphoreAddGame.Release();
+            }
 
-            return Task.FromResult(request);
+            return request;
         }
 
         public async override Task<CoverModel> PostCover(CoverModel request, ServerCallContext context)
@@ -201,57 +206,72 @@ namespace AdminServer
             return Task.FromResult(request);
         }
 
-        public override Task<GameModel> UpdateGame(GamesModel request, ServerCallContext context)
+        public async override Task<GameModel> UpdateGame(GamesModel request, ServerCallContext context)
         {
             var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.Games[0].Title));
             
-            lock (lockModifyGame)
+            await semaphoreModifyGame.WaitAsync();
+            try
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.Games[0].User))
                 {
-                    return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
+                    return new GameModel { Code = 4 };
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request.Games[1]));
                 WriteInLog(gameToModify, "Update Game by: " + request.Games[1].User);
             }
+            finally
+            {
+                semaphoreModifyGame.Release();
+            }
 
-            return Task.FromResult(ProtoBuilder.GameModel(gameToModify));
+            return ProtoBuilder.GameModel(gameToModify);
         }
 
-        public override Task<GameModel> UpdateGameWithTitle(GameModifyModel request, ServerCallContext context)
+        public async override Task<GameModel> UpdateGameWithTitle(GameModifyModel request, ServerCallContext context)
         {
             var gameToModify = GameSystem.Games.Find(g => g.Title.Equals(request.TitleGameToModify));
             this.ToModify(ProtoBuilder.GameModel(gameToModify), context);
-            lock (lockModifyGame)
+            await semaphoreModifyGame.WaitAsync();
+            try
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.User))
                 {
-                    return Task.FromException<GameModel>(new RpcException(new Status(StatusCode.AlreadyExists, "El juego esta siendo modificado")));
+                    return new GameModel { Code = 4 };
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request));
                 WriteInLog(gameToModify, "Update Game by: " + request.User);
             }
+            finally
+            {
+                semaphoreModifyGame.Release();
+            }
 
-            return Task.FromResult(ProtoBuilder.GameModel(request));
+            return ProtoBuilder.GameModel(request);
         }
 
-        public override Task<GameModel> DeleteGame(GameModel request, ServerCallContext context)
+        public async override Task<GameModel> DeleteGame(GameModel request, ServerCallContext context)
         {
             var gameToDelete = GameSystem.Games.Find(g => g.Title.Equals(request.Title));
 
             if (GameSystem.IsGameBeingModified(gameToDelete))
             {
-                return Task.FromException<GameModel>(new AlreadyModifyingException("El juego esta siendo modificado"));
+                return new GameModel { Code = 4 };
             }
-            lock (lockDeleteGame)
+            await semaphoreDeleteGame.WaitAsync();
+            try
             {
                 GameSystem.DeleteGame(gameToDelete);
                 WriteInLog(gameToDelete, "Delete Game by: " + request.User);
             }
+            finally
+            {
+                semaphoreDeleteGame.Release();
+            }
 
-            return Task.FromResult(request);
+            return request;
         }
 
         public override Task<GameModel> AcquireGame(GameModel request, ServerCallContext context)

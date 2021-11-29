@@ -194,9 +194,13 @@ namespace Server
                 }
 
                 var response = await grpcClient.UpdateGameAsync(ProtoBuilder.GamesModel(updatingGames, this.username));
-                if (response is GameModel)
+                if (response.Code != 4)
                 {
                     await SendDataAsync(CommandConstants.ModifyingGameOk, "Se ha modificado el juego: " + response.Title + ".");
+                }
+                else
+                {
+                    await SendDataAsync(CommandConstants.DeleteGameError, "El juego está siendo modificado.");
                 }
             }
             catch (Exception)
@@ -210,10 +214,15 @@ namespace Server
             try
             {
                 Game gameToDelete = Game.Decode(jsonDeleteGameData);
-
-                if (await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete)) is GameModel)
+                
+                var result = await grpcClient.DeleteGameAsync(ProtoBuilder.GameModel(gameToDelete));
+                if (result.Code != 4)
                 {
                     await SendDataAsync(CommandConstants.DeleteGameOk, "Se ha eliminado el juego: " + gameToDelete.Title + ".");
+                }
+                else
+                {
+                    await SendDataAsync(CommandConstants.DeleteGameError, "El juego está siendo modificado.");
                 }
             }
             catch (Exception)
