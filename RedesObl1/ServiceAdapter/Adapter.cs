@@ -61,7 +61,12 @@ namespace ServiceAdapter
         {
             try
             {
-                return await grpcClient.DeleteGameAsync(new GameModel { Title = title });
+                var game = await grpcClient.DeleteGameAsync(new GameModel { Title = title });
+                if(game.Code != 4)
+                {
+                    return game;
+                }
+                else return null;
             }
             catch (Exception) { return null; }
         }
@@ -101,7 +106,12 @@ namespace ServiceAdapter
                     modifiedGame.Cover = modifiedGame.Cover.Split("/").Last();
                 }
  
-                return await grpcClient.UpdateGameWithTitleAsync(ProtoBuilder.GameModifyModel(modifiedGame, gameToModify));
+                var game = await grpcClient.UpdateGameWithTitleAsync(ProtoBuilder.GameModifyModel(modifiedGame, gameToModify));
+                if(game.Code != 4)
+                {
+                    return game;
+                }
+                else return null;
             }
             catch (Exception) { return null; }
         }

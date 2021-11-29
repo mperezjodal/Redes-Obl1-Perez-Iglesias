@@ -12,8 +12,6 @@ using FileStreamLibrary;
 using System.IO;
 using Google.Protobuf;
 using System.Threading;
-using log4net;
-using log4net.Config;
 
 namespace AdminServer
 {
@@ -217,7 +215,7 @@ namespace AdminServer
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.Games[0].User))
                 {
-                    return new AlreadyModifyingException("El juego esta siendo modificado");
+                    return new GameModel { Code = 4 };
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request.Games[1]));
@@ -240,7 +238,7 @@ namespace AdminServer
             {
                 if (GameSystem.IsGameBeingModifiedByAnother(gameToModify, request.User))
                 {
-                    return new RpcException(new Status(StatusCode.AlreadyExists, "El juego esta siendo modificado"));
+                    return new GameModel { Code = 4 };
                 }
                 GameSystem.DeleteGameBeingModified(gameToModify);
                 GameSystem.UpdateGame(gameToModify, ProtoBuilder.Game(request));
@@ -260,8 +258,7 @@ namespace AdminServer
 
             if (GameSystem.IsGameBeingModified(gameToDelete))
             {
-                Log.Logger.Error(new AlreadyModifyingException("El juego esta siendo modificado"));
-                throw;
+                return new GameModel { Code = 4 };
             }
             await semaphoreDeleteGame.WaitAsync();
             try
